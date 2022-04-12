@@ -361,7 +361,7 @@ namespace MarginTrading.Backend
         {
             var deduplicationService = new StartupDeduplicationService(Environment, LogLocator.CommonLog,
                 marginTradingSettings);
-            deduplicationService.HoldLock(); 
+            deduplicationService.HoldLock();
 
             new QueueValidationService(marginTradingSettings.StartupQueuesChecker.ConnectionString,
                     new[]
