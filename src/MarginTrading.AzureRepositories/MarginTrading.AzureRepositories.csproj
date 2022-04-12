@@ -20,7 +20,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="5.0.0" />
     <PackageReference Include="Lykke.AzureStorage" Version="8.13.4" />
   </ItemGroup>
 </Project>
