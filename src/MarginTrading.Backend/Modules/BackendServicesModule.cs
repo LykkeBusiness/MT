@@ -14,6 +14,7 @@ using Lykke.Snow.Common.Correlation.RabbitMq;
 using MarginTrading.Backend.Email;
 using MarginTrading.Backend.Middleware.Validator;
 using MarginTrading.Common.RabbitMq;
+using Microsoft.AspNetCore.Hosting;
 using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Services;
 using MarginTrading.Backend.Core.Settings;
@@ -26,7 +27,6 @@ using MarginTrading.Backend.Services.RabbitMq;
 using MarginTrading.Backend.Services.Services;
 using MarginTrading.Backend.Services.Settings;
 using MarginTrading.Common.Services;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace MarginTrading.Backend.Modules
@@ -35,13 +35,13 @@ namespace MarginTrading.Backend.Modules
     {
         private readonly MtBackendSettings _mtSettings;
         private readonly MarginTradingSettings _settings;
-        private readonly IHostEnvironment _environment;
+        private readonly IHostingEnvironment _environment;
         private readonly ILog _log;
 
         public BackendServicesModule(
             MtBackendSettings mtSettings,
             MarginTradingSettings settings,
-            IHostEnvironment environment,
+            IHostingEnvironment environment,
             ILog log)
         {
             _mtSettings = mtSettings;

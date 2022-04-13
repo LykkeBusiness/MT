@@ -50,7 +50,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Converters;
@@ -58,6 +57,7 @@ using Newtonsoft.Json.Serialization;
 using Serilog.Core;
 using GlobalErrorHandlerMiddleware = MarginTrading.Backend.Middleware.GlobalErrorHandlerMiddleware;
 using IApplicationLifetime = Microsoft.Extensions.Hosting.IApplicationLifetime;
+using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 using KeyAuthHandler = MarginTrading.Backend.Middleware.KeyAuthHandler;
 
 #pragma warning disable 1591
@@ -69,10 +69,10 @@ namespace MarginTrading.Backend
         private IReloadingManager<MtBackendSettings> _mtSettingsManager;
         
         public IConfigurationRoot Configuration { get; }
-        public IHostEnvironment Environment { get; }
+        public IHostingEnvironment Environment { get; }
         public ILifetimeScope ApplicationContainer { get; set; }
 
-        public Startup(IHostEnvironment env)
+        public Startup(IHostingEnvironment env)
         {
             Configuration = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
@@ -135,7 +135,7 @@ namespace MarginTrading.Backend
         }
 
         [UsedImplicitly]
-        public void Configure(IApplicationBuilder app, IHostEnvironment env, IApplicationLifetime appLifetime)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime appLifetime)
         {
             ApplicationContainer = app.ApplicationServices.GetAutofacRoot();
 
@@ -203,7 +203,7 @@ namespace MarginTrading.Backend
         private static void RegisterModules(
             ContainerBuilder builder,
             IReloadingManager<MtBackendSettings> mtSettings,
-            IHostEnvironment environment)
+            IHostingEnvironment environment)
         {
             var settings = mtSettings.Nested(x => x.MtBackend);
 

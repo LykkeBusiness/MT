@@ -5,8 +5,9 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Common.Log;
+using Lykke.Common;
 using MarginTrading.Backend.Core.Settings;
-using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Hosting;
 using StackExchange.Redis;
 
 namespace MarginTrading.Backend.Services.Infrastructure
@@ -20,7 +21,7 @@ namespace MarginTrading.Backend.Services.Infrastructure
         private const string LockKey = "TradingEngine:DeduplicationLock";
         private readonly string _lockValue = Environment.MachineName;
 
-        private readonly IHostEnvironment _hostingEnvironment; 
+        private readonly IHostingEnvironment _hostingEnvironment; 
         private readonly ILog _log;
         private readonly MarginTradingSettings _marginTradingSettings;
 
@@ -28,7 +29,7 @@ namespace MarginTrading.Backend.Services.Infrastructure
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
         public StartupDeduplicationService(
-            IHostEnvironment hostingEnvironment,
+            IHostingEnvironment hostingEnvironment,
             ILog log,
             MarginTradingSettings marginTradingSettings)
         {

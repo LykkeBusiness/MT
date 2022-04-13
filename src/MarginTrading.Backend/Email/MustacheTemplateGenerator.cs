@@ -4,7 +4,6 @@
 using System;
 using System.IO;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
 
 #pragma warning disable 1591
 
@@ -12,10 +11,10 @@ namespace MarginTrading.Backend.Email
 {
     public class MustacheTemplateGenerator : ITemplateGenerator
     {
-        private readonly IHostEnvironment _hostingEnvironment;
+        private readonly IHostingEnvironment _hostingEnvironment;
         private readonly string _templatesFolder;
 
-        public MustacheTemplateGenerator(IHostEnvironment hostingEnvironment, string templatesFolder)
+        public MustacheTemplateGenerator(IHostingEnvironment hostingEnvironment, string templatesFolder)
         {
             _hostingEnvironment = hostingEnvironment;
             _templatesFolder = templatesFolder;
