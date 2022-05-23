@@ -143,7 +143,7 @@ namespace MarginTrading.Backend.Services.Services
                     MtMessages.Validation_NotEnoughBalance,
                     $"Account available margin: {marginAvailable}, order margin: {orderMargin}, pnl at execution: {pnlAtExecution}, entry cost: {entryCost}, exit cost: {exitCost} ");
             
-            _log.WriteInfo(nameof(CheckIsEnoughBalance), new { Order = order,  accountMarginAvailable, pnl, entryCost, exitCost, orderMargin}.ToJson(),
+            _log.WriteInfo(nameof(CheckIsEnoughBalance), new { Order = order,  orderBalanceAvailable, pnlAtExecution, entryCost, exitCost, orderMargin}.ToJson(),
                 "Account balance is enough, validation succeeded.");
         }
 
