@@ -228,8 +228,8 @@ namespace MarginTrading.Backend.Core.Orders
         {
             ClosePrice = closePrice;
             FplData.ActualHash++;
-            var account = ContainerProvider.Container.Resolve<IAccountsCacheService>().Get(AccountId);
-            account.CacheNeedsToBeUpdated();
+            var account = ContainerProvider.Container?.Resolve<IAccountsCacheService>()?.Get(AccountId);
+            account?.CacheNeedsToBeUpdated();
         }
 
         public void SetCommissionRates(decimal swapCommissionRate, decimal openCommissionRate, decimal closeCommissionRate,

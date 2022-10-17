@@ -45,7 +45,7 @@ namespace MarginTrading.Backend.Core
         {
             if (position.FplData.ActualHash != position.FplData.CalculatedHash || position.FplData.ActualHash == 0)
             {
-                ContainerProvider.Container.Resolve<IFplService>().UpdatePositionFpl(position);
+                ContainerProvider.Container?.Resolve<IFplService>()?.UpdatePositionFpl(position);
             }
 
             return position.FplData;

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using MarginTrading.Backend.Contracts;
 using MarginTrading.Backend.Core.Repositories;
 using MarginTrading.Backend.Core.Services;
+using MarginTrading.Backend.Services.Events;
 using MarginTrading.Backend.Services.TradingConditions;
 using MarginTrading.Common.Middleware;
 using Microsoft.AspNetCore.Authorization;
@@ -23,15 +24,18 @@ namespace MarginTrading.Backend.Controllers
         private readonly IOvernightMarginParameterContainer _overnightMarginParameterContainer;
         private readonly IIdentityGenerator _identityGenerator;
         private readonly ISnapshotService _snapshotService;
+        private readonly IEventConsumer<OrderExecutedEventArgs> _consumer;
 
         public ServiceController(
             IOvernightMarginParameterContainer overnightMarginParameterContainer,
             IIdentityGenerator identityGenerator,
-            ISnapshotService snapshotService)
+            ISnapshotService snapshotService,
+            IEventConsumer<OrderExecutedEventArgs> consumer)
         {
             _overnightMarginParameterContainer = overnightMarginParameterContainer;
             _identityGenerator = identityGenerator;
             _snapshotService = snapshotService;
+            _consumer = consumer;
         }
 
         /// <summary>

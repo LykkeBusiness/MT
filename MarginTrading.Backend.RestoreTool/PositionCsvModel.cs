@@ -1,0 +1,56 @@
+using MarginTrading.Backend.Core.Orders;
+
+namespace MarginTrading.Backend.RestoreTool;
+
+public class PositionCsvModel
+{
+    public int OID { get; set; }
+    public string Id { get; set; }
+    public string DealId { get; set; }
+    public long Code { get; set; }
+    public string AssetPairId { get; set; }
+    public string Direction { get; set; }
+    public decimal Volume { get; set; }
+    public string AccountId { get; set; }
+    public string TradingConditionId { get; set; }
+    public string AccountAssetId { get; set; }
+    public decimal ExpectedOpenPrice { get; set; }
+    public string OpenMatchingEngineId { get; set; }
+    public DateTime OpenDate { get; set; }
+    public string OpenTradeId { get; set; }
+    public decimal OpenPrice { get; set; }
+    public decimal OpenFxPrice { get; set; }
+    public string EquivalentAsset { get; set; }
+    public decimal OpenPriceEquivalent { get; set; }
+    public string RelatedOrders { get; set; }
+    public string LegalEntity { get; set; }
+    public OriginatorType OpenOriginator { get; set; }
+    public string ExternalProviderId { get; set; }
+    public decimal SwapCommissionRate { get; set; }
+    public decimal OpenCommissionRate { get; set; }
+    public decimal CloseCommissionRate { get; set; }
+    public decimal CommissionLot { get; set; }
+    public string CloseMatchingEngineId { get; set; }
+    public decimal ClosePrice { get; set; }
+    public decimal CloseFxPrice { get; set; }
+    public decimal ClosePriceEquivalent { get; set; }
+    public string StartClosingDate { get; set; }
+    public string CloseDate { get; set; }
+    public string CloseOriginator { get; set; }
+    public string CloseReason { get; set; }
+    public string CloseComment { get; set; }
+    public string CloseTrades { get; set; }
+    public DateTime? LastModified { get; set; }
+    public decimal TotalPnL { get; set; }
+    public decimal ChargedPnl { get; set; }
+    public string HistoryType { get; set; }
+    public string DealInfo { get; set; }
+    public DateTime HistoryTimestamp { get; set; }
+    public OrderType OpenOrderType { get; set; }
+    public decimal OpenOrderVolume { get; set; }
+    public string FxAssetPairId { get; set; }
+    public FxToAssetPairDirection FxToAssetPairDirection { get; set; }
+    public string AdditionalInfo { get; set; }
+    public bool ForceOpen { get; set; }
+    public string CorrelationId { get; set; }
+}

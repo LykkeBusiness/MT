@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using MarginTrading.Backend.Contracts.Activities;
+using MarginTrading.Backend.Contracts.Events;
 using MarginTrading.Backend.Core.Orders;
 using MarginTrading.Backend.Core.Trading;
 using MarginTrading.Backend.Services.Events;

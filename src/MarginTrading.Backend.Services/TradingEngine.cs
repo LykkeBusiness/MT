@@ -13,6 +13,7 @@ using JetBrains.Annotations;
 using Lykke.Common;
 using Lykke.Snow.Common.Correlation;
 using MarginTrading.Backend.Contracts.Activities;
+using MarginTrading.Backend.Contracts.Events;
 using MarginTrading.Backend.Contracts.TradeMonitoring;
 using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Exceptions;

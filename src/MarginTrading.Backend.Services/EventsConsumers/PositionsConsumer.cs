@@ -26,8 +26,7 @@ using MarginTrading.Common.Services;
 
 namespace MarginTrading.Backend.Services.EventsConsumers
 {
-    public class PositionsConsumer:
-        IEventConsumer<OrderExecutedEventArgs>
+    public class PositionsConsumer: IEventConsumer<OrderExecutedEventArgs>
     {
         private readonly OrdersCache _ordersCache;
         private readonly IRabbitMqNotifyService _rabbitMqNotifyService;
@@ -76,7 +75,7 @@ namespace MarginTrading.Backend.Services.EventsConsumers
             _meRouter = meRouter;
             _log = log;
         }
-        
+
         public void ConsumeEvent(object sender, OrderExecutedEventArgs ea)
         {
             var order = ea.Order;

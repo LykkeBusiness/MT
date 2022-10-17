@@ -49,6 +49,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BenchmarkRunner", "Benchmar
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BenchmarkScenarios", "BenchmarkScenarios\BenchmarkScenarios.csproj", "{A479EF23-D993-45A3-983D-948A4BC8067E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MarginTrading.Backend.RestoreTool", "MarginTrading.Backend.RestoreTool\MarginTrading.Backend.RestoreTool.csproj", "{806A3F14-1D17-47E2-888E-817CC6624211}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -111,6 +113,10 @@ Global
 		{A479EF23-D993-45A3-983D-948A4BC8067E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A479EF23-D993-45A3-983D-948A4BC8067E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A479EF23-D993-45A3-983D-948A4BC8067E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{806A3F14-1D17-47E2-888E-817CC6624211}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{806A3F14-1D17-47E2-888E-817CC6624211}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{806A3F14-1D17-47E2-888E-817CC6624211}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{806A3F14-1D17-47E2-888E-817CC6624211}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -130,6 +136,7 @@ Global
 		{115EFE4D-B269-4D62-944D-12C9FC1AE56A} = {5AD188EF-3F19-4527-816C-A361746EE9C2}
 		{08EC2443-941D-4DA8-A7AE-F92D4BB12E0A} = {F9EA3679-8D3F-4DC2-B0A9-08801E02EE70}
 		{A479EF23-D993-45A3-983D-948A4BC8067E} = {F9EA3679-8D3F-4DC2-B0A9-08801E02EE70}
+		{806A3F14-1D17-47E2-888E-817CC6624211} = {1EA2FA6D-0FEA-47D9-B8CE-EF31A1C54DCD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {16BCEC97-771D-46F8-BD02-379A8FC34CDD}
