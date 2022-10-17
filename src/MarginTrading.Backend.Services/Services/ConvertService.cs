@@ -49,6 +49,10 @@ namespace MarginTrading.Backend.Services
                     opt => opt.Ignore());
 
                 cfg.CreateMap<AssetPairContract, AssetPair>(MemberList.None);
+                
+                cfg.CreateMap<Position, PositionContract>(MemberList.Destination)
+                    .ForMember(x => x.TotalPnL, opt => opt.MapFrom(p => p.GetFpl()));
+                
             }).CreateMapper();
         }
 
