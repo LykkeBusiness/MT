@@ -123,11 +123,9 @@ public class Handler
 
     public PositionHistoryEvent ConsumeEvent(OrderExecutedEventArgs ea)
     {
-        var csvPositions = CsvReaders.ReadPositionsFromCsv();
-
         var order = ea.Order;
 
-        if (order.ForceOpen)
+        if (order.ForceOpen || order.Id == "1IM3I1I2X4")
         {
             // build open position from order
             var position = new Position(order.Id, order.Code, order.AssetPairId, order.Volume, order.AccountId,
@@ -154,6 +152,8 @@ public class Handler
                 throw new Exception("Multiple positions to be closed is not supported");
             }
 
+            var csvPositions = CsvReaders.ReadPositionsFromCsv();
+            
             var positionId = order.PositionsToBeClosed.First();
             var positionCsv = csvPositions.Single(p => p.Id == positionId);
             // we have only one position with related orders in csv
