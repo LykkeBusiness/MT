@@ -15,18 +15,18 @@ namespace MarginTrading.Backend.Core.AccountHistory
         public RestoreResult(RestoreStatus status,
             DateTime date,
             RestoreProgress progress,
-            IDictionary<string, decimal> found = null,
-            IDictionary<string, decimal> notFound = null)
+            IDictionary<string, decimal> foundPositions = null,
+            IDictionary<string, decimal> notFoundPositions = null)
         {
             Status = status;
             Date = date;
             Progress = progress;
-            _foundPositions = found == null || found.Count == 0 
+            _foundPositions = foundPositions == null || foundPositions.Count == 0 
                 ? new Dictionary<string, decimal>() 
-                : new Dictionary<string, decimal>(found);
-            _notFoundPositions = notFound == null || notFound.Count == 0
+                : new Dictionary<string, decimal>(foundPositions);
+            _notFoundPositions = notFoundPositions == null || notFoundPositions.Count == 0
                 ? new Dictionary<string, decimal>()
-                : new Dictionary<string, decimal>(notFound);
+                : new Dictionary<string, decimal>(notFoundPositions);
         }
 
         public RestoreStatus Status { get; set; }
