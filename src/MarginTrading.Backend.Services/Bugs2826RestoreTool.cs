@@ -32,7 +32,7 @@ namespace MarginTrading.Backend.Services
             _logger = logger;
         }
         
-        public async Task Restore(DateTime day)
+        public async Task Restore(DateTime day, bool demoMode)
         {
             var changes = await _accountHistoryRepository.GetUnrealizedPnlPerPosition(day);
             
@@ -74,7 +74,11 @@ namespace MarginTrading.Backend.Services
                     
                     if (_ordersCache.Positions.TryGetPositionById(entry.PositionId, out var position))
                     {
-                        position.ChargePnL(entry.OperationId, entry.ChangeAmount);
+                        if (!demoMode)
+                        {
+                            position.ChargePnL(entry.OperationId, entry.ChangeAmount);
+                        }
+
                         restoreResult.AddProcessed(entry.PositionId, entry.ChangeAmount);
                         _logger.LogInformation("Successfully processed unrealized PnL for position {PositionId} with change amount {Amount}",
                             entry.PositionId, entry.ChangeAmount);
@@ -119,6 +123,17 @@ namespace MarginTrading.Backend.Services
             }
 
             return null;
+        }
+        
+        public async Task<bool> RestoreCleanup(DateTime day)
+        {
+            var key = GetRedisKey(day);
+            
+            var removed = await _redis
+                .GetDatabase()
+                .KeyDeleteAsync(key);
+
+            return removed;
         }
 
         private async Task SaveRestoreResult(RestoreResult restoreResult)

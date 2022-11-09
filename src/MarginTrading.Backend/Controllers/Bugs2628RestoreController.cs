@@ -16,7 +16,7 @@ namespace MarginTrading.Backend.Controllers
     public class Bugs2628RestoreController : Controller
     {
         private readonly Bugs2826RestoreTool _tool;
-        private static readonly DateTime Day = new DateTime(2022, 11, 7);
+        private static readonly DateTime HardCodedDay = new DateTime(2022, 11, 7);
 
         public Bugs2628RestoreController(Bugs2826RestoreTool tool)
         {
@@ -24,22 +24,30 @@ namespace MarginTrading.Backend.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Restore()
+        public async Task<IActionResult> Restore(DateTime? day, bool demoMode = true)
         {
-            await _tool.Restore(Day);
+            await _tool.Restore(day ?? HardCodedDay, demoMode);
             
             return Ok();
         }
         
         [HttpGet]
-        public async Task<IActionResult> GetRestoreResult()
+        public async Task<IActionResult> GetRestoreResult(DateTime? day)
         {
-            var result = await _tool.FindRestoreResult(Day);
+            var result = await _tool.FindRestoreResult(day ?? HardCodedDay);
 
             if (result == null)
                 return NotFound();
             
             return Ok(result);
+        }
+        
+        [HttpDelete]
+        public async Task<IActionResult> RestoreCleanUp(DateTime? day)
+        {
+            var removed = await _tool.RestoreCleanup(day ?? HardCodedDay);
+            
+            return Ok(new {removed});
         }
     }
 }
