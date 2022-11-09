@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using MarginTrading.Backend.Core.AccountHistory;
 using MarginTrading.Backend.Core.Repositories;
-using MarginTrading.Backend.Services.Services;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using StackExchange.Redis;
 
 namespace MarginTrading.Backend.Services
@@ -112,13 +112,13 @@ namespace MarginTrading.Backend.Services
         [ItemCanBeNull]
         public async Task<RestoreResult> FindRestoreResult(DateTime day)
         {
-            var redisValue = await _redis
+            var json = await _redis
                 .GetDatabase()
                 .StringGetAsync(GetRedisKey(day));
 
-            if (redisValue.HasValue)
+            if (json.HasValue)
             {
-                var result = ProtoBufSerializer.Deserialize<RestoreResult>(redisValue);
+                var result = JsonConvert.DeserializeObject<RestoreResult>(json);
                 return result;
             }
 
@@ -138,11 +138,11 @@ namespace MarginTrading.Backend.Services
 
         private async Task SaveRestoreResult(RestoreResult restoreResult)
         {
-            var redisValue = ProtoBufSerializer.Serialize(restoreResult);
+            var json = JsonConvert.SerializeObject(restoreResult);
 
             await _redis
                 .GetDatabase()
-                .StringSetAsync(GetRedisKey(restoreResult.Date), redisValue);
+                .StringSetAsync(GetRedisKey(restoreResult.Date), json);
         }
         
         private static string GetRedisKey(DateTime day)
