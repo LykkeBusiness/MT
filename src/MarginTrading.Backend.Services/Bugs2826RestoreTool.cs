@@ -34,6 +34,9 @@ namespace MarginTrading.Backend.Services
         
         public async Task Restore(DateTime day, bool demoMode)
         {
+            var modeMessage = demoMode ? "in DEMO mode" : "in REAL mode";
+            _logger.LogInformation("BUGS-2826 restore tool is running {Mode}", modeMessage);
+            
             var changes = await _accountHistoryRepository.GetUnrealizedPnlPerPosition(day);
             
             var restoreResult = await FindRestoreResult(day) ?? new RestoreResult(RestoreStatus.NotStarted, day, new RestoreProgress(changes.Count, 0));
