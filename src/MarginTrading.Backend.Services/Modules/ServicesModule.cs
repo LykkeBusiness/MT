@@ -226,6 +226,10 @@ namespace MarginTrading.Backend.Services.Modules
 	            .InstancePerLifetimeScope();
             
             builder.RegisterType<SystemClock>().As<ISystemClock>().SingleInstance();
+
+            builder.RegisterType<Bugs2826RestoreTool>()
+	            .AsSelf()
+	            .SingleInstance();
 		}
 	}
 }
