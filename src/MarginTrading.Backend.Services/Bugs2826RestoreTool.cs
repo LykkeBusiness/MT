@@ -82,7 +82,7 @@ namespace MarginTrading.Backend.Services
                             position.ChargePnL(entry.OperationId, entry.ChangeAmount);
                         }
 
-                        restoreResult.AddProcessed(entry.PositionId, entry.AccountId, entry.ChangeAmount);
+                        restoreResult.Add(entry.PositionId, entry.AccountId, entry.ChangeAmount);
                         _logger.LogInformation("Successfully processed unrealized PnL for position {PositionId} with change amount {Amount}",
                             entry.PositionId, entry.ChangeAmount);
                     }

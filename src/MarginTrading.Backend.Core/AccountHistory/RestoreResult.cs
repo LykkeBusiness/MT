@@ -35,7 +35,7 @@ namespace MarginTrading.Backend.Core.AccountHistory
             
         public DateTime Date { get; }
             
-        public void AddProcessed(string positionId, string accountId, decimal amount)
+        public void Add(string positionId, string accountId, decimal amount)
         {
             _foundPositions.Add(positionId, (accountId, amount));
         }
