@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace MarginTrading.Backend.Core.AccountHistory
 {
@@ -21,6 +22,27 @@ namespace MarginTrading.Backend.Core.AccountHistory
             Status = status;
             Date = date;
             Progress = progress;
+            Timestamp = DateTime.UtcNow;
+            _foundPositions = foundPositions == null || foundPositions.Count == 0 
+                ? new Dictionary<string, (string, decimal)>() 
+                : new Dictionary<string, (string, decimal)>(foundPositions);
+            _notFoundPositions = notFoundPositions == null || notFoundPositions.Count == 0
+                ? new Dictionary<string, (string, decimal)>()
+                : new Dictionary<string, (string, decimal)>(notFoundPositions);
+        }
+
+        [JsonConstructor]
+        public RestoreResult(RestoreStatus status,
+            DateTime date,
+            RestoreProgress progress,
+            IDictionary<string, (string, decimal)> foundPositions,
+            IDictionary<string, (string, decimal)> notFoundPositions,
+            DateTime timestamp)
+        {
+            Status = status;
+            Date = date;
+            Progress = progress;
+            Timestamp = timestamp;
             _foundPositions = foundPositions == null || foundPositions.Count == 0 
                 ? new Dictionary<string, (string, decimal)>() 
                 : new Dictionary<string, (string, decimal)>(foundPositions);
@@ -34,6 +56,8 @@ namespace MarginTrading.Backend.Core.AccountHistory
         public RestoreProgress Progress { get; set;}
             
         public DateTime Date { get; }
+        
+        public DateTime Timestamp { get; }
             
         public void Add(string positionId, string accountId, decimal amount)
         {
