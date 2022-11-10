@@ -8,25 +8,25 @@ namespace MarginTrading.Backend.Core.AccountHistory
 {
     public class RestoreResult
     {
-        private readonly IDictionary<string, decimal> _foundPositions;
+        private readonly IDictionary<string, (string, decimal)> _foundPositions;
             
-        private readonly IDictionary<string, decimal> _notFoundPositions;
+        private readonly IDictionary<string, (string, decimal)> _notFoundPositions;
 
         public RestoreResult(RestoreStatus status,
             DateTime date,
             RestoreProgress progress,
-            IDictionary<string, decimal> foundPositions = null,
-            IDictionary<string, decimal> notFoundPositions = null)
+            IDictionary<string, (string, decimal)> foundPositions = null,
+            IDictionary<string, (string, decimal)> notFoundPositions = null)
         {
             Status = status;
             Date = date;
             Progress = progress;
             _foundPositions = foundPositions == null || foundPositions.Count == 0 
-                ? new Dictionary<string, decimal>() 
-                : new Dictionary<string, decimal>(foundPositions);
+                ? new Dictionary<string, (string, decimal)>() 
+                : new Dictionary<string, (string, decimal)>(foundPositions);
             _notFoundPositions = notFoundPositions == null || notFoundPositions.Count == 0
-                ? new Dictionary<string, decimal>()
-                : new Dictionary<string, decimal>(notFoundPositions);
+                ? new Dictionary<string, (string, decimal)>()
+                : new Dictionary<string, (string, decimal)>(notFoundPositions);
         }
 
         public RestoreStatus Status { get; set; }
@@ -35,19 +35,19 @@ namespace MarginTrading.Backend.Core.AccountHistory
             
         public DateTime Date { get; }
             
-        public void AddProcessed(string positionId, decimal amount)
+        public void AddProcessed(string positionId, string accountId, decimal amount)
         {
-            _foundPositions.Add(positionId, amount);
+            _foundPositions.Add(positionId, (accountId, amount));
         }
             
-        public void AddNotFound(string positionId, decimal amount)
+        public void AddNotFound(string positionId, string accountId, decimal amount)
         {
-            _notFoundPositions.Add(positionId, amount);
+            _notFoundPositions.Add(positionId, (accountId, amount));
         }
 
-        public IDictionary<string, decimal> FoundPositions =>
-            new Dictionary<string, decimal>(_foundPositions);
-        public IDictionary<string, decimal> NotFoundPositions =>
-            new Dictionary<string, decimal>(_notFoundPositions);
+        public IDictionary<string, (string, decimal)> FoundPositions =>
+            new Dictionary<string, (string, decimal)>(_foundPositions);
+        public IDictionary<string, (string, decimal)> NotFoundPositions =>
+            new Dictionary<string, (string, decimal)>(_notFoundPositions);
     }
 }

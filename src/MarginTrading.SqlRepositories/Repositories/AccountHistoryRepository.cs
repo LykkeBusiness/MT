@@ -63,7 +63,8 @@ select
     Oid,
     ChangeAmount,
     EventSourceId as PositionId,
-    Id as OperationId
+    Id as OperationId,
+    AccountId
 from dbo.AccountHistory
 where ReasonType = 'UnrealizedDailyPnL'
   and TradingDate is not null
