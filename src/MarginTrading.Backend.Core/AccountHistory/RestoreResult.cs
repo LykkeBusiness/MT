@@ -73,8 +73,11 @@ namespace MarginTrading.Backend.Core.AccountHistory
         {
             _notFoundPositions.Add(positionId, (accountId, amount));
 
-            var curlCommand =
-                CurlCommandGenerator.Generate(Guid.NewGuid().ToString(), accountId, amount, DateTime.UtcNow);
+            var curlCommand = CurlCommandGenerator.Generate(Guid.NewGuid().ToString(), 
+                accountId, 
+                positionId, 
+                amount, 
+                DateTime.UtcNow);
             _curlCommands.Add(curlCommand);
         }
 
