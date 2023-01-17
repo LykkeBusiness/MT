@@ -212,7 +212,10 @@ namespace MarginTrading.Backend.Services
             {
                 var account = _accounts[accountId];
 
-                if (account.LastUpdateTime > eventTime)
+                var accountUpdatedUtc = account.LastUpdateTime.ToUniversalTime();
+                var eventTimeUtc = eventTime.ToUniversalTime();
+
+                if (accountUpdatedUtc > eventTimeUtc)
                 {
                     await _log.WriteInfoAsync(nameof(AccountsCacheService), nameof(UpdateAccountChanges), 
                         $"Account with id {account.Id} is in newer state then the event");
