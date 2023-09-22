@@ -131,6 +131,7 @@ namespace MarginTrading.Backend
         {
             var deduplicationService = RunHealthChecks(_mtSettingsManager.CurrentValue.MtBackend);
 
+            // todo: this is not required, remove it
             builder.RegisterInstance(deduplicationService).AsSelf().As<IDisposable>().SingleInstance();
 
             RegisterModules(builder, _mtSettingsManager, Environment);
