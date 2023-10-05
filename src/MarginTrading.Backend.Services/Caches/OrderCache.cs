@@ -8,6 +8,7 @@ using System.Linq;
 using MarginTrading.Backend.Core.Messages;
 using MarginTrading.Backend.Core.Orders;
 using MarginTrading.Backend.Core.Trading;
+using MarginTrading.Backend.Services.Caches;
 
 namespace MarginTrading.Backend.Services
 {
