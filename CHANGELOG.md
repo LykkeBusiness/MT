@@ -1,3 +1,19 @@
+## 2.30.0 - Nova 2. Delivery 39 (January 30, 2024)
+### What's changed
+* LT-5174: Include unconfirmedmargin in account stats and capital figures apis.
+* LT-5144: Changelog.md for trading core.
+* LT-5124: Add new api that returns filtered items.
+* LT-5005: List nuget packages used by host (part 1).
+* LT-4805: Return 500 answer code for get /api/positions/{positionid}.
+
+### Deployment
+
+* Added a new endpoint: `/api/sentiments/filtered`
+* Added a new feature that logs used assembly versions. Full description is available [here](https://lykke-snow.atlassian.net/wiki/spaces/LEGO/pages/3554967553/Show+the+list+of+assemblies+loaded+by+host)
+
+
+
+
 ## 2.29.0 - Nova 2. Delivery 38 (December 13, 2023)
 ### What's changed
 * LT-5062: Rfqevent rabbit mq re-configuration.
