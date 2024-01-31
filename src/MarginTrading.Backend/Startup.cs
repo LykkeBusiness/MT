@@ -90,7 +90,6 @@ namespace MarginTrading.Backend
             services.AddSingleton<RabbitMqCorrelationManager>();
             services.AddSingleton<CqrsCorrelationManager>();
             services.AddTransient<HttpCorrelationHandler>();
-
             services.AddAssemblyLogger();
             services.AddApplicationInsightsTelemetry();
 
@@ -204,11 +203,7 @@ namespace MarginTrading.Backend
                     ApplicationContainer
                         .Resolve<ICqrsEngine>()
                         .StartAll();
-                    
-                    ApplicationContainer
-                        .Resolve<AssemblyLogger>()
-                        .StartLogging();
-                    
+
                     Program.AppHost.WriteLogs(Environment, LogLocator.CommonLog);
                     LogLocator.CommonLog?.WriteMonitorAsync("", "", $"{Configuration.ServerType()} Started");
                 }
