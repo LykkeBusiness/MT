@@ -1,4 +1,4 @@
-## 2.30.1  - Nova 2. Delivery 39. Hotfix 1  (January 31, 2024)
+## 2.30.3  - Nova 2. Delivery 39. Hotfix 1  (January 31, 2024)
 ### What's Changed
 * LT-5192: Brackets are missing in assembly logger
 
