@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using MarginTrading.Backend.Contracts;
 using MarginTrading.Backend.Contracts.Testing;
 using MarginTrading.Backend.Contracts.Workflow.SpecialLiquidation.Commands;
+using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Settings;
 using MarginTrading.Backend.Services.Infrastructure;
 using MarginTrading.Backend.Services.Services;
@@ -25,13 +26,16 @@ namespace MarginTrading.Backend.Controllers
         private readonly IFakeSnapshotService _fakeSnapshotService;
         private readonly string _protectionKey;
         private IRfqService _rfqService;
+        private readonly IAssetPairsCache _assetPairsCache;
 
         public TestingController(IFakeSnapshotService fakeSnapshotService,
             MarginTradingSettings settings, 
-            IRfqService rfqService)
+            IRfqService rfqService,
+            IAssetPairsCache assetPairsCache)
         {
             _fakeSnapshotService = fakeSnapshotService;
             _rfqService = rfqService;
+            _assetPairsCache = assetPairsCache;
             _protectionKey = settings.TestSettings?.ProtectionKey;
         }
 
@@ -113,6 +117,16 @@ namespace MarginTrading.Backend.Controllers
             _rfqService.RejectPriceRequest(operationId, reason);
             
             return Task.CompletedTask;
+        }
+        
+        /// <summary>
+        /// Gets IsTradingDisabled status on a product
+        /// FOR TEST PURPOSES ONLY.
+        /// </summary>
+        [HttpGet("isTradingDisabled")]
+        public Task<bool> GetIsTradingDisabled(string productId)
+        {
+            return Task.FromResult(_assetPairsCache.GetAssetPairById(productId).IsTradingDisabled);
         }
 
         private (bool isValid, string message) ValidateProtectionKey(string protectionKey)

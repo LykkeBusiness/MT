@@ -33,7 +33,7 @@ namespace MarginTrading.Backend.Contracts.Account
         {
             AdditionalInfo = "{}",
         };
-        
+
         public static AccountCapitalFigures Deleted = new AccountCapitalFigures()
         {
             AdditionalInfo = "{}",
