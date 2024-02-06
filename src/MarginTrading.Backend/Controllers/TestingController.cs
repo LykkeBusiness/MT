@@ -123,7 +123,7 @@ namespace MarginTrading.Backend.Controllers
         /// Gets IsTradingDisabled status on a product
         /// FOR TEST PURPOSES ONLY.
         /// </summary>
-        [HttpGet("isTradingDisabled")]
+        [HttpGet("isTradingDisabled/{productId}")]
         public Task<bool> GetIsTradingDisabled(string productId)
         {
             var product = _assetPairsCache.GetAssetPairById(productId);
