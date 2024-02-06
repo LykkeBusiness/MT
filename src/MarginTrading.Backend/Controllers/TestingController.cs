@@ -126,7 +126,8 @@ namespace MarginTrading.Backend.Controllers
         [HttpGet("isTradingDisabled")]
         public Task<bool> GetIsTradingDisabled(string productId)
         {
-            return Task.FromResult(_assetPairsCache.GetAssetPairById(productId).IsTradingDisabled);
+            var product = _assetPairsCache.GetAssetPairById(productId);
+            return Task.FromResult(product.IsTradingDisabled);
         }
 
         private (bool isValid, string message) ValidateProtectionKey(string protectionKey)
