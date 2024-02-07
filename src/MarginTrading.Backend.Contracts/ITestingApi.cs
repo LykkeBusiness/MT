@@ -25,5 +25,12 @@ namespace MarginTrading.Backend.Contracts
         /// </summary>
         [Delete("/api/testing/snapshot")]
         Task<string> DeleteTradingDataSnapshot([Query] string correlationId, [Query] string protectionKey);
+
+        /// <summary>
+        /// Gets IsTradingDisabled status on a product from MT Core cache
+        /// FOR TEST PURPOSES ONLY.
+        /// </summary>
+        [Get("/api/testing/isTradingDisabled/{productId}")]
+        public Task<bool> GetIsTradingDisabled(string productId);
     }
 }
