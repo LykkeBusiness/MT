@@ -63,7 +63,7 @@ namespace MarginTradingTests.Infrastructure
                 .Returns(() => _currentPositions.ToImmutableArray());
 
             _ordersHistoryRepositoryMock.Setup(o => o.GetLastSnapshot(It.IsAny<DateTime>(), It.IsAny<DateTime?>()))
-                .ReturnsAsync((DateTime date) => _ordersHistory);
+                .ReturnsAsync((DateTime from, DateTime? to) => _ordersHistory);
 
             _positionsHistoryRepositoryMock.Setup(o => o.GetLastSnapshot(It.IsAny<DateTime>()))
                 .ReturnsAsync((DateTime date) => _positionsHistory);
