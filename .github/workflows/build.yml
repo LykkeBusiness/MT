@@ -1,0 +1,65 @@
+name: .NET
+
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
+  workflow_dispatch:
+    inputs:
+      configuration:
+        description: "Build configuration"
+        required: true
+        default: "Release"
+      branches:
+        description: "Branches to build"
+        required: true
+        default: "master"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - run: |
+          echo "Branches: ${{ github.event.inputs.branches }}"
+          echo "Configuration: ${{ github.event.inputs.configuration }}"
+          echo "Event name: ${{ github.event_name }}"
+          echo "Event ref: ${{ github.event.ref }}"
+          echo "Environment: ${{ github.event.environment }}"
+
+      - uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: 6.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore --source https://api.nuget.org/v3/index.json --source https://nuget-lykkecloud.azurewebsites.net/nuget
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
+
+      - name: Code Coverage Report
+        uses: irongut/CodeCoverageSummary@v1.3.0
+        with:
+          filename: coverage/**/coverage.cobertura.xml
+          badge: true
+          fail_below_min: false
+          format: markdown
+          hide_branch_rate: false
+          hide_complexity: false
+          indicators: true
+          output: both
+          thresholds: "10 20"
+
+      - name: Add Coverage PR Comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' && github.actor != 'dependabot-preview[bot]'
+        with:
+          recreate: true
+          path: code-coverage-results.md
