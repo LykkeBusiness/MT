@@ -90,7 +90,6 @@ namespace MarginTrading.Backend
             services.AddSingleton<RabbitMqCorrelationManager>();
             services.AddSingleton<CqrsCorrelationManager>();
             services.AddTransient<HttpCorrelationHandler>();
-
             services.AddAssemblyLogger();
             services.AddApplicationInsightsTelemetry();
 
