@@ -5,7 +5,6 @@
         <TargetFramework>net6.0</TargetFramework>
         <RootNamespace>ExternalOrderbooksBenchmark</RootNamespace>
         <LangVersion>8.0</LangVersion>
-        <Version>2.30.3</Version>
     </PropertyGroup>
 
     <ItemGroup>
