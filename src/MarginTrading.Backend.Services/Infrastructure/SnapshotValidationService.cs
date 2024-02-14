@@ -74,6 +74,9 @@ namespace MarginTrading.Backend.Services.Infrastructure
             var ordersValidationResult = CompareOrders(currentOrders, restoredOrders);
             var positionsValidationResult = ComparePositions(currentPositions, restoredPositions);
 
+            await _log.WriteInfoAsync(nameof(SnapshotValidationService), nameof(ValidateCurrentStateAsync),
+                $"Temp log: currentOrders=${currentOrders.Length}, restoredOrders=${restoredOrders.Count}, latestLastModified=${latestLastModified}");
+            
             if (ordersValidationResult.IsValid)
             {
                 await _log.WriteInfoAsync(nameof(SnapshotValidationService), nameof(ValidateCurrentStateAsync),
