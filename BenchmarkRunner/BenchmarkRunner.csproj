@@ -4,6 +4,7 @@
         <OutputType>Exe</OutputType>
         <TargetFramework>net6.0</TargetFramework>
         <RootNamespace>ExternalOrderbooksBenchmark</RootNamespace>
+        <Version>2.30.3</Version>
         <LangVersion>8.0</LangVersion>
     </PropertyGroup>
 
