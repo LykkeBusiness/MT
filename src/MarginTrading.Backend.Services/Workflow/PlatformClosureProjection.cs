@@ -36,44 +36,62 @@ namespace MarginTrading.Backend.Services.Workflow
         [UsedImplicitly]
         public async Task Handle(MarketStateChangedEvent e)
         {
-            if (!e.IsPlatformClosureEvent())
+            if (e.IsNotPlatformClosureEvent())
                 return;
             
-            var tradingDay = DateOnly.FromDateTime(e.EventTimestamp);
-
-            string result; 
+            var successMessage = string.Empty; 
             try
             {
-                result = await _snapshotService.MakeTradingDataSnapshot(e.EventTimestamp.Date,
-                    _identityGenerator.GenerateGuid(),
-                    SnapshotStatus.Draft);
+                successMessage = await CreateDraftSnapshot(e.EventTimestamp.Date);
             }
             catch (Exception ex)
             {
-                await _log.WriteWarningAsync(nameof(PlatformClosureProjection),
-                    nameof(Handle),
-                    e.ToJson(),
-                    $"Failed to make trading data draft snapshot for [{tradingDay}]", ex);
-                
-                if (tradingDay < _dateService.NowDateOnly())
+                if (!await IsExceptionExpected(ex, e))
                 {
-                    await _log.WriteWarningAsync(nameof(PlatformClosureProjection),
-                        nameof(Handle),
-                        e.ToJson(),
-                        "The event is for the past date, so the snapshot draft will not be created.", ex);
-                    return;
+                    throw;
                 }
-
-                throw;
             }
 
-            if (!string.IsNullOrWhiteSpace(result))
+            if (!string.IsNullOrWhiteSpace(successMessage))
             {
                 await _log.WriteInfoAsync(nameof(PlatformClosureProjection),
                     nameof(Handle),
                     e.ToJson(),
-                    result);
+                    successMessage);
             }
+        }
+
+        private Task<string> CreateDraftSnapshot(DateTime tradingDay)
+        {
+            return _snapshotService.MakeTradingDataSnapshot(tradingDay,
+                _identityGenerator.GenerateGuid(),
+                SnapshotStatus.Draft);
+        }
+
+        private async Task<bool> IsExceptionExpected(Exception ex, MarketStateChangedEvent evt)
+        {
+            if (IsEventForPastDate(evt))
+            {
+                await _log.WriteWarningAsync(nameof(PlatformClosureProjection),
+                    nameof(IsExceptionExpected),
+                    evt.ToJson(),
+                    "The event is for the past date, so the snapshot draft will not be created.", ex);
+                return true;
+            }
+            
+            var tradingDayFromEvent = DateOnly.FromDateTime(evt.EventTimestamp);
+            await _log.WriteErrorAsync(nameof(PlatformClosureProjection),
+                nameof(IsExceptionExpected),
+                new {eventJson = evt.ToJson(), tradingDay = tradingDayFromEvent}.ToJson(),
+                ex);
+
+            return false;
+        }
+        
+        private bool IsEventForPastDate(MarketStateChangedEvent evt)
+        {
+            var tradingDayFromEvent = DateOnly.FromDateTime(evt.EventTimestamp);
+            return tradingDayFromEvent < _dateService.NowDateOnly();
         }
     }   
 }
