@@ -39,33 +39,38 @@ namespace MarginTrading.Backend.Services.Workflow
             if (e.IsNotPlatformClosureEvent())
                 return;
             
-            var successMessage = string.Empty; 
             try
             {
-                successMessage = await CreateDraftSnapshot(e.EventTimestamp.Date);
+                var successMessage = await CreateDraftSnapshot(e.EventTimestamp.Date);
+                await LogIfSucceeded(successMessage, e);
             }
             catch (Exception ex)
             {
-                if (!await IsExceptionExpected(ex, e))
+                var exceptionExpected = await IsExceptionExpected(ex, e); 
+                if (!exceptionExpected)
                 {
                     throw;
                 }
             }
-
-            if (!string.IsNullOrWhiteSpace(successMessage))
-            {
-                await _log.WriteInfoAsync(nameof(PlatformClosureProjection),
-                    nameof(Handle),
-                    e.ToJson(),
-                    successMessage);
-            }
+        }
+        
+        private async Task LogIfSucceeded(string successMessage, MarketStateChangedEvent evt)
+        {
+            var failed = string.IsNullOrWhiteSpace(successMessage); 
+            if (failed) return;
+            
+            await _log.WriteInfoAsync(nameof(PlatformClosureProjection),
+                nameof(LogIfSucceeded),
+                evt.ToJson(),
+                successMessage);
         }
 
-        private Task<string> CreateDraftSnapshot(DateTime tradingDay)
+        private async Task<string> CreateDraftSnapshot(DateTime tradingDay)
         {
-            return _snapshotService.MakeTradingDataSnapshot(tradingDay,
+            var result = await _snapshotService.MakeTradingDataSnapshot(tradingDay,
                 _identityGenerator.GenerateGuid(),
                 SnapshotStatus.Draft);
+            return result;
         }
 
         private async Task<bool> IsExceptionExpected(Exception ex, MarketStateChangedEvent evt)
