@@ -171,7 +171,8 @@ namespace MarginTrading.Backend.Services.Workflow.SpecialLiquidation
                 {
                     OperationId = e.OperationId,
                     CreationTime = _dateService.Now(),
-                    Reason = e.Reason
+                    Reason = e.Reason,
+                    CanRetryPriceRequest = true
                 }, _cqrsContextNamesSettings.TradingEngine);
                 
                 _chaosKitty.Meow(e.OperationId);

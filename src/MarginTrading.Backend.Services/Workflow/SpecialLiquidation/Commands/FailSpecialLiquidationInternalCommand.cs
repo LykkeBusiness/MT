@@ -17,5 +17,8 @@ namespace MarginTrading.Backend.Services.Workflow.SpecialLiquidation.Commands
         
         [Key(2)]
         public string Reason { get; set; }
+        
+        [Key(3)]
+        public bool? CanRetryPriceRequest { get; set; }
     }
 }
