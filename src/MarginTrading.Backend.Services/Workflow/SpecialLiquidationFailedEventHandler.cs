@@ -126,6 +126,7 @@ namespace MarginTrading.Backend.Services.Workflow
                         _dateService.Now());
                     break;
                 case NextAction.RetryPriceRequest:
+                    executionInfo = await GetExecutionInfo(@event.OperationId);
                     await _liquidationHelper.InternalRetryPriceRequest(@event.CreationTime, 
                         sender, 
                         executionInfo,
