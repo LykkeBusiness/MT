@@ -29,7 +29,7 @@ namespace MarginTradingTests.Modules
             blobRepository.Setup(s => s.ReadWithTimestampAsync<List<Position>>(It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync((new List<Position>(), DateTime.UtcNow));
             var orderHistoryRepository = new Mock<IOrdersHistoryRepository>();
-            orderHistoryRepository.Setup(s => s.GetLastSnapshot(It.IsAny<DateTime>(), It.IsAny<DateTime?>()))
+            orderHistoryRepository.Setup(s => s.GetLastSnapshot(It.IsAny<DateTime>()))
                 .ReturnsAsync(new List<IOrderHistory>());
             var positionHistoryRepository = new Mock<IPositionsHistoryRepository>();
             var accountHistoryRepository = new Mock<IAccountHistoryRepository>();
