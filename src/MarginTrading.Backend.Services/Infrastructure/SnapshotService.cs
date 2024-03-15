@@ -162,6 +162,11 @@ namespace MarginTrading.Backend.Services.Infrastructure
                 var accountsJson = accountStats
                     .Select(a => a.ConvertToSnapshotContract(accountsInLiquidation.Contains(a), status))
                     .ToJson();
+                
+                // timestamp will be used as an eod border
+                // setting it as close as possible to accountStats retrieval
+                var timestamp = _dateService.Now();
+
                 await _log.WriteInfoAsync(nameof(SnapshotService), nameof(MakeTradingDataSnapshot),
                     $"Preparing data... {accountStats.Count} accounts prepared.");
                 
@@ -183,7 +188,7 @@ namespace MarginTrading.Backend.Services.Infrastructure
                 var snapshot = new TradingEngineSnapshot(
                     tradingDay,
                     correlationId,
-                    _dateService.Now(),
+                    timestamp,
                     ordersJson: ordersJson,
                     positionsJson: positionsJson,
                     accountsJson: accountsJson,
