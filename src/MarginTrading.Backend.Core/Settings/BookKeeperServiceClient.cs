@@ -9,7 +9,7 @@ namespace MarginTrading.Backend.Core.Settings
     [UsedImplicitly]
     public class BookKeeperServiceClient
     {
-        [HttpCheck("/api/isalive")]
+        // isAlive check leads to a deadlock
         public string ServiceUrl { get; set; }
 		
         [Optional]
