@@ -10,7 +10,7 @@ namespace MarginTrading.Backend.Core.Settings
         /// <summary>
         /// Defines the interval between consecutive checks performed by the SnapshotMonitoring service.
         /// </summary>
-        public TimeSpan MonitoringDelay { get; set; }
+        public TimeSpan MonitoringDelay { get; set; } = TimeSpan.FromSeconds(30);
         
         /// <summary>
         /// If snapshot is not created after a specified amount of time, SnapshotMonitorService will retry this operation
