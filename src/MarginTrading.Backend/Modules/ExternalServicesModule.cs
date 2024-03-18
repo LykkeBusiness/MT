@@ -3,6 +3,7 @@
 
 using System;
 using Autofac;
+using BookKeeper.Client;
 using Common.Log;
 using Lykke.HttpClientGenerator;
 using Lykke.HttpClientGenerator.Retries;
@@ -186,6 +187,16 @@ namespace MarginTrading.Backend.Modules
                 .As<IOrderBookProviderApi>().SingleInstance();
 
             #endregion OrderBook Service
+            
+            #region BookKeeper
+
+            builder
+                .Register(ctx => BuildBookKeeperClientGenerator(ctx)
+                    .Generate<IQuotesApi>())
+                    .As<IQuotesApi>()
+                .SingleInstance();
+
+            #endregion
         }
 
         private HttpClientGenerator BuildAccountManagementClientGenerator(IComponentContext ctx)
@@ -221,6 +232,26 @@ namespace MarginTrading.Backend.Modules
             }
 
             return settingsClientGeneratorBuilder.Create();
+        }
+        
+        private HttpClientGenerator BuildBookKeeperClientGenerator(IComponentContext ctx)
+        {
+            var bookkeeperSettings = _settings.CurrentValue.BookKeeperServiceClient;
+            
+            var bookkeeperClientGeneratorBuilder = HttpClientGenerator
+                .BuildForUrl(bookkeeperSettings.ServiceUrl)
+                .WithAdditionalDelegatingHandler(ctx.Resolve<HttpCorrelationHandler>())
+                .WithServiceName<LykkeErrorResponse>(
+                    $"BookKeeper [{bookkeeperSettings.ServiceUrl}]")
+                .WithRetriesStrategy(new LinearRetryStrategy(TimeSpan.FromMilliseconds(300), 3));
+            
+            if (!string.IsNullOrWhiteSpace(bookkeeperSettings.ApiKey))
+            {
+                bookkeeperClientGeneratorBuilder = bookkeeperClientGeneratorBuilder
+                    .WithApiKey(bookkeeperSettings.ApiKey);
+            }
+
+            return bookkeeperClientGeneratorBuilder.Create();
         }
     }
 }

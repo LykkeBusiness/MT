@@ -37,6 +37,7 @@ namespace MarginTrading.Backend.Services.Infrastructure
         private readonly IMarginTradingBlobRepository _blobRepository;
         private readonly ILog _log;
         private readonly IFinalSnapshotCalculator _finalSnapshotCalculator;
+        private readonly ISnapshotMonitor _snapshotMonitor;
         private readonly MarginTradingSettings _settings;
         private readonly IHostEnvironment _environment;
 
@@ -56,8 +57,9 @@ namespace MarginTrading.Backend.Services.Infrastructure
             IMarginTradingBlobRepository blobRepository,
             ILog log,
             IFinalSnapshotCalculator finalSnapshotCalculator,
-            MarginTradingSettings settings,
-            IHostEnvironment environment)
+            IHostEnvironment environment,
+            ISnapshotMonitor snapshotMonitor,
+            MarginTradingSettings settings)
         {
             _scheduleSettingsCacheService = scheduleSettingsCacheService;
             _accountsCacheService = accountsCacheService;
@@ -71,6 +73,7 @@ namespace MarginTrading.Backend.Services.Infrastructure
             _blobRepository = blobRepository;
             _log = log;
             _finalSnapshotCalculator = finalSnapshotCalculator;
+            _snapshotMonitor = snapshotMonitor;
             _settings = settings;
             _environment = environment;
         }
@@ -133,6 +136,8 @@ namespace MarginTrading.Backend.Services.Infrastructure
 
             try
             {
+                _snapshotMonitor.SnapshotInProgress();
+                
                 var orders = _orderReader.GetAllOrders();
                 var ordersJson = orders.Select(o => o.ConvertToSnapshotContract(_orderReader, status)).ToJson();
                 await _log.WriteInfoAsync(nameof(SnapshotService), nameof(MakeTradingDataSnapshot),
@@ -172,6 +177,11 @@ namespace MarginTrading.Backend.Services.Infrastructure
                 var accountsJson = accountStats
                     .Select(a => a.ConvertToSnapshotContract(accountsInLiquidation.Contains(a), status))
                     .ToJson();
+                
+                // timestamp will be used as an eod border
+                // setting it as close as possible to accountStats retrieval
+                var timestamp = _dateService.Now();
+
                 await _log.WriteInfoAsync(nameof(SnapshotService), nameof(MakeTradingDataSnapshot),
                     $"Preparing data... {accountStats.Count} accounts prepared.");
                 
@@ -193,7 +203,7 @@ namespace MarginTrading.Backend.Services.Infrastructure
                 var snapshot = new TradingEngineSnapshot(
                     tradingDay,
                     correlationId,
-                    _dateService.Now(),
+                    timestamp,
                     ordersJson: ordersJson,
                     positionsJson: positionsJson,
                     accountsJson: accountsJson,
@@ -202,6 +212,8 @@ namespace MarginTrading.Backend.Services.Infrastructure
                     status: status);
 
                 await _tradingEngineSnapshotsRepository.AddAsync(snapshot);
+                
+                _snapshotMonitor.SnapshotFinished();
 
                 await _log.WriteInfoAsync(nameof(SnapshotService), nameof(MakeTradingDataSnapshot),
                     $"Trading data snapshot was written to the storage. {msg}");   
@@ -228,7 +240,6 @@ namespace MarginTrading.Backend.Services.Infrastructure
             try
             {
                 var snapshot = await _finalSnapshotCalculator.RunAsync(fxRates, cfdQuotes, correlationId);
-                    
                 await _tradingEngineSnapshotsRepository.AddAsync(snapshot);
             }
             finally

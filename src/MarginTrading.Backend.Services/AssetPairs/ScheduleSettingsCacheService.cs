@@ -19,6 +19,8 @@ using MarginTrading.Common.Extensions;
 using MarginTrading.Common.Services;
 using MarginTrading.AssetService.Contracts;
 using MarginTrading.AssetService.Contracts.Scheduling;
+using MarginTrading.Backend.Core.Services;
+using MarginTrading.Backend.Services.Extensions;
 using Microsoft.FeatureManagement;
 using MoreLinq;
 
@@ -49,6 +51,7 @@ namespace MarginTrading.Backend.Services.AssetPairs
 
         private readonly ReaderWriterLockSlim _readerWriterLockSlim = new ReaderWriterLockSlim();
         private readonly IFeatureManager _featureManager;
+        private readonly ISnapshotMonitor _snapshotMonitor;
 
         public ScheduleSettingsCacheService(
             ICqrsSender cqrsSender,
@@ -57,7 +60,8 @@ namespace MarginTrading.Backend.Services.AssetPairs
             IDateService dateService,
             ILog log,
             OvernightMarginSettings overnightMarginSettings,
-            IFeatureManager featureManager)
+            IFeatureManager featureManager,
+            ISnapshotMonitor snapshotMonitor)
         {
             _cqrsSender = cqrsSender;
             _scheduleSettingsApi = scheduleSettingsApi;
@@ -66,6 +70,7 @@ namespace MarginTrading.Backend.Services.AssetPairs
             _log = log;
             _overnightMarginSettings = overnightMarginSettings;
             _featureManager = featureManager;
+            _snapshotMonitor = snapshotMonitor;
         }
 
         public async Task UpdateAllSettingsAsync()
@@ -185,12 +190,20 @@ namespace MarginTrading.Backend.Services.AssetPairs
                 .Where(x => marketIds.IsNullOrEmpty() || marketIds.Contains(x.Key)))
             {
                 var newState = scheduleSettings.GetMarketState(marketId, currentTime);
-                _cqrsSender.PublishEvent(new MarketStateChangedEvent
+
+                var now = _dateService.Now();
+                var ev = new MarketStateChangedEvent
                 {
                     Id = marketId,
                     IsEnabled = newState.IsEnabled,
-                    EventTimestamp = _dateService.Now(),
-                });
+                    EventTimestamp = now,
+                };
+
+                if (ev.IsPlatformClosureEvent())
+                {
+                    _snapshotMonitor.SnapshotRequested(now.Date);
+                }
+                _cqrsSender.PublishEvent(ev);
 
                 _marketStates[marketId] = newState;
             }
