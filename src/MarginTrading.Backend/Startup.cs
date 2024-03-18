@@ -129,6 +129,8 @@ namespace MarginTrading.Backend
             services.AddFeatureManagement(_mtSettingsManager.CurrentValue.MtBackend);
 
             SetupLoggers(Configuration, services, _mtSettingsManager, correlationContextAccessor);
+
+            services.AddHostedService<SnapshotMonitorService>();
         }
 
         [UsedImplicitly]
