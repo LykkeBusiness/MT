@@ -45,6 +45,11 @@ namespace MarginTrading.Backend.Services.Workflow
             try
             {
                 var quotes = await _quotesApi.GetCfdQuotes(command.TradingDay);
+
+                if (quotes.ErrorCode != EodMarketDataErrorCodesContract.None)
+                {
+                    throw new Exception($"Could not receive quotes from BookKeeper: {quotes.ErrorCode.ToString()}");
+                }
                 
                 await _snapshotService.MakeTradingDataSnapshotFromDraft(command.OperationId, 
                     MapQuotes(quotes.EodMarketData.Underlyings), 
