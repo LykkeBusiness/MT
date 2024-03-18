@@ -130,7 +130,7 @@ namespace MarginTrading.Backend.Core.Settings
 
         // todo: probably should be moved turned in to a feature flag
         [Optional] public bool PerformanceTrackerEnabled { get; set; } = false;
-        
-        [Optional] public SnapshotMonitorSettings SnapshotMonitorSettings { get; set; }
+
+        [Optional] public SnapshotMonitorSettings SnapshotMonitorSettings { get; set; } = new SnapshotMonitorSettings();
     }
 }
