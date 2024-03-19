@@ -25,20 +25,20 @@ namespace MarginTrading.Backend.Services.Workflow
         private readonly IQuotesApi _quotesApi;
         private readonly ISnapshotService _snapshotService;
         private readonly IDateService _dateService;
-        private readonly IDraftSnapshotKeeper _draftSnapshotKeeper;
+        private readonly IDraftSnapshotKeeperFactory _draftSnapshotKeeperFactory;
         private readonly ILog _log;
 
         public EodCommandsHandler(
             IQuotesApi quotesApi,
             ISnapshotService snapshotService, 
             IDateService dateService,
-            IDraftSnapshotKeeper draftSnapshotKeeper,
+            IDraftSnapshotKeeperFactory draftSnapshotKeeperFactory,
             ILog log)
         {
             _quotesApi = quotesApi;
             _snapshotService = snapshotService;
             _dateService = dateService;
-            _draftSnapshotKeeper = draftSnapshotKeeper;
+            _draftSnapshotKeeperFactory = draftSnapshotKeeperFactory;
             _log = log;
         }
         
@@ -55,7 +55,7 @@ namespace MarginTrading.Backend.Services.Workflow
                     throw new Exception($"Could not receive quotes from BookKeeper: {quotes.ErrorCode.ToString()}");
                 }
 
-                _draftSnapshotKeeper.Init(command.TradingDay);
+                var draftSnapshotKeeper = _draftSnapshotKeeperFactory.Create(command.TradingDay);
                 
                 await _snapshotService.MakeTradingDataSnapshotFromDraft(command.OperationId, 
                     MapQuotes(quotes.EodMarketData.Underlyings), 

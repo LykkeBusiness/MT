@@ -219,7 +219,8 @@ namespace MarginTrading.Backend.Services.Infrastructure
         public async Task MakeTradingDataSnapshotFromDraft(
             string correlationId,
             IEnumerable<ClosingAssetPrice> cfdQuotes,
-            IEnumerable<ClosingFxRate> fxRates)
+            IEnumerable<ClosingFxRate> fxRates,
+            IDraftSnapshotKeeper draftSnapshotKeeper = null)
         {
             if (IsMakingSnapshotInProgress)
             {
@@ -229,7 +230,7 @@ namespace MarginTrading.Backend.Services.Infrastructure
             await Lock.WaitAsync();
             try
             {
-                var snapshot = await _finalSnapshotCalculator.RunAsync(fxRates, cfdQuotes, correlationId);
+                var snapshot = await _finalSnapshotCalculator.RunAsync(fxRates, cfdQuotes, correlationId, draftSnapshotKeeper);
                 await _tradingEngineSnapshotsRepository.AddAsync(snapshot);
             }
             finally
