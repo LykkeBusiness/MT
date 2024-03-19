@@ -59,7 +59,8 @@ namespace MarginTrading.Backend.Services.Workflow
                 
                 await _snapshotService.MakeTradingDataSnapshotFromDraft(command.OperationId, 
                     MapQuotes(quotes.EodMarketData.Underlyings), 
-                    MapFxRates(quotes.EodMarketData.Forex));
+                    MapFxRates(quotes.EodMarketData.Forex),
+                    draftSnapshotKeeper);
                 
                 publisher.PublishEvent(new SnapshotCreatedEvent
                 {
