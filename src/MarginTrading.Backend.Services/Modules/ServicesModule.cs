@@ -225,6 +225,10 @@ namespace MarginTrading.Backend.Services.Modules
             builder.RegisterType<DraftSnapshotKeeper>()
 	            .As<IDraftSnapshotKeeper>()
 	            .InstancePerLifetimeScope();
+
+            builder.RegisterType<DraftSnapshotKeeperFactory>()
+	            .As<IDraftSnapshotKeeperFactory>()
+	            .SingleInstance();
             
             builder.RegisterType<SystemClock>().As<ISystemClock>().SingleInstance();
 

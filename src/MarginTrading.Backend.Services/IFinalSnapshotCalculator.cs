@@ -23,6 +23,7 @@ namespace MarginTrading.Backend.Services
         Task<TradingEngineSnapshot> RunAsync(
             IEnumerable<ClosingFxRate> fxRates,
             IEnumerable<ClosingAssetPrice> cfdQuotes,
-            string correlationId);
+            string correlationId,
+            IDraftSnapshotKeeper draftSnapshotKeeper = null);
     }
 }
