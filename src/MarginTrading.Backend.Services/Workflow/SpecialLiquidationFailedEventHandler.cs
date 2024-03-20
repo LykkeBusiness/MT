@@ -71,6 +71,8 @@ namespace MarginTrading.Backend.Services.Workflow
                 { NextAction.RetryPriceRequest, SpecialLiquidationOperationState.PriceRequested },
                 { NextAction.ResumeInitialFlow, SpecialLiquidationOperationState.Failed },
             };
+
+        private const string LiquidityIsSufficientReason = "Liquidity is sufficient to close positions within regular flow";
         
         private readonly IDateService _dateService;
         private readonly IOperationExecutionInfoRepository _operationExecutionInfoRepository;
@@ -118,7 +120,7 @@ namespace MarginTrading.Backend.Services.Workflow
             switch (nextAction)
             {
                 case NextAction.Cancel:
-                    sender.SendCancellation(@event.OperationId);
+                    sender.SendCancellation(@event.OperationId, LiquidityIsSufficientReason);
                     break;
                 case NextAction.ResumeInitialFlow:
                     sender.SendResumeLiquidation(executionInfo.Data.CausationOperationId, 

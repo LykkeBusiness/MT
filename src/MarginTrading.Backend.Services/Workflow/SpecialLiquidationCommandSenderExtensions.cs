@@ -44,8 +44,9 @@ namespace MarginTrading.Backend.Services.Workflow
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="liquidationId"></param>
+        /// <param name="reason"></param>
         /// <exception cref="ArgumentNullException"></exception>
-        public static void SendCancellation(this ICommandSender sender, string liquidationId)
+        public static void SendCancellation(this ICommandSender sender, string liquidationId, string reason)
         {
             if (string.IsNullOrWhiteSpace(liquidationId))
                 throw new ArgumentNullException(nameof(liquidationId));
@@ -53,7 +54,7 @@ namespace MarginTrading.Backend.Services.Workflow
             sender.SendCommand(new CancelSpecialLiquidationCommand
             {
                 OperationId = liquidationId,
-                Reason = "Liquidity is enough to close positions within regular flow"
+                Reason = reason
             }, "TradingEngine");
         }
     }
