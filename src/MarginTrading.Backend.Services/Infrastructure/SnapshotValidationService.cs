@@ -62,10 +62,8 @@ namespace MarginTrading.Backend.Services.Infrastructure
             var lastOrders = GetOrders(tradingEngineSnapshot);
             var lastPositions = GetPositions(tradingEngineSnapshot);
 
-            var latestLastModified = currentOrders.Any()
-                ? currentOrders.Max(x => x.LastModified)
-                : (DateTime?)null;
-            var ordersHistory = await _ordersHistoryRepository.GetLastSnapshot(tradingEngineSnapshot.Timestamp, latestLastModified);
+            var latestOrder = currentOrders.MaxBy(x => x.LastModified);
+            var ordersHistory = await _ordersHistoryRepository.GetLastSnapshot(tradingEngineSnapshot.Timestamp, latestOrder?.LastModified);
             var positionsHistory = await _positionsHistoryRepository.GetLastSnapshot(tradingEngineSnapshot.Timestamp);
 
             var restoredOrders = RestoreOrdersCurrentStateFromHistory(lastOrders, ordersHistory);
