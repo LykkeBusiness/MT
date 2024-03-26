@@ -7,19 +7,15 @@ using MarginTrading.Backend.Core.Settings;
 
 namespace MarginTrading.Backend.Services.Infrastructure
 {
-    /// <summary>
-    /// This class decouples draft snapshot creation from rabbit mq
-    /// Normal flow: MarketStateChangedEvent generated => handled in PlatformClosureProjection => snapshot saved
-    /// Degraded flow: MarketStateChangedEvent generated, snapshot requested => event not received in PlatformClosureProjection => SnapshotMonitorService retries snapshot creation after a timeout 
-    /// </summary>
-    public class SnapshotMonitor : ISnapshotMonitor
+    /// <inheritdoc />
+    public class SnapshotStatusTracker : ISnapshotStatusTracker
     {
         private readonly SnapshotMonitorSettings _settings;
-        private DraftSnapshotState _state = DraftSnapshotState.None;
+        private DraftSnapshotStatus _status = DraftSnapshotStatus.None;
         private DateTime _timestamp;
         private DateTime _tradingDay;
 
-        public SnapshotMonitor(SnapshotMonitorSettings settings)
+        public SnapshotStatusTracker(SnapshotMonitorSettings settings)
         {
             _settings = settings;
         }
@@ -27,34 +23,42 @@ namespace MarginTrading.Backend.Services.Infrastructure
         // TODO: concurrency / thread safety?
         public void SnapshotRequested(DateTime tradingDay)
         {
-            _state = DraftSnapshotState.Requested;
+            _status = DraftSnapshotStatus.Requested;
             _timestamp = DateTime.UtcNow;
             _tradingDay = tradingDay;
         }
 
         public void SnapshotInProgress()
         {
-            _state = DraftSnapshotState.InProgress;
+            if (_status != DraftSnapshotStatus.Requested)
+            {
+                return;
+            }
+            _status = DraftSnapshotStatus.InProgress;
         }
 
-        public void SnapshotFinished()
+        public void SnapshotCreated()
         {
-            _state = DraftSnapshotState.None;
+            if (_status != DraftSnapshotStatus.InProgress)
+            {
+                return;
+            }
+            _status = DraftSnapshotStatus.None;
             _timestamp = default;
             _tradingDay = default;
         }
 
         public bool ShouldRetrySnapshot(out DateTime tradingDay)
         {
-            var shouldRetry = _state == DraftSnapshotState.Requested &&
-                             _timestamp.Add(_settings.SnapshotCreationTimeout) <= DateTime.UtcNow;
+            var shouldRetry = _status == DraftSnapshotStatus.Requested &&
+                             _timestamp.Add(_settings.DelayBeforeFallbackSnapshot) <= DateTime.UtcNow;
             
             tradingDay = shouldRetry ? _tradingDay : default;
             
             return shouldRetry;
         }
         
-        private enum DraftSnapshotState
+        private enum DraftSnapshotStatus
         {
             None,
             Requested,

@@ -13,22 +13,25 @@ using Microsoft.Extensions.Logging;
 
 namespace MarginTrading.Backend.Services
 {
-    public class SnapshotMonitorService : BackgroundService
+    /// <summary>
+    /// Attempts to build a draft snapshot when the platform is degraded (specifically, when there's an issue with rabbitmq)
+    /// </summary>
+    public class SnapshotMonitoringService : BackgroundService
     {
-        private readonly ISnapshotMonitor _snapshotMonitor;
+        private readonly ISnapshotStatusTracker _snapshotStatusTracker;
         private readonly ISnapshotService _snapshotService;
         private readonly IIdentityGenerator _identityGenerator;
         private readonly SnapshotMonitorSettings _settings;
-        private readonly ILogger<SnapshotMonitorService> _logger;
+        private readonly ILogger<SnapshotMonitoringService> _logger;
 
-        public SnapshotMonitorService(
-            ISnapshotMonitor snapshotMonitor,
+        public SnapshotMonitoringService(
+            ISnapshotStatusTracker snapshotStatusTracker,
             ISnapshotService snapshotService,
             IIdentityGenerator identityGenerator,
             SnapshotMonitorSettings settings,
-            ILogger<SnapshotMonitorService> logger)
+            ILogger<SnapshotMonitoringService> logger)
         {
-            _snapshotMonitor = snapshotMonitor;
+            _snapshotStatusTracker = snapshotStatusTracker;
             _snapshotService = snapshotService;
             _identityGenerator = identityGenerator;
             _settings = settings;
@@ -37,14 +40,14 @@ namespace MarginTrading.Backend.Services
         
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _logger.LogInformation("{ServiceName} started", nameof(SnapshotMonitorService));
+            _logger.LogInformation("{ServiceName} started", nameof(SnapshotMonitoringService));
             
             while (!stoppingToken.IsCancellationRequested)
             {
-                if (_snapshotMonitor.ShouldRetrySnapshot(out var tradingDay))
+                if (_snapshotStatusTracker.ShouldRetrySnapshot(out var tradingDay))
                 {
                     _logger.LogWarning("{ServiceName}: Trading Snapshot Draft was requested, but timeout exceeded. Attempting to create the snapshot.",
-                        nameof(SnapshotMonitorService));
+                        nameof(SnapshotMonitoringService));
                     
                     try
                     {
@@ -53,7 +56,7 @@ namespace MarginTrading.Backend.Services
                             SnapshotStatus.Draft);
                         
                         _logger.LogInformation("{ServiceName}: Trading Snapshot Draft was created",
-                            nameof(SnapshotMonitorService));
+                            nameof(SnapshotMonitoringService));
                     }
                     catch (Exception ex)
                     {

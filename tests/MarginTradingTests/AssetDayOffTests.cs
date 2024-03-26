@@ -329,7 +329,7 @@ namespace MarginTradingTests
                 new EmptyLog(),
                 new OvernightMarginSettings(),
                 Mock.Of<IFeatureManager>(),
-                new SnapshotMonitor(new SnapshotMonitorSettings()));
+                new SnapshotStatusTracker(new SnapshotMonitorSettings()));
             
             scheduleSettingsCacheService.UpdateAllSettingsAsync().GetAwaiter().GetResult();
             return new AssetPairDayOffService(scheduleSettingsCacheService);
