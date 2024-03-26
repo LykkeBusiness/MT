@@ -80,10 +80,12 @@ namespace MarginTradingTests
                 },
                 ReportingEquivalentPricesSettings = new[]
                     {new ReportingEquivalentPricesSettings {EquivalentAsset = "USD", LegalEntity = "LYKKETEST"}},
-                OvernightMargin = overnightMarginSettings
+                OvernightMargin = overnightMarginSettings,
+                SnapshotMonitorSettings = new SnapshotMonitorSettings(),
             };
 
             builder.RegisterInstance(marginSettings).SingleInstance();
+            builder.RegisterInstance(marginSettings.SnapshotMonitorSettings).SingleInstance();
             builder.RegisterInstance(PositionHistoryEvents).As<List<PositionHistoryEvent>>().SingleInstance();
             builder.RegisterInstance(overnightMarginSettings).SingleInstance();
             builder.RegisterInstance(Mock.Of<ExchangeConnectorServiceClient>());

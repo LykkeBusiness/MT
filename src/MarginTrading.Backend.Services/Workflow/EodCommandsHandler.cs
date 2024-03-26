@@ -2,38 +2,65 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using BookKeeper.Client;
+using BookKeeper.Client.Responses.Eod;
 using BookKeeper.Client.Workflow.Commands;
 using BookKeeper.Client.Workflow.Events;
 using Common.Log;
 using JetBrains.Annotations;
 using Lykke.Cqrs;
+using MarginTrading.Backend.Contracts.Prices;
 using MarginTrading.Backend.Core.Services;
 using MarginTrading.Common.Services;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MarginTrading.Backend.Services.Workflow
 {
     [UsedImplicitly]
     public class EodCommandsHandler
     {
+        private readonly IQuotesApi _quotesApi;
         private readonly ISnapshotService _snapshotService;
         private readonly IDateService _dateService;
+        private readonly IDraftSnapshotKeeperFactory _draftSnapshotKeeperFactory;
         private readonly ILog _log;
 
-        public EodCommandsHandler(ISnapshotService snapshotService, IDateService dateService, ILog log)
+        public EodCommandsHandler(
+            IQuotesApi quotesApi,
+            ISnapshotService snapshotService, 
+            IDateService dateService,
+            IDraftSnapshotKeeperFactory draftSnapshotKeeperFactory,
+            ILog log)
         {
+            _quotesApi = quotesApi;
             _snapshotService = snapshotService;
             _dateService = dateService;
+            _draftSnapshotKeeperFactory = draftSnapshotKeeperFactory;
             _log = log;
         }
         
         [UsedImplicitly]
         private async Task Handle(CreateSnapshotCommand command, IEventPublisher publisher)
         {
-            //deduplication is inside _snapshotService.MakeTradingDataSnapshot
+            //deduplication is inside _snapshotService
             try
             {
-                await _snapshotService.MakeTradingDataSnapshot(command.TradingDay, command.OperationId);
+                var quotes = await _quotesApi.GetCfdQuotes(command.TradingDay);
+
+                if (quotes.ErrorCode != EodMarketDataErrorCodesContract.None)
+                {
+                    throw new Exception($"Could not receive quotes from BookKeeper: {quotes.ErrorCode.ToString()}");
+                }
+
+                var draftSnapshotKeeper = _draftSnapshotKeeperFactory.Create(command.TradingDay);
+                
+                await _snapshotService.MakeTradingDataSnapshotFromDraft(command.OperationId, 
+                    MapQuotes(quotes.EodMarketData.Underlyings), 
+                    MapFxRates(quotes.EodMarketData.Forex),
+                    draftSnapshotKeeper);
                 
                 publisher.PublishEvent(new SnapshotCreatedEvent
                 {
@@ -53,6 +80,24 @@ namespace MarginTrading.Backend.Services.Workflow
                     FailReason = exception.Message,
                 });
             }
+        }
+
+        private IEnumerable<ClosingAssetPrice> MapQuotes(IEnumerable<BestPriceContract> bestPrices)
+        {
+            return bestPrices.Select(x => new ClosingAssetPrice()
+            {
+                ClosePrice = x.Ask, // equal to bid
+                AssetId = x.Id,
+            });
+        }
+        
+        private IEnumerable<ClosingFxRate> MapFxRates(IEnumerable<BestPriceContract> bestPrices)
+        {
+            return bestPrices.Select(x => new ClosingFxRate()
+            {
+                ClosePrice = x.Ask, // equal to bid
+                AssetId = x.Id,
+            });
         }
     }
 }

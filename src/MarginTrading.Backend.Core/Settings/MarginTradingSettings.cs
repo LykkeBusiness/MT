@@ -5,6 +5,7 @@ using System;
 using JetBrains.Annotations;
 using Lykke.Common.Chaos;
 using Lykke.SettingsReader.Attributes;
+using MarginTrading.Backend.Core.Services;
 using MarginTrading.Common.RabbitMq;
 using MarginTrading.Common.Settings;
 
@@ -129,5 +130,7 @@ namespace MarginTrading.Backend.Core.Settings
 
         // todo: probably should be moved turned in to a feature flag
         [Optional] public bool PerformanceTrackerEnabled { get; set; } = false;
+
+        [Optional] public SnapshotMonitorSettings SnapshotMonitorSettings { get; set; } = new SnapshotMonitorSettings();
     }
 }

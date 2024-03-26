@@ -36,6 +36,7 @@ namespace MarginTrading.Backend.Services.Infrastructure
         private readonly IMarginTradingBlobRepository _blobRepository;
         private readonly ILog _log;
         private readonly IFinalSnapshotCalculator _finalSnapshotCalculator;
+        private readonly ISnapshotStatusTracker _snapshotStatusTracker;
         private readonly MarginTradingSettings _settings;
 
         private static readonly SemaphoreSlim Lock = new SemaphoreSlim(1, 1);
@@ -54,6 +55,7 @@ namespace MarginTrading.Backend.Services.Infrastructure
             IMarginTradingBlobRepository blobRepository,
             ILog log,
             IFinalSnapshotCalculator finalSnapshotCalculator,
+            ISnapshotStatusTracker snapshotStatusTracker,
             MarginTradingSettings settings)
         {
             _scheduleSettingsCacheService = scheduleSettingsCacheService;
@@ -68,6 +70,7 @@ namespace MarginTrading.Backend.Services.Infrastructure
             _blobRepository = blobRepository;
             _log = log;
             _finalSnapshotCalculator = finalSnapshotCalculator;
+            _snapshotStatusTracker = snapshotStatusTracker;
             _settings = settings;
         }
 
@@ -123,6 +126,8 @@ namespace MarginTrading.Backend.Services.Infrastructure
 
             try
             {
+                _snapshotStatusTracker.SnapshotInProgress();
+                
                 var orders = _orderReader.GetAllOrders();
                 var ordersJson = orders.Select(o => o.ConvertToSnapshotContract(_orderReader, status)).ToJson();
                 await _log.WriteInfoAsync(nameof(SnapshotService), nameof(MakeTradingDataSnapshot),
@@ -162,6 +167,11 @@ namespace MarginTrading.Backend.Services.Infrastructure
                 var accountsJson = accountStats
                     .Select(a => a.ConvertToSnapshotContract(accountsInLiquidation.Contains(a), status))
                     .ToJson();
+                
+                // timestamp will be used as an eod border
+                // setting it as close as possible to accountStats retrieval
+                var timestamp = _dateService.Now();
+
                 await _log.WriteInfoAsync(nameof(SnapshotService), nameof(MakeTradingDataSnapshot),
                     $"Preparing data... {accountStats.Count} accounts prepared.");
                 
@@ -183,7 +193,7 @@ namespace MarginTrading.Backend.Services.Infrastructure
                 var snapshot = new TradingEngineSnapshot(
                     tradingDay,
                     correlationId,
-                    _dateService.Now(),
+                    timestamp,
                     ordersJson: ordersJson,
                     positionsJson: positionsJson,
                     accountsJson: accountsJson,
@@ -192,6 +202,8 @@ namespace MarginTrading.Backend.Services.Infrastructure
                     status: status);
 
                 await _tradingEngineSnapshotsRepository.AddAsync(snapshot);
+                
+                _snapshotStatusTracker.SnapshotCreated();
 
                 await _log.WriteInfoAsync(nameof(SnapshotService), nameof(MakeTradingDataSnapshot),
                     $"Trading data snapshot was written to the storage. {msg}");   
@@ -207,7 +219,8 @@ namespace MarginTrading.Backend.Services.Infrastructure
         public async Task MakeTradingDataSnapshotFromDraft(
             string correlationId,
             IEnumerable<ClosingAssetPrice> cfdQuotes,
-            IEnumerable<ClosingFxRate> fxRates)
+            IEnumerable<ClosingFxRate> fxRates,
+            IDraftSnapshotKeeper draftSnapshotKeeper = null)
         {
             if (IsMakingSnapshotInProgress)
             {
@@ -217,8 +230,7 @@ namespace MarginTrading.Backend.Services.Infrastructure
             await Lock.WaitAsync();
             try
             {
-                var snapshot = await _finalSnapshotCalculator.RunAsync(fxRates, cfdQuotes, correlationId);
-                    
+                var snapshot = await _finalSnapshotCalculator.RunAsync(fxRates, cfdQuotes, correlationId, draftSnapshotKeeper);
                 await _tradingEngineSnapshotsRepository.AddAsync(snapshot);
             }
             finally

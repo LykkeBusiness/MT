@@ -57,6 +57,10 @@ namespace MarginTrading.Backend.Services.Modules
             builder.RegisterType<SnapshotValidationService>()
                 .As<ISnapshotValidationService>()
                 .SingleInstance();
+            
+            builder.RegisterType<SnapshotStatusTracker>()
+                .As<ISnapshotStatusTracker>()
+                .SingleInstance();
         }
     }
 }

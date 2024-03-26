@@ -42,8 +42,13 @@ namespace MarginTrading.Backend.Services.Services
         }
 
         /// <inheritdoc />
-        public async Task<TradingEngineSnapshot> RunAsync(IEnumerable<ClosingFxRate> fxRates, IEnumerable<ClosingAssetPrice> cfdQuotes, string correlationId)
+        public async Task<TradingEngineSnapshot> RunAsync(IEnumerable<ClosingFxRate> fxRates, 
+            IEnumerable<ClosingAssetPrice> cfdQuotes, 
+            string correlationId,
+            IDraftSnapshotKeeper draftSnapshotKeeper = null)
         {
+            var keeper = draftSnapshotKeeper ?? _draftSnapshotKeeper;
+            
             var fxRatesList = fxRates?.ToList();
             var cfdQuotesList = cfdQuotes?.ToList();
             
@@ -53,14 +58,14 @@ namespace MarginTrading.Backend.Services.Services
             if (cfdQuotesList == null || !cfdQuotesList.Any())
                 throw new EmptyPriceUploadException();
             
-            var positions = _draftSnapshotKeeper.GetPositions();
-            var accounts = (await _draftSnapshotKeeper.GetAccountsAsync()).ToImmutableArray();
+            var positions = keeper.GetPositions();
+            var accounts = (await keeper.GetAccountsAsync()).ToImmutableArray();
             foreach (var closingFxRate in fxRatesList)
             {
                 ApplyFxRate(positions, accounts, closingFxRate.ClosePrice, closingFxRate.AssetId);
             }
             
-            var orders = _draftSnapshotKeeper.GetAllOrders();
+            var orders = keeper.GetAllOrders();
             foreach (var closingAssetPrice in cfdQuotesList)
             {
                 ApplyCfdQuote(positions, orders, accounts, closingAssetPrice.ClosePrice, closingAssetPrice.AssetId);
@@ -68,7 +73,7 @@ namespace MarginTrading.Backend.Services.Services
 
             var quotesTimestamp = _dateService.Now();
 
-            await _draftSnapshotKeeper.UpdateAsync(
+            await keeper.UpdateAsync(
                 positions,
                 orders,
                 accounts,
@@ -76,14 +81,14 @@ namespace MarginTrading.Backend.Services.Services
                 cfdQuotesList.Select(q => q.ToContract(quotesTimestamp))
             );
 
-            return new TradingEngineSnapshot(_draftSnapshotKeeper.TradingDay,
+            return new TradingEngineSnapshot(keeper.TradingDay,
                 correlationId,
-                _draftSnapshotKeeper.Timestamp,
-                MapToFinalJson(orders, _draftSnapshotKeeper),
-                MapToFinalJson(positions, _draftSnapshotKeeper),
+                keeper.Timestamp,
+                MapToFinalJson(orders, keeper),
+                MapToFinalJson(positions, keeper),
                 await MapToFinalJson(accounts),
-                MapToJson(_draftSnapshotKeeper.FxPrices),
-                MapToJson(_draftSnapshotKeeper.CfdQuotes),
+                MapToJson(keeper.FxPrices),
+                MapToJson(keeper.CfdQuotes),
                 SnapshotStatus.Final);
         }
 
