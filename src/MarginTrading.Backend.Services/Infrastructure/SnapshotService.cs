@@ -36,7 +36,7 @@ namespace MarginTrading.Backend.Services.Infrastructure
         private readonly IMarginTradingBlobRepository _blobRepository;
         private readonly ILog _log;
         private readonly IFinalSnapshotCalculator _finalSnapshotCalculator;
-        private readonly ISnapshotMonitor _snapshotMonitor;
+        private readonly ISnapshotStatusTracker _snapshotStatusTracker;
         private readonly MarginTradingSettings _settings;
 
         private static readonly SemaphoreSlim Lock = new SemaphoreSlim(1, 1);
@@ -55,7 +55,7 @@ namespace MarginTrading.Backend.Services.Infrastructure
             IMarginTradingBlobRepository blobRepository,
             ILog log,
             IFinalSnapshotCalculator finalSnapshotCalculator,
-            ISnapshotMonitor snapshotMonitor,
+            ISnapshotStatusTracker snapshotStatusTracker,
             MarginTradingSettings settings)
         {
             _scheduleSettingsCacheService = scheduleSettingsCacheService;
@@ -70,7 +70,7 @@ namespace MarginTrading.Backend.Services.Infrastructure
             _blobRepository = blobRepository;
             _log = log;
             _finalSnapshotCalculator = finalSnapshotCalculator;
-            _snapshotMonitor = snapshotMonitor;
+            _snapshotStatusTracker = snapshotStatusTracker;
             _settings = settings;
         }
 
@@ -126,7 +126,7 @@ namespace MarginTrading.Backend.Services.Infrastructure
 
             try
             {
-                _snapshotMonitor.SnapshotInProgress();
+                _snapshotStatusTracker.SnapshotInProgress();
                 
                 var orders = _orderReader.GetAllOrders();
                 var ordersJson = orders.Select(o => o.ConvertToSnapshotContract(_orderReader, status)).ToJson();
@@ -203,7 +203,7 @@ namespace MarginTrading.Backend.Services.Infrastructure
 
                 await _tradingEngineSnapshotsRepository.AddAsync(snapshot);
                 
-                _snapshotMonitor.SnapshotFinished();
+                _snapshotStatusTracker.SnapshotCreated();
 
                 await _log.WriteInfoAsync(nameof(SnapshotService), nameof(MakeTradingDataSnapshot),
                     $"Trading data snapshot was written to the storage. {msg}");   

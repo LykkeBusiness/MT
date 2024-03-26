@@ -51,7 +51,7 @@ namespace MarginTrading.Backend.Services.AssetPairs
 
         private readonly ReaderWriterLockSlim _readerWriterLockSlim = new ReaderWriterLockSlim();
         private readonly IFeatureManager _featureManager;
-        private readonly ISnapshotMonitor _snapshotMonitor;
+        private readonly ISnapshotStatusTracker _snapshotStatusTracker;
 
         public ScheduleSettingsCacheService(
             ICqrsSender cqrsSender,
@@ -61,7 +61,7 @@ namespace MarginTrading.Backend.Services.AssetPairs
             ILog log,
             OvernightMarginSettings overnightMarginSettings,
             IFeatureManager featureManager,
-            ISnapshotMonitor snapshotMonitor)
+            ISnapshotStatusTracker snapshotStatusTracker)
         {
             _cqrsSender = cqrsSender;
             _scheduleSettingsApi = scheduleSettingsApi;
@@ -70,7 +70,7 @@ namespace MarginTrading.Backend.Services.AssetPairs
             _log = log;
             _overnightMarginSettings = overnightMarginSettings;
             _featureManager = featureManager;
-            _snapshotMonitor = snapshotMonitor;
+            _snapshotStatusTracker = snapshotStatusTracker;
         }
 
         public async Task UpdateAllSettingsAsync()
@@ -201,7 +201,7 @@ namespace MarginTrading.Backend.Services.AssetPairs
 
                 if (ev.IsPlatformClosureEvent())
                 {
-                    _snapshotMonitor.SnapshotRequested(now.Date);
+                    _snapshotStatusTracker.SnapshotRequested(now.Date);
                 }
                 _cqrsSender.PublishEvent(ev);
 
