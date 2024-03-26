@@ -88,6 +88,9 @@ namespace MarginTrading.Backend.Services.Extensions
         public static bool IsPlatformClosureEvent(this MarketStateChangedEvent evt) =>
             evt.Id == LykkeConstants.PlatformMarketIdentifier && !evt.IsEnabled;
         
+        public static bool IsNotPlatformClosureEvent(this MarketStateChangedEvent evt) =>
+            !evt.IsPlatformClosureEvent();
+        
         private static List<T> GetOrders<T>(this TradingEngineSnapshot snapshot)
         {
             return string.IsNullOrWhiteSpace(snapshot.OrdersJson)
