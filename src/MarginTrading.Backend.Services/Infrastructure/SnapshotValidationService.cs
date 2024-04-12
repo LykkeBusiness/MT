@@ -16,6 +16,7 @@ using MarginTrading.Backend.Core.Services;
 using MarginTrading.Backend.Core.Snapshots;
 using MarginTrading.Backend.Core.Trading;
 using MarginTrading.Common.Extensions;
+using Newtonsoft.Json;
 
 namespace MarginTrading.Backend.Services.Infrastructure
 {
@@ -72,6 +73,42 @@ namespace MarginTrading.Backend.Services.Infrastructure
             var ordersValidationResult = CompareOrders(currentOrders, restoredOrders);
             var positionsValidationResult = ComparePositions(currentPositions, restoredPositions);
 
+            var tempLogs = new
+            {
+                From = tradingEngineSnapshot.Timestamp,
+                To = latestOrder?.LastModified,
+                OrdersFromCache = currentOrders.Select(x => new
+                {
+                    x.Id,
+                    x.Created,
+                    x.Activated,
+                    x.LastModified,
+                    x.Validity,
+                    x.ExecutionStarted,
+                    x.Executed,
+                    x.Canceled,
+                    x.Rejected
+                }),
+                PositionsFromCache = currentPositions.Select(x => new
+                {
+                    x.Id,
+                    x.OpenDate,
+                    x.StartClosingDate,
+                    x.CloseDate,
+                    x.LastModified
+                }),
+                OrdersFromDb = restoredOrders.Select(x => new
+                {
+                    x.Id
+                }),
+                PositionsFromDb = restoredPositions.Select(x => new
+                {
+                    x.Id
+                })
+            };
+            await _log.WriteInfoAsync(nameof(SnapshotValidationService), nameof(ValidateCurrentStateAsync),
+                $"Temp logs LT-4926: {JsonConvert.SerializeObject(tempLogs)}");
+            
             if (ordersValidationResult.IsValid)
             {
                 await _log.WriteInfoAsync(nameof(SnapshotValidationService), nameof(ValidateCurrentStateAsync),
