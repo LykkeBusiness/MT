@@ -175,7 +175,7 @@ namespace MarginTrading.Backend.Services.Services
             if (account == null)
                 return;
 
-            var isInLiquidation = await _accountsCacheService.IsInLiquidation(accountId);
+            var isInLiquidation = await _accountsCacheService.HasRunningLiquidation(accountId);
 
             if (isInLiquidation && (liquidationType == LiquidationType.Forced
                                     || account.GetAccountLevel() != AccountLevel.StopOut))

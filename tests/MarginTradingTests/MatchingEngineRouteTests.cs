@@ -30,10 +30,10 @@ namespace MarginTradingTests
                 throw new Exception("Unable to resolve MatchingEngineRoutesCacheService");
 
             // Add user accounts
-            _accountsCacheService.TryAddNew(new MarginTradingAccount {Id = "CLIENT001"});
-            _accountsCacheService.TryAddNew(new MarginTradingAccount {Id = "CLIENT002"});
-            _accountsCacheService.TryAddNew(new MarginTradingAccount {Id = "CLIENT003"});
-            _accountsCacheService.TryAddNew(new MarginTradingAccount {Id = "CLIENT004"});
+            _accountsCacheService.TryAdd(new MarginTradingAccount {Id = "CLIENT001"});
+            _accountsCacheService.TryAdd(new MarginTradingAccount {Id = "CLIENT002"});
+            _accountsCacheService.TryAdd(new MarginTradingAccount {Id = "CLIENT003"});
+            _accountsCacheService.TryAdd(new MarginTradingAccount {Id = "CLIENT004"});
 
             // Add trading conditions 
             //_tradingConditionsCache.AddOrUpdateTradingCondition(new TradingCondition() { Id = "TCID001", Name= "MarginTradingCondition 1", IsDefault = true });
