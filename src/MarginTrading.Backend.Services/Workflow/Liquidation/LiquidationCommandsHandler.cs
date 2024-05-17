@@ -143,7 +143,7 @@ namespace MarginTrading.Backend.Services.Workflow.Liquidation
             if (executionInfo.Data.State == LiquidationOperationState.Initiated)
             {
                 var (started, runningOperationId) =
-                    await _accountsCache.TryStartLiquidation(command.AccountId, command.OperationId);
+                    await _accountsCache.TryAddSharedLiquidationState(command.AccountId, command.OperationId);
                 
                 if (!started)
                 {

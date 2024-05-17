@@ -10,7 +10,6 @@ using Common.Log;
 using MarginTrading.Backend.Contracts.Account;
 using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Exceptions;
-using MarginTrading.Backend.Core.Extensions;
 using MarginTrading.Backend.Core.Helpers;
 using MarginTrading.Backend.Core.Messages;
 using MarginTrading.Backend.Services.Services;
@@ -58,7 +57,7 @@ namespace MarginTrading.Backend.Services
             return _accounts.Values.ToArray();
         }
 
-        public IAsyncEnumerable<MarginTradingAccount> GetAllInLiquidation()
+        public IAsyncEnumerable<MarginTradingAccount> GetAllWhereLiquidationIsRunning()
         {
             var accountIds = _accounts.Select(a => a.Value.Id);
 
@@ -88,7 +87,7 @@ namespace MarginTrading.Backend.Services
                 throw new AccountNotFoundException(accountId, string.Format(MtMessages.AccountByIdNotFound, accountId));
         }
 
-        public async Task<string> GetLiquidationOperationId(string accountId)
+        public async Task<string> GetRunningLiquidationOperationId(string accountId)
         {
             var info = await GetLiquidationInfo(new[] { accountId }).ToListAsync();
 
@@ -126,7 +125,7 @@ namespace MarginTrading.Backend.Services
             }
         }
 
-        public void ResetTodayProps()
+        public void ResetTodayStatistics()
         {
             _lockSlim.EnterWriteLock();
             try
@@ -148,9 +147,9 @@ namespace MarginTrading.Backend.Services
             }
         }
 
-        public async Task<(bool, string)> TryStartLiquidation(string accountId, string operationId)
+        public async Task<(bool, string)> TryAddSharedLiquidationState(string accountId, string operationId)
         {
-            if (!_accounts.TryGetValue(accountId, out _))
+            if (TryGet(accountId) == null)
                 return (false, string.Empty);
 
             var liquidationInfoAdded = await TryAddLiquidationInfo(accountId, operationId);
@@ -158,7 +157,7 @@ namespace MarginTrading.Backend.Services
             if (liquidationInfoAdded)
                 return (true, operationId);
 
-            var existingLiquidationOperationId = await GetLiquidationOperationId(accountId);
+            var existingLiquidationOperationId = await GetRunningLiquidationOperationId(accountId);
 
             if (existingLiquidationOperationId == null)
             {
@@ -169,13 +168,14 @@ namespace MarginTrading.Backend.Services
             return (false, existingLiquidationOperationId);
         }
 
-        public async Task<bool> TryFinishLiquidation(string accountId, string reason, 
+        public async Task<bool> TryRemoveSharedLiquidationState(string accountId, string reason, 
             string liquidationOperationId = null)
         {
-            if (!_accounts.TryGetValue(accountId, out var account))
+            var account = TryGet(accountId);
+            if (account == null)
                 return false;
 
-            var existingLiquidationOperationId = await GetLiquidationOperationId(accountId);
+            var existingLiquidationOperationId = await GetRunningLiquidationOperationId(accountId);
             
             if (existingLiquidationOperationId == null)
                 return false;
@@ -185,12 +185,12 @@ namespace MarginTrading.Backend.Services
             {
                 await RemoveLiquidationInfo(accountId);
 
-                _log.WriteInfo(nameof(TryFinishLiquidation), account,
+                _log.WriteInfo(nameof(TryRemoveSharedLiquidationState), account,
                     $"Liquidation state was removed for account {accountId}. Reason: {reason}");
                 return true;
             }
 
-            _log.WriteInfo(nameof(TryFinishLiquidation), account,
+            _log.WriteInfo(nameof(TryRemoveSharedLiquidationState), account,
                 $"Liquidation state was not removed for account {accountId} " +
                 $"by liquidationOperationId {liquidationOperationId} " +
                 $"Current LiquidationOperationId: {existingLiquidationOperationId}.");
@@ -198,14 +198,14 @@ namespace MarginTrading.Backend.Services
             return false;
         }
 
-        public async Task<bool> IsInLiquidation(string accountId)
+        public async Task<bool> HasRunningLiquidation(string accountId)
         {
-            var liquidationOperationId = await GetLiquidationOperationId(accountId);
+            var liquidationOperationId = await GetRunningLiquidationOperationId(accountId);
 
             return liquidationOperationId != null;
         }
 
-        public async Task<bool> UpdateAccountChanges(string accountId, string updatedTradingConditionId,
+        public async Task<bool> TryUpdateAccountChanges(string accountId, string updatedTradingConditionId,
             decimal updatedWithdrawTransferLimit, bool isDisabled, bool isWithdrawalDisabled, DateTime eventTime, string additionalInfo)
         {
             _lockSlim.EnterWriteLock();
@@ -214,7 +214,7 @@ namespace MarginTrading.Backend.Services
                 var account = _accounts[accountId];
                 if (account.LastUpdateTime > eventTime)
                 {
-                    await _log.WriteInfoAsync(nameof(AccountsCacheService), nameof(UpdateAccountChanges), 
+                    await _log.WriteInfoAsync(nameof(AccountsCacheService), nameof(TryUpdateAccountChanges), 
                         $"Account with id {account.Id} is in newer state then the event");
                     return false;
                 } 
@@ -285,13 +285,13 @@ namespace MarginTrading.Backend.Services
             return true;
         }
 
-        public void TryAddNew(MarginTradingAccount account)
+        public bool TryAdd(MarginTradingAccount account)
         {
             _lockSlim.EnterWriteLock();
             try
             {
                 account.LastUpdateTime = _dateService.Now();
-                _accounts.TryAdd(account.Id, account);
+                return _accounts.TryAdd(account.Id, account);
             }
             finally
             {
@@ -299,24 +299,30 @@ namespace MarginTrading.Backend.Services
             }
         }
 
-        public async Task Remove(string accountId)
+        public async Task<bool> TryRemove(string accountId)
         {
-            bool removedFromCache;
+            bool removed;
             
             _lockSlim.EnterWriteLock();
             try
             {
-                removedFromCache = _accounts.Remove(accountId);
+                removed = _accounts.Remove(accountId);
             }
             finally
             {
                 _lockSlim.ExitWriteLock();
             }
 
-            if (removedFromCache)
-            {
-                await RemoveLiquidationInfo(accountId);
-            }
+            if (!removed) return false;
+            
+            var removedLiquidationInfo = await RemoveLiquidationInfo(accountId);
+            if (removedLiquidationInfo)
+                return true;
+
+            _log.WriteWarning(nameof(TryRemove), accountId,
+                $"Liquidation info was not removed for account {accountId}");
+                
+            return true;
         }
 
         public async Task<string> Reset(string accountId, DateTime eventTime)

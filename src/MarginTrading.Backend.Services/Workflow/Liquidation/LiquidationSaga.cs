@@ -245,7 +245,7 @@ namespace MarginTrading.Backend.Services.Workflow.Liquidation
 
             // resuming liquidations on corresponding accounts upon market open
             await _accountsCacheService
-                .GetAllInLiquidation()
+                .GetAllWhereLiquidationIsRunning()
                 .SelectMany(a => _ordersCache.Positions.GetPositionsByAccountIds(a.Id).ToAsyncEnumerable())
                 .GroupBy(p => p.AccountId)
                 .WhereAwait(AnyAssetRelatesToMarket)
@@ -260,7 +260,7 @@ namespace MarginTrading.Backend.Services.Workflow.Liquidation
 
             async Task SendResumeCommand(string accountId)
             {
-                var liquidationOperationId = await _accountsCacheService.GetLiquidationOperationId(accountId);
+                var liquidationOperationId = await _accountsCacheService.GetRunningLiquidationOperationId(accountId);
 
                 if (liquidationOperationId != null)
                 {
