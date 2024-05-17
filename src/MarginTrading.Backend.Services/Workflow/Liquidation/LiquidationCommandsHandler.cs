@@ -142,17 +142,21 @@ namespace MarginTrading.Backend.Services.Workflow.Liquidation
             
             if (executionInfo.Data.State == LiquidationOperationState.Initiated)
             {
-                var (started, currentOperationId) =
+                var (started, runningOperationId) =
                     await _accountsCache.TryStartLiquidation(command.AccountId, command.OperationId);
                 
                 if (!started)
                 {
-                    if (currentOperationId != command.OperationId)
+                    if (runningOperationId != command.OperationId)
                     {
                         PublishFailedEvent(
-                            $"Liquidation is already in progress. Initiated by operation : {currentOperationId}");
+                            $"Liquidation is already in progress. Initiated by operation : {runningOperationId}");
                         return;
                     }
+                    
+                    PublishFailedEvent("Liquidation could not start, reason unknown. LiquidationOperationData: " +
+                                       executionInfo.Data.ToJson());
+                    return;
                 }
 
                 _chaosKitty.Meow(
