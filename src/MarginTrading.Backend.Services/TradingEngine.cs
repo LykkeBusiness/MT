@@ -689,7 +689,7 @@ namespace MarginTrading.Backend.Services
 
         private async Task CommitStopOut(MarginTradingAccount account, InstrumentBidAskPair quote)
         {
-            if (await _accountsCacheService.IsInLiquidation(account.Id))
+            if (await _accountsCacheService.HasRunningLiquidation(account.Id))
                 return;
 
             var liquidationType = account.GetUsedMargin() == account.GetCurrentlyUsedMargin()

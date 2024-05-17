@@ -163,7 +163,7 @@ namespace MarginTrading.Backend.Services.Infrastructure
                 // To ensure all cache data is updated with most up-to date data for all accounts.
                 accountStats.ForEach(a => a.CacheNeedsToBeUpdated());
 
-                var accountsInLiquidation = await _accountsCacheService.GetAllInLiquidation().ToListAsync();
+                var accountsInLiquidation = await _accountsCacheService.GetAllWhereLiquidationIsRunning().ToListAsync();
                 var accountsJson = accountStats
                     .Select(a => a.ConvertToSnapshotContract(accountsInLiquidation.Contains(a), status))
                     .ToJson();
