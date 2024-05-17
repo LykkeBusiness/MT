@@ -142,10 +142,10 @@ namespace MarginTrading.Backend.Services.Workflow.Liquidation
             
             if (executionInfo.Data.State == LiquidationOperationState.Initiated)
             {
-                var (started, runningOperationId) =
+                var (added, runningOperationId) =
                     await _accountsCache.TryAddSharedLiquidationState(command.AccountId, command.OperationId);
                 
-                if (!started)
+                if (!added)
                 {
                     if (runningOperationId != command.OperationId)
                     {
@@ -154,7 +154,7 @@ namespace MarginTrading.Backend.Services.Workflow.Liquidation
                         return;
                     }
                     
-                    PublishFailedEvent("Liquidation could not start, reason unknown. LiquidationOperationData: " +
+                    PublishFailedEvent("Could not add shared liquidation state, reason unknown. LiquidationOperationData: " +
                                        executionInfo.Data.ToJson());
                     return;
                 }
