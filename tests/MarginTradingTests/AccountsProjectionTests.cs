@@ -376,7 +376,7 @@ namespace MarginTradingTests
             await accountProjection.Handle(@event);
         
             // Assert
-            mockAccountCacheService.Verify(svc => svc.UpdateAccountChanges(It.IsAny<string>(), 
+            mockAccountCacheService.Verify(svc => svc.TryUpdateAccountChanges(It.IsAny<string>(), 
                 It.IsAny<string>(), It.IsAny<decimal>(), It.IsAny<bool>(), It.IsAny<bool>(), 
                 It.Is<DateTime>(dt => dt == greater), It.IsAny<string>()));
         }
@@ -414,7 +414,7 @@ namespace MarginTradingTests
             if(accountsCacheServiceArg == null)
             {
                 _accountsCacheService = new AccountsCacheService(DateService, _logMock.Object, _connectionMultiplexerMock.Object);
-                _accountsCacheService.TryAddNew(Convert(Accounts[0]));
+                _accountsCacheService.TryAdd(Convert(Accounts[0]));
             }
             else 
             {

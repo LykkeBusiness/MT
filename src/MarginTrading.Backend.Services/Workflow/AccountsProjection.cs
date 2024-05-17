@@ -84,13 +84,13 @@ namespace MarginTrading.Backend.Services.Workflow
                 switch (e.EventType)
                 {
                     case AccountChangedEventTypeContract.Created:
-                        _accountsCacheService.TryAddNew(MarginTradingAccount.Create(updatedAccount));
+                        _accountsCacheService.TryAdd(MarginTradingAccount.Create(updatedAccount));
                         break;
                     case AccountChangedEventTypeContract.Updated:
                         {
                             var account = _accountsCacheService.TryGet(e.Account.Id);
                             if (await ValidateAccount(account, e)
-                                && await _accountsCacheService.UpdateAccountChanges(updatedAccount.Id,
+                                && await _accountsCacheService.TryUpdateAccountChanges(updatedAccount.Id,
                                     updatedAccount.TradingConditionId, updatedAccount.WithdrawTransferLimit,
                                     updatedAccount.IsDisabled, updatedAccount.IsWithdrawalDisabled, 
                                     DateTimeExtensions.MaxDateTime(e.Account.ModificationTimestamp, e.Account.ClientModificationTimestamp),
@@ -151,7 +151,7 @@ namespace MarginTrading.Backend.Services.Workflow
                         }
                     case AccountChangedEventTypeContract.Deleted:
                         //account deletion from cache is double-handled by CQRS flow
-                        await _accountsCacheService.Remove(e.Account.Id);
+                        await _accountsCacheService.TryRemove(e.Account.Id);
                         break;
 
                     default:
