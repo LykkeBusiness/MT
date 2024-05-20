@@ -4,6 +4,7 @@
 using Autofac;
 using MarginTrading.AssetService.Contracts.ClientProfileSettings;
 using MarginTrading.Backend.Core;
+using MarginTrading.Backend.Core.Repositories;
 using MarginTrading.Backend.Core.Services;
 using MarginTrading.Backend.Services.AssetPairs;
 using MarginTrading.Backend.Services.Caches;
@@ -21,6 +22,12 @@ namespace MarginTrading.Backend.Services.Modules
                 .AsSelf()
                 .SingleInstance();
 
+            builder.RegisterType<RunningLiquidationRepository>()
+                .As<IRunningLiquidationRepository>()
+                .SingleInstance();
+
+            builder.RegisterDecorator<RunningLiquidationLogger, IRunningLiquidationRepository>();
+            
             builder.RegisterType<AccountsCacheService>()
                 .AsSelf()
                 .As<IAccountsCacheService>()
