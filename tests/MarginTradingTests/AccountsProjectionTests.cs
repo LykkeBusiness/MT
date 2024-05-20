@@ -22,9 +22,9 @@ using MarginTrading.Backend.Services.Events;
 using MarginTrading.Backend.Services.Services;
 using MarginTrading.Backend.Services.Workflow;
 using MarginTrading.Common.Services;
+using MarginTradingTests.Services;
 using Moq;
 using NUnit.Framework;
-using StackExchange.Redis;
 
 namespace MarginTradingTests
 {
@@ -32,7 +32,6 @@ namespace MarginTradingTests
     public class AccountsProjectionTests
     {
         private IAccountsCacheService _accountsCacheService;
-        //private Mock<IAccountsCacheService> _accountCacheServiceMock;
         private Mock<IEventChannel<AccountBalanceChangedEventArgs>> _accountBalanceChangedEventChannelMock;
         private Mock<IAccountUpdateService> _accountUpdateServiceMock;
         private static readonly IDateService DateService = new DateService();
@@ -41,9 +40,8 @@ namespace MarginTradingTests
         private OrdersCache _ordersCache;
         private Mock<ILog> _logMock;
         private Mock<Position> _fakePosition;
-        private Mock<IConnectionMultiplexer> _connectionMultiplexerMock;
         
-        private int _logCounter = 0;
+        private int _logCounter;
 
         private static readonly AccountContract[] Accounts =
         {
@@ -188,7 +186,7 @@ namespace MarginTradingTests
             var t1 = new Thread(async () =>
             {
 
-                var accountContract = new AccountContract()
+                var accountContract = new AccountContract
                 {
                     Id = account.Id,
                     ClientId = account.ClientId,
@@ -376,7 +374,7 @@ namespace MarginTradingTests
             await accountProjection.Handle(@event);
         
             // Assert
-            mockAccountCacheService.Verify(svc => svc.UpdateAccountChanges(It.IsAny<string>(), 
+            mockAccountCacheService.Verify(svc => svc.TryUpdateAccountChanges(It.IsAny<string>(), 
                 It.IsAny<string>(), It.IsAny<decimal>(), It.IsAny<bool>(), It.IsAny<bool>(), 
                 It.Is<DateTime>(dt => dt == greater), It.IsAny<string>()));
         }
@@ -409,12 +407,10 @@ namespace MarginTradingTests
                     .Callback(() => _logCounter++).Returns(Task.CompletedTask);
             }
             
-            _connectionMultiplexerMock = new Mock<IConnectionMultiplexer>();
-
             if(accountsCacheServiceArg == null)
             {
-                _accountsCacheService = new AccountsCacheService(DateService, _logMock.Object, _connectionMultiplexerMock.Object);
-                _accountsCacheService.TryAddNew(Convert(Accounts[0]));
+                _accountsCacheService = new AccountsCacheService(DateService, new RunningLiquidationRepositoryFake(), _logMock.Object);
+                _accountsCacheService.TryAdd(Convert(Accounts[0]));
             }
             else 
             {

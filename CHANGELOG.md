@@ -1,3 +1,47 @@
+## 2.32.0 - Nova 2. Delivery 41 (April 01, 2024)
+### What's changed
+* LT-5298: Looping error in mtcore requesting to stop the trading.
+* LT-5279: Adjust the snapshot flow.
+* LT-5061: Order does not execute automatically when contribution is started again.
+
+### Deployment
+
+* Add a new settings section: `BookKeeperServiceClient` (on the same level as `SettingsServiceClient`, `AccountsManagementServiceClient` etc)
+Then fill the `ServiceUrl` parameter with Bookkeeper's api url
+
+example:
+
+```json
+{
+   "BookKeeperServiceClient": {
+      "ServiceUrl": "//url"
+   }
+}
+```
+
+* (Optional) Add a new settings section: `SnapshotMonitorSettings`. Then fill the parameters 
+`MonitoringDelay` and `DelayBeforeFallbackSnapshot`.
+`MonitoringDelay` determines how often the service will check if snapshot was created.
+`DelayBeforeFallbackSnapshot` determines maximum timeout before a fallback creation of snapshot will occur.
+
+Default values: 
+- `MonitoringDelay`: 30 sec
+- `DelayBeforeFallbackSnapshot`: 5 min
+
+Both parameters must be configured as timespans (e.g. `"00:03:00"`)
+
+example: 
+```json
+{
+   "SnapshotMonitorSettings": {
+      "MonitoringDelay": "//timespan",
+      "DelayBeforeFallbackSnapshot": "//timespan"
+   }
+}
+```
+
+
+
 ## 2.31.0 - Nova 2. Delivery 40 (February 28, 2024)
 ### What's changed
 * LT-5276: Step: deprecated packages validation is failed.
