@@ -216,6 +216,8 @@ namespace MarginTrading.Backend.Services.Modules
 	            .As<IAccountsProvider>()
 	            .InstancePerLifetimeScope();
 
+            builder.RegisterDecorator<AccountsProviderLoggingDecorator, IAccountsProvider>();
+
             builder.RegisterType<FinalSnapshotCalculator>()
 	            .As<IFinalSnapshotCalculator>()
 	            .InstancePerLifetimeScope();
