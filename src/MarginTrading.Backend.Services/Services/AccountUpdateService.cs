@@ -180,7 +180,7 @@ namespace MarginTrading.Backend.Services.Services
             if (isInLiquidation && (liquidationType == LiquidationType.Forced
                                     || account.GetAccountLevel() != AccountLevel.StopOut))
             {
-                await _accountsProvider.TryFinishLiquidation(accountId, reason, liquidationOperationId);
+                await _accountsProvider.TryRemoveRunningLiquidation(accountId, reason, liquidationOperationId);
             }
         }
 

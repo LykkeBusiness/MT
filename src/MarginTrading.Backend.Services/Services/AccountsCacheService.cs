@@ -84,7 +84,13 @@ namespace MarginTrading.Backend.Services
             _lockSlim.EnterReadLock();
             try
             {
-                return _accounts.TryGetValue(accountId, out var result) ? result : null;
+                if (!_accounts.TryGetValue(accountId, out var result))
+                {
+                    _log.WriteWarning(nameof(TryGetAccount), null, $"Account with id {accountId} not found in AccountsCacheService");
+                    return null;
+                }
+
+                return result;
             }
             finally
             {
