@@ -17,4 +17,17 @@ namespace MarginTrading.Backend.Services.Workflow.Liquidation.Events
         [Key(2)]
         public string Comment { get; set; }
     }
+    
+    public static class FailedLiquidationInfoFactory
+    {
+        public static LiquidationInfo Create(string positionId, string comment)
+        {
+            return new LiquidationInfo
+            {
+                PositionId = positionId,
+                IsLiquidated = false,
+                Comment = $"Close position failed: {comment}"
+            };
+        }
+    }
 }
