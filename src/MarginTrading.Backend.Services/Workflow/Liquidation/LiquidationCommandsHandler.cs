@@ -14,6 +14,7 @@ using MarginTrading.Backend.Contracts.Positions;
 using MarginTrading.Backend.Contracts.Workflow.Liquidation;
 using MarginTrading.Backend.Contracts.Workflow.Liquidation.Events;
 using MarginTrading.Backend.Core;
+using MarginTrading.Backend.Core.Extensions;
 using MarginTrading.Backend.Core.Orders;
 using MarginTrading.Backend.Core.Repositories;
 using MarginTrading.Backend.Core.Services;
@@ -361,15 +362,13 @@ namespace MarginTrading.Backend.Services.Workflow.Liquidation
                 {
                     var (result, order) = await _tradingEngine.ClosePositionsAsync(positionGroup, false);
 
-                    foreach (var position in positionGroup.Positions)
-                    {
-                        liquidationInfos.Add(new LiquidationInfo
+                    liquidationInfos.AddRange(
+                        positionGroup.Positions.Select(p => new LiquidationInfo
                         {
-                            PositionId = position.Value.Id,
-                            IsLiquidated = true,
-                            Comment = order != null ? $"Order: {order.Id}" : result.ToString()
-                        });
-                    }
+                            PositionId = p.Value.Id,
+                            IsLiquidated = result.IsSuccess(),
+                            Comment = order?.GetTitle() ?? result.GetTitle()
+                        }));
                 }
                 catch (Exception ex)
                 {
@@ -378,15 +377,9 @@ namespace MarginTrading.Backend.Services.Workflow.Liquidation
                         $"Failed to close positions {string.Join(",", positionGroup.Positions.Select(p => p.Value.Id))} on liquidation operation #{command.OperationId}",
                         ex);
 
-                    foreach (var position in positionGroup.Positions)
-                    {
-                        liquidationInfos.Add(new LiquidationInfo
-                        {
-                            PositionId = position.Value.Id,
-                            IsLiquidated = false,
-                            Comment = $"Close position failed: {ex.Message}"
-                        });
-                    }
+                    liquidationInfos.AddRange(
+                        positionGroup.Positions.Select(p => 
+                            FailedLiquidationInfoFactory.Create(p.Value.Id, ex.Message)));
                 }
             }
 
