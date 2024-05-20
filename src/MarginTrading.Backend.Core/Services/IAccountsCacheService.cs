@@ -129,7 +129,7 @@ namespace MarginTrading.Backend.Core
         /// <param name="accountId"></param>
         /// <param name="operationId"></param>
         /// <returns>Tuple of success flag and the luquidation operation id</returns>
-        Task<(bool, string)> TryAddSharedLiquidationState(string accountId, string operationId);
+        Task<(bool, string)> TryAddRunningLiquidation(string accountId, string operationId);
         
         /// <summary>
         /// Tries to remove liquidation information from distributed cache
@@ -138,7 +138,7 @@ namespace MarginTrading.Backend.Core
         /// <param name="reason"></param>
         /// <param name="liquidationOperationId"></param>
         /// <returns></returns>
-        Task<bool> TryRemoveSharedLiquidationState(string accountId, string reason, string liquidationOperationId = null);
+        Task<bool> TryRemoveRunningLiquidation(string accountId, string reason, string liquidationOperationId = null);
 
         /// <summary>
         /// Checks if the account has running liquidation by fetching data from distributed cache
