@@ -9,16 +9,16 @@ namespace MarginTrading.Backend.Services.Workflow.Liquidation.Events
     public class LiquidationInfo
     {
         [Key(0)]
-        public string PositionId {get; set; }
-            
+        public string PositionId { get; set; }
+
         [Key(1)]
         public bool IsLiquidated { get; set; }
-            
+
         [Key(2)]
         public string Comment { get; set; }
     }
-    
-    public static class FailedLiquidationInfoFactory
+
+    public static class ExceptionalLiquidationInfoFactory
     {
         public static LiquidationInfo Create(string positionId, string comment)
         {
