@@ -1,6 +1,9 @@
 // Copyright (c) 2019 Lykke Corp.
 // See the LICENSE file in the project root for more information.
 
+using MarginTrading.Backend.Core.Orders;
+using MarginTrading.Backend.Core.Trading;
+
 namespace MarginTrading.Backend.Core.Snapshots
 {
     /// <summary>
@@ -15,5 +18,7 @@ namespace MarginTrading.Backend.Core.Snapshots
         public ValidationResult<PositionInfo> Positions { get; set; }
         
         public string PreviousSnapshotCorrelationId { get; set; }
+        
+        public IOrderReader Cache { get; set; }
     }
 }
