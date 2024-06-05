@@ -145,7 +145,6 @@ csharp_indent_switch_labels = true
 csharp_indent_method_decl_pars = inside
 csharp_indent_invocation_pars = inside
 
-
 # Space preferences
 csharp_space_after_cast = false
 csharp_space_after_colon_in_inheritance_clause = true
