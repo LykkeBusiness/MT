@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
-using Common;
 using MarginTrading.Backend.Contracts.Snow.Prices;
 using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Exceptions;
@@ -24,63 +23,24 @@ namespace MarginTradingTests
     [TestFixture]
     public class DraftSnapshotKeeperTests
     {
-        private Mock<ITradingEngineSnapshotsRepository> _repositoryMock;
+        private Mock<ITradingEngineSnapshotsRepository> _repositoryWithEmptySnapshot;
+        private Mock<ITradingEngineSnapshotsRepository> _repositoryWithDumbSnapshot;
 
-        private static readonly object[] UpdateCases =
+        private static readonly object[] UpdateWithInvalidArgumentsCases =
         {
             new object[] { null, null, null, null, null },
             new object[]
             {
-                null, 
-                ImmutableArray.Create<Order>(DumbDataGenerator.GenerateOrder()),
-                ImmutableArray.Create<MarginTradingAccount>(new MarginTradingAccount()),
-                new List<BestPriceContract>(),
-                new List<BestPriceContract>(),
-            },
-            new object[]
-            {
-                ImmutableArray.Create<Position>(new Position()), 
-                null,
-                ImmutableArray.Create<MarginTradingAccount>(new MarginTradingAccount()),
-                new List<BestPriceContract>(),
-                new List<BestPriceContract>(),
-            },
-            new object[]
-            {
-                ImmutableArray.Create<Position>(new Position()), 
-                ImmutableArray.Create<Order>(DumbDataGenerator.GenerateOrder()), 
+                ImmutableArray.Create(new Position()), 
+                ImmutableArray.Create(DumbDataGenerator.GenerateOrder()), 
                 null,
                 new List<BestPriceContract>(),
                 new List<BestPriceContract>(),
             },
             new object[]
             {
-                ImmutableArray.Create<Position>(),
-                ImmutableArray.Create<Order>(),
-                ImmutableArray.Create<MarginTradingAccount>(),
-                new List<BestPriceContract>(),
-                new List<BestPriceContract>(),
-            },
-            new object[]
-            {
-                ImmutableArray.Create<Position>(),
-                ImmutableArray.Create<Order>(DumbDataGenerator.GenerateOrder()),
-                ImmutableArray.Create<MarginTradingAccount>(new MarginTradingAccount()),
-                new List<BestPriceContract>(),
-                new List<BestPriceContract>(),
-            },
-            new object[]
-            {
-                ImmutableArray.Create<Position>(new Position()),
-                ImmutableArray.Create<Order>(),
-                ImmutableArray.Create<MarginTradingAccount>(new MarginTradingAccount()),
-                new List<BestPriceContract>(),
-                new List<BestPriceContract>(),
-            },
-            new object[]
-            {
-                ImmutableArray.Create<Position>(new Position()),
-                ImmutableArray.Create<Order>(DumbDataGenerator.GenerateOrder()),
+                ImmutableArray.Create(new Position()),
+                ImmutableArray.Create(DumbDataGenerator.GenerateOrder()),
                 ImmutableArray.Create<MarginTradingAccount>(),
                 new List<BestPriceContract>(),
                 new List<BestPriceContract>(),
@@ -90,19 +50,27 @@ namespace MarginTradingTests
         [SetUp]
         public void SetUp()
         {
-            _repositoryMock = new Mock<ITradingEngineSnapshotsRepository>();
-            _repositoryMock
+            _repositoryWithEmptySnapshot = new Mock<ITradingEngineSnapshotsRepository>();
+            _repositoryWithEmptySnapshot
                 .Setup(r => r.DraftExistsAsync(It.IsAny<DateTime>()))
                 .ReturnsAsync(true);
-            _repositoryMock
+            _repositoryWithEmptySnapshot
                 .Setup(r => r.GetLastDraftAsync(It.IsAny<DateTime>()))
-                .ReturnsAsync(GetDumbDraft);
+                .ReturnsAsync(new EmptyTradingEngineSnapshot());
+            
+            _repositoryWithDumbSnapshot = new Mock<ITradingEngineSnapshotsRepository>();
+            _repositoryWithDumbSnapshot
+                .Setup(r => r.DraftExistsAsync(It.IsAny<DateTime>()))
+                .ReturnsAsync(true);
+            _repositoryWithDumbSnapshot
+                .Setup(r => r.GetLastDraftAsync(It.IsAny<DateTime>()))
+                .ReturnsAsync(new DumbTradingEngineSnapshot());
         }
         
         [Test]
         public void AccessTradingDay_BeforeInitialization_ThrowsException()
         {
-            var keeper = new DraftSnapshotKeeper(_repositoryMock.Object);
+            var keeper = new DraftSnapshotKeeper(_repositoryWithEmptySnapshot.Object);
 
             Assert.Throws<InvalidOperationException>(() =>
             {
@@ -113,7 +81,7 @@ namespace MarginTradingTests
         [Test]
         public void AccessTimestamp_BeforeInitialization_ThrowsException()
         {
-            var keeper = new DraftSnapshotKeeper(_repositoryMock.Object);
+            var keeper = new DraftSnapshotKeeper(_repositoryWithEmptySnapshot.Object);
 
             Assert.Throws<InvalidOperationException>(() =>
             {
@@ -124,7 +92,7 @@ namespace MarginTradingTests
         [Test]
         public void Exists_BeforeInitialization_ThrowsException()
         {
-            var keeper = new DraftSnapshotKeeper(_repositoryMock.Object);
+            var keeper = new DraftSnapshotKeeper(_repositoryWithEmptySnapshot.Object);
 
             Assert.ThrowsAsync<InvalidOperationException>(async () => await keeper.ExistsAsync());
         }
@@ -132,17 +100,17 @@ namespace MarginTradingTests
         [Test]
         public async Task Exists_ChecksIfDraftExists()
         {
-            var keeper = GetSut();
+            var keeper = GetSutWithEmptySnapshot();
             
             var _ = await keeper.ExistsAsync();
             
-            _repositoryMock.Verify(r => r.DraftExistsAsync(It.IsAny<DateTime>()), Times.Once);
+            _repositoryWithEmptySnapshot.Verify(r => r.DraftExistsAsync(It.IsAny<DateTime>()), Times.Once);
         }
 
         [Test]
         public void GetAccounts_BeforeInitialization_ThrowsException()
         {
-            var keeper = new DraftSnapshotKeeper(_repositoryMock.Object);
+            var keeper = new DraftSnapshotKeeper(_repositoryWithEmptySnapshot.Object);
 
             Assert.ThrowsAsync<InvalidOperationException>(async () => await keeper.GetAccountsAsync());
         }
@@ -150,11 +118,11 @@ namespace MarginTradingTests
         [Test]
         public void GetAccounts_NoDraft_ThrowsException()
         {
-            _repositoryMock
+            _repositoryWithEmptySnapshot
                 .Setup(r => r.GetLastDraftAsync(It.IsAny<DateTime>()))
                 .ReturnsAsync((TradingEngineSnapshot)null);
 
-            var keeper = GetSut();
+            var keeper = GetSutWithEmptySnapshot();
 
             Assert.ThrowsAsync<TradingSnapshotDraftNotFoundException>(async () => await keeper.GetAccountsAsync());
         }
@@ -162,14 +130,14 @@ namespace MarginTradingTests
         [Test]
         public async Task GetAccounts_ReturnsCached_WhenAccessed_MoreThanOnce()
         {
-            var keeper = GetSut();
+            var keeper = GetSutWithDumbSnapshot();
             
             var accounts = await keeper.GetAccountsAsync();
             
             Assert.NotNull(accounts);
             Assert.That(accounts.Exists(a => a.Id == "1"));
 
-            _repositoryMock
+            _repositoryWithEmptySnapshot
                 .Setup(r => r.GetLastDraftAsync(It.IsAny<DateTime>()))
                 .ReturnsAsync((TradingEngineSnapshot)null);
 
@@ -177,7 +145,7 @@ namespace MarginTradingTests
             Assert.That(accounts.SequenceEqual(accountsCached));
         }
 
-        [TestCaseSource(nameof(UpdateCases))]
+        [TestCaseSource(nameof(UpdateWithInvalidArgumentsCases))]
         public void Update_InvalidArguments_ThrowsException(
             ImmutableArray<Position> positions, 
             ImmutableArray<Order> orders, 
@@ -185,24 +153,45 @@ namespace MarginTradingTests
             IList<BestPriceContract> fxRates,
             IList<BestPriceContract> cfdQuotes)
         {
-            var keeper = GetSut();
+            var keeper = GetSutWithEmptySnapshot();
 
             Assert.ThrowsAsync<ArgumentNullException>(async () =>
                 await keeper.UpdateAsync(positions, orders, accounts, fxRates, cfdQuotes));
         }
 
-        private IDraftSnapshotKeeper GetSut() => new DraftSnapshotKeeper(_repositoryMock.Object).Init(DateTime.UtcNow);
+        [Test]
+        public void When_Positions_NotEmpty_Update_WithEmptyList_ThrowsException()
+        {
+            var keeper = GetSutWithDumbSnapshot();
+            
+            var actualPositions = keeper.GetPositions();
+            CollectionAssert.IsNotEmpty(actualPositions);
 
-        private static TradingEngineSnapshot GetDumbDraft() =>
-            new TradingEngineSnapshot(
-                DateTime.UtcNow,
-                string.Empty,
-                DateTime.UtcNow,
-                string.Empty,
-                string.Empty,
-                new List<MarginTradingAccount>{new MarginTradingAccount{Id = "1"}}.ToJson(),
-                string.Empty,
-                string.Empty,
-                SnapshotStatus.Draft);
+            Assert.ThrowsAsync<ArgumentNullException>(async () =>
+                await keeper.UpdateAsync(ImmutableArray<Position>.Empty,
+                    ImmutableArray.Create(DumbDataGenerator.GenerateOrder()),
+                    ImmutableArray.Create(new MarginTradingAccount()),
+                    new List<BestPriceContract>(),
+                    new List<BestPriceContract>()));
+        }
+        
+        [Test]
+        public void When_Orders_NotEmpty_Update_WithEmptyList_ThrowsException()
+        {
+            var keeper = GetSutWithDumbSnapshot();
+            
+            var actualOrders = keeper.GetAllOrders();
+            CollectionAssert.IsNotEmpty(actualOrders);
+
+            Assert.ThrowsAsync<ArgumentNullException>(async () =>
+                await keeper.UpdateAsync(ImmutableArray.Create(new Position()),
+                    ImmutableArray<Order>.Empty,
+                    ImmutableArray.Create(new MarginTradingAccount()),
+                    new List<BestPriceContract>(),
+                    new List<BestPriceContract>()));
+        }
+
+        private IDraftSnapshotKeeper GetSutWithEmptySnapshot() => new DraftSnapshotKeeper(_repositoryWithEmptySnapshot.Object).Init(DateTime.UtcNow);
+        private IDraftSnapshotKeeper GetSutWithDumbSnapshot() => new DraftSnapshotKeeper(_repositoryWithDumbSnapshot.Object).Init(DateTime.UtcNow);
     }
 }
