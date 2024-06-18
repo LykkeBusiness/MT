@@ -52,7 +52,7 @@ namespace MarginTrading.Backend.Controllers
         {
             var stats = _accountsCacheService.GetAll();
 
-            var accountsInLiquidation = await _accountsCacheService.GetAllInLiquidation().ToListAsync();
+            var accountsInLiquidation = await _accountsCacheService.GetAllWhereLiquidationIsRunning().ToListAsync();
 
             return stats.Select(x =>
             {
@@ -157,7 +157,7 @@ namespace MarginTrading.Backend.Controllers
             {
                 var stats = _accountsCacheService.Get(accountId);
 
-                var isInLiquidation = await _accountsCacheService.IsInLiquidation(accountId);
+                var isInLiquidation = await _accountsCacheService.HasRunningLiquidation(accountId);
 
                 return stats.ConvertToContract(isInLiquidation);
             }
@@ -186,7 +186,7 @@ namespace MarginTrading.Backend.Controllers
         [HttpPost, Route("resume-liquidation/{accountId}")]
         public async Task ResumeLiquidation(string accountId, string comment)
         {
-            var liquidation = await _accountsCacheService.GetLiquidationOperationId(accountId);
+            var liquidation = await _accountsCacheService.GetRunningLiquidationOperationId(accountId);
 
             if (string.IsNullOrEmpty(liquidation))
             {
@@ -204,7 +204,7 @@ namespace MarginTrading.Backend.Controllers
 
         private async Task<Lykke.Contracts.Responses.PaginatedResponse<AccountStatContract>> Convert(PaginatedResponse<MarginTradingAccount> accounts)
         {
-            var accountsInLiquidation = await _accountsCacheService.GetAllInLiquidation().ToListAsync();
+            var accountsInLiquidation = await _accountsCacheService.GetAllWhereLiquidationIsRunning().ToListAsync();
             
             return new Lykke.Contracts.Responses.PaginatedResponse<AccountStatContract>(
                 contents: accounts.Contents
