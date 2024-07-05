@@ -2,11 +2,10 @@
 // See the LICENSE file in the project root for more information.
 
 using Autofac;
-using Common.Log;
 using Autofac.Features.Variance;
 using Lykke.RabbitMqBroker.Publisher;
 using Lykke.Snow.Common.Correlation.RabbitMq;
-using MarginTrading.AssetService.Contracts;
+
 using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.MatchingEngines;
 using MarginTrading.Backend.Core.Orderbooks;
@@ -18,7 +17,6 @@ using MarginTrading.Backend.Services.EventsConsumers;
 using MarginTrading.Backend.Services.Helpers;
 using MarginTrading.Backend.Services.Infrastructure;
 using MarginTrading.Backend.Services.MatchingEngines;
-using MarginTrading.Backend.Services.Notifications;
 using MarginTrading.Backend.Services.Quotes;
 using MarginTrading.Backend.Services.Scheduling;
 using MarginTrading.Backend.Services.Services;
@@ -26,7 +24,6 @@ using MarginTrading.Backend.Services.Stp;
 using MarginTrading.Backend.Services.TradingConditions;
 using MarginTrading.Backend.Services.Workflow.Liquidation;
 using MarginTrading.Common.RabbitMq;
-using MarginTrading.Common.Services;
 using MarginTrading.Common.Services.Telemetry;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
@@ -165,8 +162,6 @@ namespace MarginTrading.Backend.Services.Modules
 
 			builder.Register(c => new RabbitMqService(
 					c.Resolve<ILoggerFactory>(),
-					c.Resolve<ILog>(),
-					_settings.Env,
 					c.Resolve<IPublishingQueueRepository>(),
 					c.Resolve<RabbitMqCorrelationManager>()))
 				.As<IRabbitMqService>()
@@ -197,10 +192,6 @@ namespace MarginTrading.Backend.Services.Modules
 			builder.RegisterType<LiquidationFailureExecutor>()
 				.As<ILiquidationFailureExecutor>()
 				.SingleInstance();
-
-            builder.RegisterType<BrokerSettingsChangedHandler>()
-                .AsSelf()
-                .SingleInstance();
 
             builder.RegisterType<PositionsProvider>()
 	            .As<IPositionsProvider>()
