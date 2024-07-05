@@ -10,6 +10,9 @@ using MarginTrading.AccountMarginEventsBroker.Repositories.SqlRepositories;
 using Lykke.MarginTrading.BrokerBase;
 using Lykke.MarginTrading.BrokerBase.Models;
 using Lykke.MarginTrading.BrokerBase.Settings;
+
+using MarginTrading.Backend.Contracts.Events;
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -29,6 +32,8 @@ namespace MarginTrading.AccountMarginEventsBroker
             ContainerBuilder builder,
             IReloadingManager<Settings> settings)
         {
+            builder.AddJsonBrokerMessagingFactory<MarginEventMessage>();
+            
             builder
                 .RegisterType<Application>()
                 .As<IBrokerApplication>()
