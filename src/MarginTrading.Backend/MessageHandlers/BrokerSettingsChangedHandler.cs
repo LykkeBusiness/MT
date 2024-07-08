@@ -49,6 +49,7 @@ namespace MarginTrading.Backend.MessageHandlers
             switch (message.ChangeType)
             {
                 case ChangeType.Creation:
+                case ChangeType.Deletion:
                     break;
                 case ChangeType.Edition:
                     if (message.OldValue == null || IsScheduleDataChanged(message.OldValue, message.NewValue, _settings.BrokerId))
@@ -59,10 +60,10 @@ namespace MarginTrading.Backend.MessageHandlers
                         _scheduleControlService.ScheduleNext();
                     }
                     break;
-                case ChangeType.Deletion:
-                    break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new ArgumentOutOfRangeException(
+                        nameof(message.ChangeType), 
+                        $@"Unexpected ChangeType: {message.ChangeType.ToString()}");
             }
         }
 

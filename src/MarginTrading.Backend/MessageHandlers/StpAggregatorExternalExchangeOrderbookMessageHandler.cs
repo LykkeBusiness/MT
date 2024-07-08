@@ -9,18 +9,18 @@ using Lykke.RabbitMqBroker.Subscriber;
 
 using MarginTrading.Backend.Core.Orderbooks;
 using MarginTrading.Backend.Core.Services;
+using MarginTrading.Backend.Services.Events;
 using MarginTrading.Common.Services;
-using MarginTrading.OrderbookAggregator.Contracts.Messages;
 
 namespace MarginTrading.Backend.MessageHandlers
 {
     [UsedImplicitly]
-    internal sealed class ExternalExchangeOrderbookMessageHandler : IMessageHandler<ExternalExchangeOrderbookMessage>
+    internal sealed class StpAggregatorExternalExchangeOrderbookMessageHandler : IMessageHandler<StpAggregatorExternalExchangeOrderbookMessage>
     {
         private readonly IConvertService _convertService;
         private readonly IExternalOrderbookService _externalOrderbookService;
 
-        public ExternalExchangeOrderbookMessageHandler(
+        public StpAggregatorExternalExchangeOrderbookMessageHandler(
             IConvertService convertService,
             IExternalOrderbookService externalOrderbookService)
         {
@@ -28,9 +28,9 @@ namespace MarginTrading.Backend.MessageHandlers
             _externalOrderbookService = externalOrderbookService;
         }
 
-        public Task Handle(ExternalExchangeOrderbookMessage message)
+        public Task Handle(StpAggregatorExternalExchangeOrderbookMessage message)
         {
-            var orderbook = _convertService.Convert<ExternalExchangeOrderbookMessage, ExternalOrderBook>(message);
+            var orderbook = _convertService.Convert<StpAggregatorExternalExchangeOrderbookMessage, ExternalOrderBook>(message);
             _externalOrderbookService.SetOrderbook(orderbook);
             return Task.CompletedTask;
         }
