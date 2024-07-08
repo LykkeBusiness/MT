@@ -179,6 +179,23 @@ namespace MarginTradingTests
 
             Assert.IsTrue(_scheduleSettingsCache.AllSettingsUpdated, "UpdateAllSettingsAsync was not called");
         }
+        
+        [Test]
+        [TestCase(ChangeType.Creation)]
+        [TestCase(ChangeType.Deletion)]
+        public async Task Handle_NotEdition_SkipMessage(ChangeType changeType)
+        {
+            var message = new BrokerSettingsChangedEvent
+            {
+                ChangeType = changeType,
+                OldValue = null,
+                NewValue = new BrokerSettingsContract { BrokerId = "TestBroker" }
+            };
+
+            await _handler.Handle(message);
+
+            Assert.IsFalse(_scheduleSettingsCache.AllSettingsUpdated, "Settings were updated");
+        }
 
         [Test]
         public void Handle_UnexpectedChangeType_ThrowsArgumentOutOfRangeException()
