@@ -13,8 +13,8 @@ using MarginTrading.Backend.Core.MarketMakerFeed;
 using MarginTrading.Backend.Core.MatchingEngines;
 using MarginTrading.Backend.Core.Settings;
 using MarginTrading.Backend.MessageHandlers;
+using MarginTrading.Backend.Services.Events;
 using MarginTrading.Common.RabbitMq;
-using MarginTrading.OrderbookAggregator.Contracts.Messages;
 
 namespace MarginTrading.Backend.Modules
 {
@@ -49,7 +49,7 @@ namespace MarginTrading.Backend.Modules
 
             if (_settings.FxRateRabbitMqSettings != null)
             {
-                builder.AddRabbitMqListener<ExternalExchangeOrderbookMessage, FxRateExternalExchangeOrderbookHandler>(
+                builder.AddRabbitMqListener<FxRateExternalExchangeOrderbookMessage, FxRateExternalExchangeOrderbookHandler>(
                         _settings.FxRateRabbitMqSettings.ToInstanceSubscriptionSettings(_settings.Env, false),
                         ConfigureCorrelationManager)
                     .AddOptions(
@@ -65,7 +65,7 @@ namespace MarginTrading.Backend.Modules
 
             if (_settings.StpAggregatorRabbitMqSettings != null)
             {
-                builder.AddRabbitMqListener<ExternalExchangeOrderbookMessage, ExternalExchangeOrderbookMessageHandler>(
+                builder.AddRabbitMqListener<StpAggregatorExternalExchangeOrderbookMessage, StpAggregatorExternalExchangeOrderbookMessageHandler>(
                         _settings.StpAggregatorRabbitMqSettings.ToInstanceSubscriptionSettings(_settings.Env, false),
                         ConfigureCorrelationManager)
                     .AddOptions(

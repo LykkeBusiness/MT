@@ -26,7 +26,7 @@ using Microsoft.Extensions.Logging;
 namespace MarginTrading.Backend.MessageHandlers
 {
     [UsedImplicitly]
-    internal sealed class FxRateExternalExchangeOrderbookHandler : IMessageHandler<ExternalExchangeOrderbookMessage>
+    internal sealed class FxRateExternalExchangeOrderbookHandler : IMessageHandler<FxRateExternalExchangeOrderbookMessage>
     {
         private readonly MarginTradingSettings _settings;
         private readonly IAssetPairDayOffService _assetPairDayOffService;
@@ -48,7 +48,7 @@ namespace MarginTrading.Backend.MessageHandlers
             _logger = logger;
         }
 
-        public Task Handle(ExternalExchangeOrderbookMessage message)
+        public Task Handle(FxRateExternalExchangeOrderbookMessage message)
         {
             var isEodOrderbook = message.ExchangeName == ExternalOrderbookService.EodExternalExchange;
 
@@ -90,7 +90,7 @@ namespace MarginTrading.Backend.MessageHandlers
             return Task.CompletedTask;
         }
 
-        private InstrumentBidAskPair CreatePair(ExternalExchangeOrderbookMessage message)
+        private InstrumentBidAskPair CreatePair(FxRateExternalExchangeOrderbookMessage message)
         {
             if (!ValidateOrderbook(message))
             {
@@ -111,7 +111,7 @@ namespace MarginTrading.Backend.MessageHandlers
                 };
         }
 
-        private bool ValidateOrderbook(ExternalExchangeOrderbookMessage orderbook)
+        private bool ValidateOrderbook(FxRateExternalExchangeOrderbookMessage orderbook)
         {
             try
             {
