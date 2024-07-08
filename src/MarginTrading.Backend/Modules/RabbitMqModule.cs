@@ -43,13 +43,13 @@ namespace MarginTrading.Backend.Modules
                             opt.ShareConnection = true;
                             opt.SubscriptionTemplate = SubscriptionTemplate.NoLoss;
                             opt.ConsumerCount = (byte)_settings.MarketMakerRabbitMqSettings.ConsumerCount;
-                        })
-                    .AutoStart();
+                        });
             }
 
             if (_settings.FxRateRabbitMqSettings != null)
             {
-                builder.AddRabbitMqListener<FxRateExternalExchangeOrderbookMessage, FxRateExternalExchangeOrderbookHandler>(
+                builder
+                    .AddRabbitMqListener<FxRateExternalExchangeOrderbookMessage, FxRateExternalExchangeOrderbookHandler>(
                         _settings.FxRateRabbitMqSettings.ToInstanceSubscriptionSettings(_settings.Env, false),
                         ConfigureCorrelationManager)
                     .AddOptions(
@@ -59,13 +59,13 @@ namespace MarginTrading.Backend.Modules
                             opt.ShareConnection = true;
                             opt.SubscriptionTemplate = SubscriptionTemplate.LossAcceptable;
                             opt.ConsumerCount = (byte)_settings.FxRateRabbitMqSettings.ConsumerCount;
-                        })
-                    .AutoStart();
+                        });
             }
 
             if (_settings.StpAggregatorRabbitMqSettings != null)
             {
-                builder.AddRabbitMqListener<StpAggregatorExternalExchangeOrderbookMessage, StpAggregatorExternalExchangeOrderbookMessageHandler>(
+                builder
+                    .AddRabbitMqListener<StpAggregatorExternalExchangeOrderbookMessage, StpAggregatorExternalExchangeOrderbookMessageHandler>(
                         _settings.StpAggregatorRabbitMqSettings.ToInstanceSubscriptionSettings(_settings.Env, false),
                         ConfigureCorrelationManager)
                     .AddOptions(
@@ -75,8 +75,7 @@ namespace MarginTrading.Backend.Modules
                             opt.ShareConnection = true;
                             opt.SubscriptionTemplate = SubscriptionTemplate.LossAcceptable;
                             opt.ConsumerCount = (byte)_settings.StpAggregatorRabbitMqSettings.ConsumerCount;
-                        })
-                    .AutoStart();
+                        });
             }
 
             if (_settings.RisksRabbitMqSettings != null)
@@ -91,8 +90,7 @@ namespace MarginTrading.Backend.Modules
                             opt.ShareConnection = true;
                             opt.SubscriptionTemplate = SubscriptionTemplate.NoLoss;
                             opt.ConsumerCount = (byte)_settings.RisksRabbitMqSettings.ConsumerCount;
-                        })
-                    .AutoStart();
+                        });
             }
 
             builder.AddRabbitMqListener<SettingsChangedEvent, SettingsChangedHandler>(
@@ -105,8 +103,7 @@ namespace MarginTrading.Backend.Modules
                         opt.ShareConnection = true;
                         opt.SubscriptionTemplate = SubscriptionTemplate.NoLoss;
                         opt.ConsumerCount = (byte)_settings.SettingsChangedRabbitMqSettings.ConsumerCount;
-                    })
-                .AutoStart();
+                    });
 
             builder.AddRabbitMqListener<BrokerSettingsChangedEvent, BrokerSettingsChangedHandler>(
                     _settings.BrokerSettingsRabbitMqSettings.ToInstanceSubscriptionSettings(_settings.Env, false),
@@ -118,8 +115,7 @@ namespace MarginTrading.Backend.Modules
                         opt.ShareConnection = true;
                         opt.SubscriptionTemplate = SubscriptionTemplate.NoLoss;
                         opt.ConsumerCount = (byte)_settings.BrokerSettingsRabbitMqSettings.ConsumerCount;
-                    })
-                .AutoStart();
+                    });
         }
 
         private static void ConfigureCorrelationManager<T>(RabbitMqSubscriber<T> subscriber, IComponentContext ctx)
