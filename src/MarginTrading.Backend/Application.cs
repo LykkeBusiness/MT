@@ -107,7 +107,7 @@ namespace MarginTrading.Backend
                 _logger.WriteInfo(
                     nameof(StartListenerWithLogging),
                     nameof(Application),
-                    $"Listener for {nameof(T)} successfully started");
+                    $"Listener for {typeof(T).Name} successfully started");
             }
             catch (Exception ex)
             {
