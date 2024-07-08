@@ -8,7 +8,10 @@ using System.Threading.Tasks;
 
 using MarginTrading.AssetService.Contracts.Enums;
 using MarginTrading.AssetService.Contracts.Messages;
+using MarginTrading.Backend.Core.MatchingEngines;
+using MarginTrading.Backend.Core.Orders;
 using MarginTrading.Backend.MessageHandlers;
+using MarginTrading.Backend.Services.MatchingEngines;
 
 using NUnit.Framework;
 
@@ -17,6 +20,36 @@ namespace MarginTradingTests
     [TestFixture]
     public class SettingsChangedHandlerTests
     {
+        private class FakeMatchingEngineRoutesManager : IMatchingEngineRoutesManager
+        {
+            public bool UpdateRoutesCacheCalled { get; private set; } = false;
+
+            public Task UpdateRoutesCacheAsync()
+            {
+                UpdateRoutesCacheCalled = true;
+                return Task.CompletedTask;
+            }
+
+            public IMatchingEngineRoute FindRoute(
+                string clientId,
+                string tradingConditionId,
+                string instrumentId,
+                OrderDirection orderType)
+            {
+                throw new System.NotImplementedException();
+            }
+
+            public Task HandleRiskManagerCommand(MatchingEngineRouteRisksCommand command)
+            {
+                throw new System.NotImplementedException();
+            }
+
+            public Task HandleRiskManagerBlockTradingCommand(MatchingEngineRouteRisksCommand command)
+            {
+                throw new System.NotImplementedException();
+            }
+        }
+        
         private FakeMatchingEngineRoutesManager _fakeMatchingEngineRoutesManager;
         private SettingsChangedHandler _handler;
 
@@ -39,15 +72,16 @@ namespace MarginTradingTests
 
         [Test]
         [TestCaseSource(nameof(NonTradingRouteSettingsTypes))]
-        public async Task Handle_NonTradingRouteSettingsType_DoesNotUpdateRoutesCache(SettingsTypeContract nonTradingRouteSettingsType)
+        public async Task Handle_NonTradingRouteSettingsType_DoesNotUpdateRoutesCache(
+            SettingsTypeContract nonTradingRouteSettingsType)
         {
-            var message = new SettingsChangedEvent { SettingsType = nonTradingRouteSettingsType};
+            var message = new SettingsChangedEvent { SettingsType = nonTradingRouteSettingsType };
 
             await _handler.Handle(message);
 
             Assert.IsFalse(_fakeMatchingEngineRoutesManager.UpdateRoutesCacheCalled);
         }
-        
+
         private static IEnumerable<SettingsTypeContract> NonTradingRouteSettingsTypes()
         {
             return Enum.GetValues(typeof(SettingsTypeContract))
