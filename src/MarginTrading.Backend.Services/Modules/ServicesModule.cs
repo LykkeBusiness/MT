@@ -230,6 +230,10 @@ namespace MarginTrading.Backend.Services.Modules
             builder.RegisterType<ConfigurationValidator>()
 	            .As<IConfigurationValidator>()
 	            .SingleInstance();
+
+            builder.RegisterType<SnapshotTrackerService>()
+	            .As<ISnapshotTrackerService>()
+	            .SingleInstance();
 		}
 	}
 }
