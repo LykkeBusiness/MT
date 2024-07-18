@@ -64,7 +64,7 @@ namespace MarginTrading.Backend.Services.Workflow
 
                 var shouldRecreateSnapshot = await _snapshotTrackerService.GetShouldRecreateSnapshot();
 
-                if (shouldRecreateSnapshot)
+                if (shouldRecreateSnapshot && !command.IsMissing)
                 {
                     await _snapshotService.MakeTradingDataSnapshot(command.TradingDay, 
                         _identityGenerator.GenerateGuid(),
