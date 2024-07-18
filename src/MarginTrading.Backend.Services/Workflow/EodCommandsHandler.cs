@@ -13,9 +13,10 @@ using Common.Log;
 using JetBrains.Annotations;
 using Lykke.Cqrs;
 using MarginTrading.Backend.Contracts.Prices;
+using MarginTrading.Backend.Core.Repositories;
 using MarginTrading.Backend.Core.Services;
+using MarginTrading.Backend.Core.Snapshots;
 using MarginTrading.Common.Services;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace MarginTrading.Backend.Services.Workflow
 {
@@ -26,6 +27,8 @@ namespace MarginTrading.Backend.Services.Workflow
         private readonly ISnapshotService _snapshotService;
         private readonly IDateService _dateService;
         private readonly IDraftSnapshotKeeperFactory _draftSnapshotKeeperFactory;
+        private readonly IIdentityGenerator _identityGenerator;
+        private readonly ISnapshotTrackerService _snapshotTrackerService;
         private readonly ILog _log;
 
         public EodCommandsHandler(
@@ -33,12 +36,16 @@ namespace MarginTrading.Backend.Services.Workflow
             ISnapshotService snapshotService, 
             IDateService dateService,
             IDraftSnapshotKeeperFactory draftSnapshotKeeperFactory,
+            IIdentityGenerator identityGenerator,
+            ISnapshotTrackerService snapshotTrackerService,
             ILog log)
         {
             _quotesApi = quotesApi;
             _snapshotService = snapshotService;
             _dateService = dateService;
             _draftSnapshotKeeperFactory = draftSnapshotKeeperFactory;
+            _identityGenerator = identityGenerator;
+            _snapshotTrackerService = snapshotTrackerService;
             _log = log;
         }
         
@@ -53,6 +60,15 @@ namespace MarginTrading.Backend.Services.Workflow
                 if (quotes.ErrorCode != EodMarketDataErrorCodesContract.None)
                 {
                     throw new Exception($"Could not receive quotes from BookKeeper: {quotes.ErrorCode.ToString()}");
+                }
+
+                var shouldRecreateSnapshot = await _snapshotTrackerService.GetShouldRecreateSnapshot();
+
+                if (shouldRecreateSnapshot && !command.IsMissing)
+                {
+                    await _snapshotService.MakeTradingDataSnapshot(command.TradingDay, 
+                        _identityGenerator.GenerateGuid(),
+                        SnapshotStatus.Draft);
                 }
 
                 var draftSnapshotKeeper = _draftSnapshotKeeperFactory.Create(command.TradingDay);
