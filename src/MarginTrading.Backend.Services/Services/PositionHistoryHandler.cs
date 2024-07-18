@@ -22,18 +22,21 @@ namespace MarginTrading.Backend.Services.Services
         private readonly IRabbitMqNotifyService _rabbitMqNotifyService;
         private readonly IDateService _dateService;
         private readonly IAccountsCacheService _accountsCacheService;
+        private readonly ISnapshotTrackerService _snapshotTrackerService;
 
         public PositionHistoryHandler(ICqrsSender cqrsSender,
             IConvertService convertService,
             IRabbitMqNotifyService rabbitMqNotifyService,
             IDateService dateService,
-            IAccountsCacheService accountsCacheService)
+            IAccountsCacheService accountsCacheService,
+            ISnapshotTrackerService snapshotTrackerService)
         {
             _cqrsSender = cqrsSender;
             _convertService = convertService;
             _rabbitMqNotifyService = rabbitMqNotifyService;
             _dateService = dateService;
             _accountsCacheService = accountsCacheService;
+            _snapshotTrackerService = snapshotTrackerService;
         }
 
         public Task HandleOpenPosition(Position position, string additionalInfo, PositionOpenMetadata metadata)
@@ -46,7 +49,7 @@ namespace MarginTrading.Backend.Services.Services
             return _rabbitMqNotifyService.PositionHistory(historyEvent);
         }
 
-        public Task HandleClosePosition(Position position, DealContract deal, string additionalInfo)
+        public async Task HandleClosePosition(Position position, DealContract deal, string additionalInfo)
         {
             var positionClosedEvent = CreatePositionClosedEvent(position, deal);
             _cqrsSender.PublishEvent(positionClosedEvent);
@@ -55,10 +58,11 @@ namespace MarginTrading.Backend.Services.Services
                 PositionHistoryTypeContract.Close, 
                 deal,
                 additionalInfo);
-            return _rabbitMqNotifyService.PositionHistory(historyEvent);
+            await _rabbitMqNotifyService.PositionHistory(historyEvent);
+            await _snapshotTrackerService.SetShouldRecreateSnapshot(true);
         }
         
-        public Task HandlePartialClosePosition(Position position, DealContract deal, string additionalInfo)
+        public async Task HandlePartialClosePosition(Position position, DealContract deal, string additionalInfo)
         {
             var positionClosedEvent = CreatePositionClosedEvent(position, deal);
             _cqrsSender.PublishEvent(positionClosedEvent);
@@ -67,7 +71,8 @@ namespace MarginTrading.Backend.Services.Services
                 PositionHistoryTypeContract.PartiallyClose, 
                 deal,
                 additionalInfo);
-            return _rabbitMqNotifyService.PositionHistory(historyEvent);
+            await _rabbitMqNotifyService.PositionHistory(historyEvent);
+            await _snapshotTrackerService.SetShouldRecreateSnapshot(true);
         }
         
         private PositionHistoryEvent CreatePositionHistoryEvent(Position position,

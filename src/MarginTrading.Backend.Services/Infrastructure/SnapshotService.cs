@@ -37,6 +37,7 @@ namespace MarginTrading.Backend.Services.Infrastructure
         private readonly ILog _log;
         private readonly IFinalSnapshotCalculator _finalSnapshotCalculator;
         private readonly ISnapshotStatusTracker _snapshotStatusTracker;
+        private readonly ISnapshotTrackerService _snapshotTrackerService;
         private readonly MarginTradingSettings _settings;
 
         private static readonly SemaphoreSlim Lock = new SemaphoreSlim(1, 1);
@@ -56,6 +57,7 @@ namespace MarginTrading.Backend.Services.Infrastructure
             ILog log,
             IFinalSnapshotCalculator finalSnapshotCalculator,
             ISnapshotStatusTracker snapshotStatusTracker,
+            ISnapshotTrackerService snapshotTrackerService,
             MarginTradingSettings settings)
         {
             _scheduleSettingsCacheService = scheduleSettingsCacheService;
@@ -71,6 +73,7 @@ namespace MarginTrading.Backend.Services.Infrastructure
             _log = log;
             _finalSnapshotCalculator = finalSnapshotCalculator;
             _snapshotStatusTracker = snapshotStatusTracker;
+            _snapshotTrackerService = snapshotTrackerService;
             _settings = settings;
         }
 
@@ -204,6 +207,10 @@ namespace MarginTrading.Backend.Services.Infrastructure
                 await _tradingEngineSnapshotsRepository.AddAsync(snapshot);
                 
                 _snapshotStatusTracker.SnapshotCreated();
+                if (status == SnapshotStatus.Draft)
+                {
+                    await _snapshotTrackerService.SetShouldRecreateSnapshot(false);   
+                }
 
                 await _log.WriteInfoAsync(nameof(SnapshotService), nameof(MakeTradingDataSnapshot),
                     $"Trading data snapshot was written to the storage. {msg}");   
