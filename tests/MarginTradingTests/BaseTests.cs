@@ -29,6 +29,7 @@ using MarginTrading.AssetService.Contracts;
 using MarginTrading.AssetService.Contracts.ClientProfileSettings;
 using MarginTrading.AssetService.Contracts.Scheduling;
 using MarginTrading.Backend.Contracts.Events;
+using MarginTrading.Backend.Core.Services;
 using MarginTrading.Backend.Services.AssetPairs;
 using MarginTrading.Backend.Services.Quotes;
 using MarginTradingTests.Modules;
@@ -191,6 +192,10 @@ namespace MarginTradingTests
             builder.RegisterInstance(exchangeConnector).As<IExchangeConnectorClient>();
             builder.RegisterInstance(Mock.Of<IRabbitMqService>()).As<IRabbitMqService>();
             builder.RegisterInstance(Mock.Of<IRfqService>()).As<IRfqService>();
+
+            builder.RegisterInstance(Mock.Of<ISnapshotTrackerService>())
+                .As<ISnapshotTrackerService>()
+                .SingleInstance();
             
             builder.RegisterBuildCallback(c =>
             {
