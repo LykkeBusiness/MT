@@ -19,19 +19,21 @@ namespace MarginTrading.SqlRepositories.Repositories
     {
         private const string TableName = "TradingEngineSnapshots";
 
-        private const string CreateTableScript = @"CREATE TABLE [{0}](
-[OID] [bigint] NOT NULL IDENTITY (1,1),
-[TradingDay] [datetime] NOT NULL,
-[CorrelationId] [nvarchar](64) NOT NULL,
-[Timestamp] [datetime] NOT NULL,
-[Orders] [nvarchar] (MAX) NOT NULL,
-[Positions] [nvarchar](MAX) NOT NULL,
-[AccountStats] [nvarchar](MAX) NOT NULL,
-[BestFxPrices] [nvarchar](MAX) NOT NULL,
-[BestPrices] [nvarchar](MAX) NOT NULL,
-[Status] [nvarchar](32) constraint TradingEngineSnapshots_Status_Default_Value default 'Final' not null,
-INDEX IX_{0}_Base (TradingDay, CorrelationId, Timestamp)
-);";
+        private const string CreateTableScript = """
+ CREATE TABLE [{0}](
+ [OID] [bigint] NOT NULL IDENTITY (1,1),
+ [TradingDay] [datetime] NOT NULL,
+ [CorrelationId] [nvarchar](64) NOT NULL,
+ [Timestamp] [datetime] NOT NULL,
+ [Orders] [nvarchar] (MAX) NOT NULL,
+ [Positions] [nvarchar](MAX) NOT NULL,
+ [AccountStats] [nvarchar](MAX) NOT NULL,
+ [BestFxPrices] [nvarchar](MAX) NOT NULL,
+ [BestPrices] [nvarchar](MAX) NOT NULL,
+ [Status] [nvarchar](32) constraint TradingEngineSnapshots_Status_Default_Value default 'Final' not null,
+ INDEX IX_{0}_Base (TradingDay, CorrelationId, Timestamp)
+ );
+""";
 
         private readonly string _connectionString;
         private readonly MarginTradingSettings _settings;

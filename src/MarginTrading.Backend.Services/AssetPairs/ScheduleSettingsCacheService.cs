@@ -231,7 +231,7 @@ namespace MarginTrading.Backend.Services.AssetPairs
 
             try
             {
-                return _compiledMarketScheduleCache.ToDictionary();
+                return MoreEnumerable.ToDictionary(_compiledMarketScheduleCache);
             }
             finally
             {
@@ -358,7 +358,7 @@ namespace MarginTrading.Backend.Services.AssetPairs
 
             try
             {
-                return _marketStates.ToDictionary();
+                return MoreEnumerable.ToDictionary(_marketStates);
             }
             finally
             {

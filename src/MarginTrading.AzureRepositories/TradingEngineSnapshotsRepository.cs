@@ -15,7 +15,7 @@ namespace MarginTrading.AzureRepositories
             throw new NotImplementedException();
         }
 
-        public async Task<TradingEngineSnapshot> GetLastDraftAsync(DateTime? tradingDay)
+        public Task<TradingEngineSnapshot> GetLastDraftAsync(DateTime? tradingDay)
         {
             throw new NotImplementedException();
         }
@@ -35,7 +35,7 @@ namespace MarginTrading.AzureRepositories
             throw new NotImplementedException();
         }
 
-        public async Task<bool> DraftExistsAsync(DateTime tradingDay)
+        public Task<bool> DraftExistsAsync(DateTime tradingDay)
         {
             throw new NotImplementedException();
         }
