@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
@@ -9,13 +9,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\BenchmarkScenarios\BenchmarkScenarios.csproj"/>
+        <ProjectReference Include="..\BenchmarkScenarios\BenchmarkScenarios.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="BenchmarkDotNet" Version="0.13.2"/>
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
+        <PackageReference Include="BenchmarkDotNet" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+        <PackageReference Include="Microsoft.Extensions.Logging" />
     </ItemGroup>
 
 </Project>
