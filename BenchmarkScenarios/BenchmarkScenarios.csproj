@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
@@ -7,14 +7,14 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\src\MarginTrading.Backend.Services\MarginTrading.Backend.Services.csproj"/>
-        <ProjectReference Include="..\src\MarginTrading.Common\MarginTrading.Common.csproj"/>
+        <ProjectReference Include="..\src\MarginTrading.Backend.Services\MarginTrading.Backend.Services.csproj" />
+        <ProjectReference Include="..\src\MarginTrading.Common\MarginTrading.Common.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="BenchmarkDotNet" Version="0.11.5"/>
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
-        <PackageReference Include="Moq" Version="4.13.1"/>
+        <PackageReference Include="BenchmarkDotNet" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+        <PackageReference Include="Moq" />
     </ItemGroup>
 
 </Project>
