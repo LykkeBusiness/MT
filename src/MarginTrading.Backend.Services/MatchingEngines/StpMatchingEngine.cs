@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Common;
 using Common.Log;
+using Lykke.Common.Log;
 using MarginTrading.Backend.Contracts.ExchangeConnector;
 using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Exceptions;
@@ -23,6 +24,7 @@ using MarginTrading.Backend.Services.Notifications;
 using MarginTrading.Common.Extensions;
 using MarginTrading.Common.Services;
 using MarginTrading.Common.Settings;
+using Microsoft.Extensions.Logging;
 using OrderType = MarginTrading.Backend.Contracts.ExchangeConnector.OrderType;
 
 namespace MarginTrading.Backend.Services.MatchingEngines
@@ -143,8 +145,7 @@ namespace MarginTrading.Backend.Services.MatchingEngines
 
                     if (!executionResult.Success)
                     {
-                        var ex = new Exception(
-                            $"External order was not executed. Status: {executionResult.ExecutionStatus}. Failure: {executionResult.FailureType}");
+                        var ex = new ExternalOrderWasNotExecuted(executionResult);
                         LogOrderExecutionException(order, externalOrderModel, ex);
                     }
                     else
@@ -198,9 +199,17 @@ namespace MarginTrading.Backend.Services.MatchingEngines
                 ? "Fake"
                 : _exchangeConnectorServiceClient.ServiceUrl;
 
-            _log.WriteError(
-                $"{nameof(StpMatchingEngine)}:{nameof(MatchOrderAsync)}:{connector}",
-                $"Internal order: {internalOrder.ToJson()}, External order model: {externalOrderModel.ToJson()}", ex);
+            var process = $"{nameof(StpMatchingEngine)}:{nameof(MatchOrderAsync)}:{connector}";
+            var context = $"Internal order: {internalOrder.ToJson()}, External order model: {externalOrderModel.ToJson()}";
+            
+            if (ex is ExternalOrderWasNotExecuted)
+            {
+                _log.WriteWarning(process, context, string.Empty ,ex);  
+            }
+            else
+            {
+                _log.WriteError(process, context, ex);  
+            }
         }
 
         public (string externalProviderId, decimal? price) GetBestPriceForOpen(string assetPairId, decimal volume)
