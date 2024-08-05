@@ -7,6 +7,7 @@ using JetBrains.Annotations;
 using MarginTrading.Backend.Contracts.ErrorCodes;
 using MarginTrading.Backend.Contracts.Prices;
 using MarginTrading.Backend.Contracts.Snow.Prices;
+using MarginTrading.Contract.BackendContracts;
 using Refit;
 
 namespace MarginTrading.Backend.Contracts
@@ -41,5 +42,12 @@ namespace MarginTrading.Backend.Contracts
         /// <returns></returns>
         [Post("/api/prices/missed")]
         Task<QuotesUploadErrorCode> UploadMissingQuotesAsync([Body] [NotNull] UploadMissingQuotesRequest request);
+
+        /// <summary>
+        /// Deletes fx rate for assetPairId from cache
+        /// </summary>
+        /// <returns></returns>
+        [Delete("bestFx/{assetPairId}")]
+        public MtBackendResponse<bool> RemoveFromBestFxPriceCache(string assetPairId);
     }
 }
