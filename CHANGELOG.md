@@ -1,3 +1,8 @@
+## 2.32.1 - Nova 2. Delivery 42. Hotfix 9 (July 19, 2024)
+### What's changed
+* LT-5621: Fix an issue with closing positions after platform's closure
+
+
 ## 2.32.0 - Nova 2. Delivery 41 (April 01, 2024)
 ### What's changed
 * LT-5298: Looping error in mtcore requesting to stop the trading.
