@@ -10,6 +10,7 @@ using Common.Log;
 using MarginTrading.Backend.Contracts;
 using MarginTrading.Backend.Contracts.ErrorCodes;
 using MarginTrading.Backend.Contracts.Prices;
+using MarginTrading.Backend.Contracts.Responses;
 using MarginTrading.Backend.Contracts.Snow.Prices;
 using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Exceptions;

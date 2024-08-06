@@ -1,12 +1,42 @@
 ﻿// Copyright (c) 2019 Lykke Corp.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using MarginTrading.Backend.Contracts.TradingSchedule;
 using MarginTrading.Backend.Core.DayOffSettings;
-using MarginTrading.Contract.RabbitMqMessageModels;
+using Newtonsoft.Json;
 
 namespace MarginTrading.Backend.Core.Mappers
-{
+{  public class AccountStatsContract
+    {
+        public string AccountId { get; set; }
+        public string BaseAssetId { get; set; }
+        public string ClientId { get; set; }
+        public string TradingConditionId { get; set; }
+        public decimal Balance { get; set; }
+        public decimal WithdrawTransferLimit { get; set; }
+        public decimal MarginCallLevel { get; set; }
+        public decimal StopOutLevel { get; set; }
+        public decimal TotalCapital { get; set; }
+        public decimal FreeMargin { get; set; }
+        public decimal MarginAvailable { get; set; }
+        public decimal UsedMargin { get; set; }
+        public decimal MarginInit { get; set; }
+        public decimal PnL { get; set; }
+        public decimal OpenPositionsCount { get; set; }
+        public decimal MarginUsageLevel { get; set; }
+        public string LegalEntity { get; set; }
+    }
+    public class BidAskPairRabbitMqContract
+    {
+        public string Instrument { get; set; }
+        public DateTime Date { get; set; }
+        public decimal Bid { get; set; }
+        public decimal Ask { get; set; }
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public bool? IsEod { get; set; }
+    }
     public static class DomainToRabbitMqContractMapper
     {
         public static BidAskPairRabbitMqContract ToRabbitMqContract(this InstrumentBidAskPair pair, bool isEod)
