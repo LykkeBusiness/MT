@@ -10,6 +10,5 @@
   <ItemGroup>
     <ProjectReference Include="..\MarginTrading.Backend.Contracts\MarginTrading.Backend.Contracts.csproj" />
     <ProjectReference Include="..\MarginTrading.Backend.Core\MarginTrading.Backend.Core.csproj" />
-    <ProjectReference Include="..\MarginTrading.Contract\MarginTrading.Contract.csproj" />
   </ItemGroup>
 </Project>
