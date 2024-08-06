@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using MarginTrading.Backend.Contracts.ErrorCodes;
 using MarginTrading.Backend.Contracts.Prices;
+using MarginTrading.Backend.Contracts.Responses;
 using MarginTrading.Backend.Contracts.Snow.Prices;
-using MarginTrading.Contract.BackendContracts;
 using Refit;
+using InitPricesBackendRequest = MarginTrading.Backend.Contracts.Prices.InitPricesBackendRequest;
 
 namespace MarginTrading.Backend.Contracts
 {
