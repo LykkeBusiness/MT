@@ -6,7 +6,6 @@ using MarginTrading.Backend.Core.Mappers;
 using MarginTrading.Backend.Core.Settings;
 using MarginTrading.Backend.Services.Events;
 using MarginTrading.Backend.Services.Notifications;
-using MarginTrading.Contract.RabbitMqMessageModels;
 
 namespace MarginTrading.Backend.Services.EventsConsumers
 {
