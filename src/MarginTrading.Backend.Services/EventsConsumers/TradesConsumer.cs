@@ -2,11 +2,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using MarginTrading.Backend.Contracts.RabbitMqMessageModels;
 using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Services.Events;
 using MarginTrading.Backend.Services.Notifications;
 using MarginTrading.Common.Extensions;
-using MarginTrading.Contract.RabbitMqMessageModels;
 using Microsoft.FeatureManagement;
 
 namespace MarginTrading.Backend.Services.EventsConsumers

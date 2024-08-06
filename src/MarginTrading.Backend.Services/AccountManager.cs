@@ -12,6 +12,7 @@ using Common.Log;
 using FluentScheduler;
 using MarginTrading.AccountsManagement.Contracts;
 using MarginTrading.AccountsManagement.Contracts.Models;
+using MarginTrading.Backend.Contracts.RabbitMqMessageModels;
 using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Mappers;
 using MarginTrading.Backend.Core.Orders;
@@ -21,7 +22,6 @@ using MarginTrading.Backend.Core.Trading;
 using MarginTrading.Backend.Services.Extensions;
 using MarginTrading.Backend.Services.Notifications;
 using MarginTrading.Common.Services;
-using MarginTrading.Contract.RabbitMqMessageModels;
 using Microsoft.Extensions.Internal;
 using MoreLinq;
 

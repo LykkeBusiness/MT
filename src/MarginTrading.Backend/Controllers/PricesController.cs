@@ -10,6 +10,7 @@ using Common.Log;
 using MarginTrading.Backend.Contracts;
 using MarginTrading.Backend.Contracts.ErrorCodes;
 using MarginTrading.Backend.Contracts.Prices;
+using MarginTrading.Backend.Contracts.Responses;
 using MarginTrading.Backend.Contracts.Snow.Prices;
 using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Exceptions;
@@ -17,7 +18,6 @@ using MarginTrading.Backend.Core.Quotes;
 using MarginTrading.Backend.Core.Services;
 using MarginTrading.Backend.Services;
 using MarginTrading.Backend.Services.Mappers;
-using MarginTrading.Contract.BackendContracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

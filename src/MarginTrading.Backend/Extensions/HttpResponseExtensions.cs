@@ -3,7 +3,7 @@
 
 using System.Threading.Tasks;
 using Common;
-using MarginTrading.Contract.BackendContracts;
+using MarginTrading.Backend.Contracts.Responses;
 using Microsoft.AspNetCore.Http;
 using Refit;
 
