@@ -19,8 +19,8 @@ using MarginTrading.Backend.Core.MatchingEngines;
 using MarginTrading.Backend.Core.Orderbooks;
 using MarginTrading.Backend.Core.Orders;
 using MarginTrading.Backend.Core.TradingConditions;
+using MarginTrading.Backend.Services.Events;
 using MarginTrading.Common.Services;
-using MarginTrading.OrderbookAggregator.Contracts.Messages;
 using MarginTrading.SqlRepositories.Entities;
 using VolumePrice = MarginTrading.Backend.Core.Orderbooks.VolumePrice;
 
@@ -56,7 +56,7 @@ namespace MarginTrading.Backend.Services.Services
                 cfg.CreateMap<VolumePriceContract, VolumePrice>();
                 cfg.CreateMap<ExternalOrderBookContract, ExternalOrderBook>();
                 cfg.CreateMap<MarginTrading.OrderbookAggregator.Contracts.Messages.VolumePrice, VolumePrice>();
-                cfg.CreateMap<ExternalExchangeOrderbookMessage, ExternalOrderBook>();
+                cfg.CreateMap<StpAggregatorExternalExchangeOrderbookMessage, ExternalOrderBook>();
 
                 cfg.CreateMap<IAccountMarginFreezing, AccountMarginFreezingEntity>();
                 cfg.CreateMap<MatchingEngineRouteContract, MatchingEngineRoute>();

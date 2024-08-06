@@ -245,6 +245,7 @@ namespace MarginTrading.Backend
             builder.RegisterModule(new CacheModule());
             builder.RegisterModule(new ManagersModule());
             builder.RegisterModule(new ServicesModule(settings.CurrentValue));
+            builder.RegisterModule(new RabbitMqModule(settings.CurrentValue));
             builder.RegisterModule(new BackendServicesModule(
                 mtSettings.CurrentValue,
                 settings.CurrentValue,

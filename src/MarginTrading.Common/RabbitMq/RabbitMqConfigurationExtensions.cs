@@ -2,6 +2,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using Lykke.RabbitMqBroker;
 
 namespace MarginTrading.Common.RabbitMq
 {
@@ -17,6 +18,21 @@ namespace MarginTrading.Common.RabbitMq
                 ConnectionString = configuration.ConnectionString,
                 IsDurable = configuration.IsDurable,
                 LogEventPublishing = logEventPublishing,
+            };
+        }
+
+        public static RabbitMqSubscriptionSettings ToInstanceSubscriptionSettings(
+            this RabbitMqConsumerConfiguration config,
+            string instanceId,
+            bool isDurable)
+        {
+            return new RabbitMqSubscriptionSettings
+            {
+                ConnectionString = config.ConnectionString,
+                QueueName = QueueHelper.BuildQueueName(config.ExchangeName, env: instanceId),
+                ExchangeName = config.ExchangeName,
+                IsDurable = isDurable,
+                RoutingKey = config.RoutingKey
             };
         }
 

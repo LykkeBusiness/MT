@@ -2,9 +2,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
-using System.Threading.Tasks;
+
 using MarginTrading.Backend.Core.Quotes;
-using MarginTrading.OrderbookAggregator.Contracts.Messages;
 
 namespace MarginTrading.Backend.Core.Services
 {
@@ -12,7 +11,6 @@ namespace MarginTrading.Backend.Core.Services
     {
         InstrumentBidAskPair GetQuote(string instrument);
         Dictionary<string, InstrumentBidAskPair> GetAllQuotes();
-        Task SetQuote(ExternalExchangeOrderbookMessage orderBookMessage);
         void SetQuote(InstrumentBidAskPair bidAskPair);
         RemoveQuoteError RemoveQuote(string assetPairId);
     }

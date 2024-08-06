@@ -4,19 +4,22 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Common;
-using Common.Log;
+
 using JetBrains.Annotations;
+
+using Lykke.RabbitMqBroker.Subscriber;
 using Lykke.Snow.Mdm.Contracts.Models.Contracts;
 using Lykke.Snow.Mdm.Contracts.Models.Events;
+
 using MarginTrading.Backend.Core.Services;
 using MarginTrading.Backend.Core.Settings;
 using MarginTrading.Backend.Services.AssetPairs;
+
 using Microsoft.Extensions.Logging;
 
-namespace MarginTrading.Backend.Services.Services
+namespace MarginTrading.Backend.MessageHandlers
 {
-    public class BrokerSettingsChangedHandler
+    public class BrokerSettingsChangedHandler : IMessageHandler<BrokerSettingsChangedEvent>
     {
         private readonly MarginTradingSettings _settings;
         private readonly IScheduleSettingsCacheService _scheduleSettingsCache;
@@ -39,16 +42,17 @@ namespace MarginTrading.Backend.Services.Services
         }
 
         [UsedImplicitly]
-        public async Task Handle(BrokerSettingsChangedEvent e)
+        public async Task Handle(BrokerSettingsChangedEvent message)
         {
             _logger.LogInformation("BrokerSettingsChangedEvent received");
             
-            switch (e.ChangeType)
+            switch (message.ChangeType)
             {
                 case ChangeType.Creation:
+                case ChangeType.Deletion:
                     break;
                 case ChangeType.Edition:
-                    if (e.OldValue == null || IsScheduleDataChanged(e.OldValue, e.NewValue, _settings.BrokerId))
+                    if (message.OldValue == null || IsScheduleDataChanged(message.OldValue, message.NewValue, _settings.BrokerId))
                     {
                         _logger.LogInformation("BrokerSettingsChangedEvent: schedule data changed");
                         await _scheduleSettingsCache.UpdateAllSettingsAsync();
@@ -56,10 +60,10 @@ namespace MarginTrading.Backend.Services.Services
                         _scheduleControlService.ScheduleNext();
                     }
                     break;
-                case ChangeType.Deletion:
-                    break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new ArgumentOutOfRangeException(
+                        nameof(message.ChangeType), 
+                        $@"Unexpected ChangeType: {message.ChangeType.ToString()}");
             }
         }
 
