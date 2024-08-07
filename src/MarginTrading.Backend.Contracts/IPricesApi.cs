@@ -48,7 +48,7 @@ namespace MarginTrading.Backend.Contracts
         /// Deletes fx rate for assetPairId from cache
         /// </summary>
         /// <returns></returns>
-        [Delete("internal/bestFx/{assetPairId}")]
+        [Delete("/internal/bestFx/{assetPairId}")]
         Task<bool> RemoveFromBestFxPriceCacheInternal(string assetPairId);
     }
 }
