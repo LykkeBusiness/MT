@@ -25,10 +25,5 @@ namespace MarginTrading.Backend.Contracts.Responses
                 ErrorMessage = message
             };
         }
-        
-        public static implicit operator Task<MtBackendResponse<T>>(MtBackendResponse<T> response)
-        {
-            return Task.FromResult(response);
-        }
     }
 }
