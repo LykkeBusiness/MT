@@ -10,14 +10,15 @@ using Common.Log;
 using MarginTrading.Backend.Contracts;
 using MarginTrading.Backend.Contracts.ErrorCodes;
 using MarginTrading.Backend.Contracts.Prices;
+using MarginTrading.Backend.Contracts.Responses;
 using MarginTrading.Backend.Contracts.Snow.Prices;
 using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Exceptions;
 using MarginTrading.Backend.Core.Quotes;
 using MarginTrading.Backend.Core.Services;
+using MarginTrading.Backend.Filters;
 using MarginTrading.Backend.Services;
 using MarginTrading.Backend.Services.Mappers;
-using MarginTrading.Contract.BackendContracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -171,6 +172,18 @@ namespace MarginTrading.Backend.Controllers
             return result == RemoveQuoteErrorCode.None
                 ? MtBackendResponse<bool>.Ok(true)
                 : MtBackendResponse<bool>.Error(result.Message);
+        }
+        
+        [ServiceFilter(typeof(DevelopmentEnvironmentFilter))]
+        [HttpDelete]
+        [Route("internal/bestFx/{assetPairId}")]
+        public Task<bool> RemoveFromBestFxPriceCacheInternal(string assetPairId)
+        {
+            var decodedAssetPairId = HttpUtility.UrlDecode(assetPairId);
+                
+            var result = _fxRateCacheService.RemoveQuote(decodedAssetPairId);
+
+            return Task.FromResult(result.ErrorCode == RemoveQuoteErrorCode.None);
         }
     }
 }

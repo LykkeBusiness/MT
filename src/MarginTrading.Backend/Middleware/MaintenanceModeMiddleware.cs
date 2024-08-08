@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using Common;
 using Common.Log;
 using JetBrains.Annotations;
+using MarginTrading.Backend.Contracts.Responses;
 using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Services.Infrastructure;
-using MarginTrading.Contract.BackendContracts;
 using Microsoft.AspNetCore.Http;
 
 namespace MarginTrading.Backend.Middleware

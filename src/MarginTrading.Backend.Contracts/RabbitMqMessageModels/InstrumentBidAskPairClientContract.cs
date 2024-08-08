@@ -4,7 +4,7 @@
 using System;
 using Newtonsoft.Json;
 
-namespace MarginTrading.Contract.RabbitMqMessageModels
+namespace MarginTrading.Backend.Contracts.RabbitMqMessageModels
 {
     public class BidAskPairRabbitMqContract
     {

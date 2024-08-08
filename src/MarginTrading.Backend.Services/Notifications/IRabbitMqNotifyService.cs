@@ -4,10 +4,10 @@
 using System.Threading.Tasks;
 using MarginTrading.Backend.Contracts.Events;
 using MarginTrading.Backend.Contracts.ExchangeConnector;
+using MarginTrading.Backend.Contracts.RabbitMqMessageModels;
 using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Orders;
 using MarginTrading.Backend.Core.Trading;
-using MarginTrading.Contract.RabbitMqMessageModels;
 
 namespace MarginTrading.Backend.Services.Notifications
 {

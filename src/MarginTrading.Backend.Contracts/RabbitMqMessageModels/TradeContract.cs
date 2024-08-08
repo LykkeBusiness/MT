@@ -5,7 +5,7 @@ using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace MarginTrading.Contract.RabbitMqMessageModels
+namespace MarginTrading.Backend.Contracts.RabbitMqMessageModels
 {
     public class TradeContract
     {

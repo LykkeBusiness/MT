@@ -8,6 +8,7 @@ using Common;
 using Common.Log;
 using MarginTrading.Backend.Contracts.Events;
 using MarginTrading.Backend.Contracts.ExchangeConnector;
+using MarginTrading.Backend.Contracts.RabbitMqMessageModels;
 using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Mappers;
 using MarginTrading.Backend.Core.Orders;
@@ -15,7 +16,6 @@ using MarginTrading.Backend.Core.Settings;
 using MarginTrading.Backend.Core.Trading;
 using MarginTrading.Common.Extensions;
 using MarginTrading.Common.Services;
-using MarginTrading.Contract.RabbitMqMessageModels;
 using MarginTrading.Backend.Services.Mappers;
 
 namespace MarginTrading.Backend.Services.Notifications

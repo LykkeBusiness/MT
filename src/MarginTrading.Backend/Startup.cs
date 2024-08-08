@@ -106,6 +106,7 @@ namespace MarginTrading.Backend
                     options.SerializerSettings.Converters.Add(new StringEnumConverter());
                 });
             services.AddScoped<MarginTradingEnabledFilter>();
+            services.AddScoped<DevelopmentEnvironmentFilter>();
             services.AddAuthentication(KeyAuthOptions.AuthenticationScheme)
                 .AddScheme<KeyAuthOptions, KeyAuthHandler>(KeyAuthOptions.AuthenticationScheme, "", options => { });
 

@@ -1,7 +1,9 @@
 ﻿// Copyright (c) 2019 Lykke Corp.
 // See the LICENSE file in the project root for more information.
 
-namespace MarginTrading.Contract.BackendContracts
+using System.Threading.Tasks;
+
+namespace MarginTrading.Backend.Contracts.Responses
 {
     public class MtBackendResponse<T>
     {
