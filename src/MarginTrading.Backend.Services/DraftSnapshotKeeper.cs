@@ -161,11 +161,21 @@ namespace MarginTrading.Backend.Services
             if (!_tradingDay.HasValue)
                 throw new InvalidOperationException("Unable to update snapshot: the draft snapshot provider has not been initialized yet");
 
-            if (positions == null || !positions.Any())
+            // if there are already positions we can't update them with empty list
+            if ((_positions?.Any() ?? false) && (positions == null || !positions.Any()))
                 throw new ArgumentNullException(nameof(positions), @"Unable to update snapshot: positions list is empty");
+            if (positions == null)
+            {
+                positions = ImmutableArray<Position>.Empty;
+            }
 
-            if (orders == null || !orders.Any())
+            // if there are already orders we can't update them with empty list
+            if ((_orders?.Any() ?? false) && (orders == null || !orders.Any()))
                 throw new ArgumentNullException(nameof(orders), @"Unable to update snapshot: orders list is empty");
+            if (orders == null)
+            {
+                orders = ImmutableArray<Order>.Empty;
+            }
 
             if (accounts == null || !accounts.Any())
                 throw new ArgumentNullException(nameof(accounts), @"Unable to update snapshot: accounts list is empty");
@@ -199,7 +209,7 @@ namespace MarginTrading.Backend.Services
             _fxPrices = null;
             _cfdQuotes = null;
         }
-
+        
         #endregion
         
         #region IOrderReader implementation
