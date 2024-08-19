@@ -1,3 +1,28 @@
+## 2.33.0 - Nova 2. Delivery 44 (August 19, 2024)
+### What's changed
+* LT-5665: Add an api for deleting quotes from fx cache.
+* LT-5524: Update rabbitmq broker library with new rabbitmq.client and templates.
+* LT-5515: Failed if no open orders on the platform.
+* LT-5364: Execution rejected by the bank matching engine should not appear as an error in mtcore.
+* LT-5190: List nuget packages used by host (part 2).
+
+### Deployment
+Please ensure that the mirroring policy is configured on the RabbitMQ server side for the following queues:
+- `MtCoreSettingsChanged.MarginTrading.Backend.DefaultEnv`
+- `dev.MdmService.events.exchange.MarginTrading.Backend.DefaultEnv`
+- `lykke.mt.account.marginevents.MarginTrading.AccountMarginEventsBroker.DefaultEnv`
+- if `MarketMakerRabbitMqSettings` section is configured on your side then queue name should be `{MarketMakerRabbitMqSettings.ExchangeName}.MarginTrading.Backend.{Configured Environment Name or DefaultEnv}.{Configured Instance Id}`
+- if `RisksRabbitMqSettings` section is configured on your side then queue name should be `{RisksRabbitMqSettings.ExchangeName}.MarginTrading.Backend.{Configured Environment Name or DefaultEnv}.{Configured Instance Id}`
+
+These queues require the mirroring policy to be enabled as part of our ongoing initiative to enhance system reliability. They are now classified as "no loss" queues, which necessitates proper configuration. The mirroring feature must be enabled on the RabbitMQ server side.
+
+In some cases, you may encounter an error indicating that the server-side configuration of a queue differs from the client’s expected configuration. If this occurs, please delete the queue, allowing it to be automatically recreated by the client.
+
+**Warning**: The "no loss" configuration is only valid if the mirroring policy is enabled on the server side.
+
+Please be aware that the provided queue names may include environment-specific identifiers (e.g., dev, test, prod). Be sure to replace these with the actual environment name in use. The same applies to instance names embedded within the queue names (e.g., DefaultEnv, etc.).
+
+
 ## 2.32.1 - Nova 2. Delivery 42. Hotfix 9 (July 19, 2024)
 ### What's changed
 * LT-5621: Fix an issue with closing positions after platform's closure
