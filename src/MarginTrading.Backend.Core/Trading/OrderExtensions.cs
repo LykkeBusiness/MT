@@ -274,5 +274,10 @@ namespace MarginTrading.Backend.Core
                 order.SetTrailingDistance(closePrice);
             }
         }
+
+        public static string GetTitle(this Order order)
+        {
+            return $"Order: {order.Id}";
+        }
     }
 }

@@ -49,8 +49,8 @@ namespace MarginTrading.Backend.Services.Services
             return GetAccountByIdInternal(accountId);
         }
 
-        public Task<bool> TryFinishLiquidation(string accountId, string reason, string liquidationOperationId = null) =>
-            _accountsCacheService.TryFinishLiquidation(accountId, reason, liquidationOperationId);
+        public Task<bool> TryRemoveRunningLiquidation(string accountId, string reason, string liquidationOperationId = null) =>
+            _accountsCacheService.TryRemoveRunningLiquidation(accountId, reason, liquidationOperationId);
 
         public async Task<MarginTradingAccount> GetActiveOrDeleted(string accountId)
         {

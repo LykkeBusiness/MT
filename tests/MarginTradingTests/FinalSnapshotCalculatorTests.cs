@@ -62,7 +62,7 @@ namespace MarginTradingTests
                 .Returns(DateTime.UtcNow);
 
             _accountCacheServiceMock
-                .Setup(c => c.GetAllInLiquidation())
+                .Setup(c => c.GetAllWhereLiquidationIsRunning())
                 .Returns(AsyncEnumerable.Empty<MarginTradingAccount>());
         }
 

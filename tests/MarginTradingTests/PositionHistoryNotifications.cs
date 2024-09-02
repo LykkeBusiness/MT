@@ -22,42 +22,43 @@ namespace MarginTradingTests
         {
             _container = container ?? throw new ArgumentNullException(nameof(container));
         }
-        public async Task OrderHistory(Order order, OrderUpdateType orderUpdateType, string activitiesMetadata = null)
+        public Task OrderHistory(Order order, OrderUpdateType orderUpdateType, string activitiesMetadata = null)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
-        public async Task OrderBookPrice(InstrumentBidAskPair quote, bool isEod)
+        public Task OrderBookPrice(InstrumentBidAskPair quote, bool isEod)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
-        public async Task AccountMarginEvent(MarginEventMessage eventMessage)
+        public Task AccountMarginEvent(MarginEventMessage eventMessage)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
-        public async Task UpdateAccountStats(AccountStatsUpdateMessage message)
+        public Task UpdateAccountStats(AccountStatsUpdateMessage message)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
-        public async Task NewTrade(TradeContract trade)
+        public Task NewTrade(TradeContract trade)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
-        public async Task ExternalOrder(ExecutionReport trade)
+        public Task ExternalOrder(ExecutionReport trade)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
-        public async Task PositionHistory(PositionHistoryEvent historyEvent)
+        public Task PositionHistory(PositionHistoryEvent historyEvent)
         {
             _container.Add(historyEvent);
+            return Task.CompletedTask;
         }
 
-        public async Task Rfq(RfqEvent rfqEvent)
+        public Task Rfq(RfqEvent rfqEvent)
         {
             throw new NotImplementedException();
         }

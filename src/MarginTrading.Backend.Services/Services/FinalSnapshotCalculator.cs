@@ -193,7 +193,7 @@ namespace MarginTrading.Backend.Services.Services
 
         private async Task<string> MapToFinalJson(IList<MarginTradingAccount> accounts)
         {
-            var accountsInLiquidation = await _accountsCacheService.GetAllInLiquidation().ToListAsync();
+            var accountsInLiquidation = await _accountsCacheService.GetAllWhereLiquidationIsRunning().ToListAsync();
 
             return accounts.Select(a => a.ConvertToSnapshotContract(accountsInLiquidation.Contains(a))).ToJson();
         }
