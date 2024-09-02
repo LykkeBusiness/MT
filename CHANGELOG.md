@@ -1,3 +1,10 @@
+## 2.34.0 - Nova 2. Delivery 45 (September 02, 2024)
+### What's changed
+* LT-5495: Liquidation stops and finishes after the next platform opening.
+
+
+
+
 ## 2.33.0 - Nova 2. Delivery 44 (August 19, 2024)
 ### What's changed
 * LT-5665: Add an api for deleting quotes from fx cache.
