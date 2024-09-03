@@ -3,7 +3,7 @@
 
 using MarginTrading.Backend.Core.Orders;
 
-namespace MarginTrading.Backend.Core.Extensions
+namespace MarginTrading.Backend.Services.Workflow.Liquidation
 {
     public static class PositionCloseResultExtensions
     {
