@@ -24,7 +24,7 @@
         <PackageVersion Include="Lykke.Service.ClientAccount.Client" Version="3.2.0"/>
         <PackageVersion Include="LykkeBiz.Logs.MsSql" Version="3.1.0"/>
         <PackageVersion Include="LykkeBiz.Logs.Serilog" Version="3.3.3"/>
-        <PackageVersion Include="LykkeBiz.RabbitMqBroker" Version="9.2.6"/>
+        <PackageVersion Include="LykkeBiz.RabbitMqBroker" Version="13.9.1"/>
         <PackageVersion Include="Lykke.Service.EmailSender" Version="1.1.0"/>
         <PackageVersion Include="Lykke.Snow.Common.Startup" Version="3.12.0"/>
         <PackageVersion Include="Lykke.MarginTrading.AccountsManagement.Contracts" Version="7.16.0"/>
@@ -54,12 +54,12 @@
         <PackageVersion Include="Autofac" Version="6.4.0"/>
         <PackageVersion Include="LykkeBiz.HttpClientGenerator" Version="5.6.2"/>
         <PackageVersion Include="Dapper" Version="2.0.123"/>
-        <PackageVersion Include="LykkeBiz.MarginTrading.BrokerBase" Version="6.0.4"/>
+        <PackageVersion Include="LykkeBiz.MarginTrading.BrokerBase" Version="8.3.0"/>
         <PackageVersion Include="Lykke.MarginTrading.BookKeeper.Contracts" Version="1.6.1"/>
         <PackageVersion Include="Lykke.Rocks.Caching" Version="1.0.0"/>
         <PackageVersion Include="Lykke.Snow.Domain" Version="2.1.4"/>
         <PackageVersion Include="Lykke.Snow.Mdm.Contracts" Version="4.3.6"/>
-        <PackageVersion Include="LykkeBiz.Snow.Cqrs" Version="4.0.2"/>
+        <PackageVersion Include="LykkeBiz.Snow.Cqrs" Version="5.1.0"/>
         <PackageVersion Include="LykkeBiz.Messaging.RabbitMq" Version="7.0.0"/>
         <PackageVersion Include="Lykke.Service.Session" Version="16.0.0"/>
         <PackageVersion Include="morelinq" Version="3.3.2"/>

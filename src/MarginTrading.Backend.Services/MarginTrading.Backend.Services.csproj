@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <AssemblyName>MarginTrading.Backend.Services</AssemblyName>
@@ -32,7 +32,6 @@
     <PackageReference Include="Lykke.Snow.Mdm.Contracts" />
     <PackageReference Include="LykkeBiz.Snow.Cqrs" />
     <PackageReference Include="LykkeBiz.RabbitMqBroker" />
-    <PackageReference Include="LykkeBiz.Messaging.RabbitMq" />
     <PackageReference Include="Lykke.Service.ClientAccount.Client" />
     <PackageReference Include="Lykke.Service.EmailSender" />
     <PackageReference Include="Lykke.Service.Session" />
