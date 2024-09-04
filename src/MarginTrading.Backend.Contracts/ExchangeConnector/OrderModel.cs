@@ -21,12 +21,28 @@ namespace MarginTrading.Backend.Contracts.ExchangeConnector
         /// 'Market', 'Limit'</param>
         /// <param name="timeInForce">Possible values include:
         /// 'GoodTillCancel', 'FillOrKill'</param>
+        /// <param name="volume"></param>
         /// <param name="dateTime">Date and time must be in 5 minutes threshold
         /// from UTC now</param>
-        public OrderModel(TradeType tradeType, OrderType orderType, TimeInForce timeInForce, double volume,
-            DateTime dateTime, string exchangeName = null, string instrument = null, double? price = null, 
-            string orderId = null, TradeRequestModality modality = TradeRequestModality.Regular,
-            bool isCancellationTrade = false, string cancellationTradeExternalId = null)
+        /// <param name="exchangeName"></param>
+        /// <param name="instrument"></param>
+        /// <param name="price"></param>
+        /// <param name="orderId"></param>
+        /// <param name="modality"></param>
+        /// <param name="isCancellationTrade"></param>
+        /// <param name="cancellationTradeExternalId"></param>
+        public OrderModel(TradeType tradeType,
+                          OrderType orderType,
+                          TimeInForce timeInForce,
+                          double volume,
+                          DateTime dateTime,
+                          string exchangeName = null,
+                          string instrument = null,
+                          double? price = null,
+                          string orderId = null,
+                          TradeRequestModality modality = TradeRequestModality.Regular,
+                          bool isCancellationTrade = false,
+                          string cancellationTradeExternalId = null)
         {
             ExchangeName = exchangeName;
             Instrument = instrument;
@@ -92,9 +108,9 @@ namespace MarginTrading.Backend.Contracts.ExchangeConnector
 
         [DefaultValue(TradeRequestModality.Regular)]
         public TradeRequestModality Modality { get; set; }
-        
+
         public bool IsCancellationTrade { get; set; }
-        
+
         public string CancellationTradeExternalId { get; set; }
     }
 }

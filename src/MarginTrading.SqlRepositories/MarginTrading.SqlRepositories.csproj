@@ -1,13 +1,13 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <AssemblyName>MarginTrading.SqlRepositories</AssemblyName>
     <PackageId>MarginTrading.SqlRepositories</PackageId>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-    <Version>2.29.8</Version>
-    <LangVersion>8.0</LangVersion>
+    <Version>2.34.0</Version>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
   <PropertyGroup>
     <NoWarn>1701;1702;1705;CA2007;0612;0618;1591</NoWarn>
@@ -16,6 +16,8 @@
     <ProjectReference Include="..\MarginTrading.Backend.Core\MarginTrading.Backend.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Dapper" Version="2.0.123" />
+    <PackageReference Include="Dapper" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
   </ItemGroup>
 </Project>

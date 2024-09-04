@@ -61,7 +61,7 @@ namespace MarginTrading.AzureRepositories
             return Convert<TData>(obj);
         }
 
-        public async Task<PaginatedResponse<OperationExecutionInfoWithPause<SpecialLiquidationOperationData>>> GetRfqAsync(int skip,
+        public Task<PaginatedResponse<OperationExecutionInfoWithPause<SpecialLiquidationOperationData>>> GetRfqAsync(int skip,
             int take,
             string id = null,
             string instrumentId = null,
@@ -80,7 +80,7 @@ namespace MarginTrading.AzureRepositories
             await _tableStorage.ReplaceAsync(entity);
         }
 
-        public async Task<IEnumerable<string>> FilterPositionsInSpecialLiquidationAsync(IEnumerable<string> positionIds)
+        public Task<IEnumerable<string>> FilterPositionsInSpecialLiquidationAsync(IEnumerable<string> positionIds)
         {
             throw new NotImplementedException();
         }

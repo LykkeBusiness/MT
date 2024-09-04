@@ -10,7 +10,6 @@ using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Exceptions;
 using MarginTrading.Backend.Core.Messages;
 using MarginTrading.Backend.Services.Infrastructure;
-using MoreLinq;
 using AssetPairKey = System.ValueTuple<string, string, string>;
 
 namespace MarginTrading.Backend.Services.AssetPairs
@@ -218,7 +217,7 @@ namespace MarginTrading.Backend.Services.AssetPairs
                         (GetAssetPairKey(p.BaseAssetId, p.QuoteAssetId, p.LegalEntity), p),
                         (GetAssetPairKey(p.QuoteAssetId, p.BaseAssetId, p.LegalEntity), p),
                     });
-                    return MoreEnumerable.DistinctBy(pairsEnum, p => p.Item1).ToDictionary();
+                    return pairsEnum.DistinctBy(p => p.Item1).ToDictionary();
                 });
         }
 
