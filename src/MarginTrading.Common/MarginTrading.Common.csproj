@@ -14,7 +14,6 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="AutoMapper" />
-    <PackageReference Include="JetBrains.Annotations" />
     <PackageReference Include="Lykke.Snow.Common" />
     <PackageReference Include="LykkeBiz.RabbitMqBroker" />
     <PackageReference Include="Lykke.Service.ClientAccount.Client" />

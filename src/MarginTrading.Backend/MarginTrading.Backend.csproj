@@ -38,7 +38,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="FluentScheduler" />
-    <PackageReference Include="JetBrains.Annotations" />
     <PackageReference Include="Lykke.MarginTrading.OrderBookService.Contracts" />
     <PackageReference Include="Lykke.Service.ClientAccount.Client" />
     <PackageReference Include="LykkeBiz.Logs.MsSql" />

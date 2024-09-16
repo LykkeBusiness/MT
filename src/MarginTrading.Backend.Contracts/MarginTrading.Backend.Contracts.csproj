@@ -13,7 +13,6 @@
     <NoWarn>1701;1702;1705;1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="JetBrains.Annotations" developmentDependency="true" />
     <PackageReference Include="Lykke.Contracts" />
     <PackageReference Include="MessagePack" />
     <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
