@@ -1,8 +1,11 @@
+## 2.35.0 - Nova 2. Delivery 46 (September 27, 2024)
+### What's changed
+* LT-5595: Migrate to net 8.
+
+
 ## 2.34.0 - Nova 2. Delivery 45 (September 02, 2024)
 ### What's changed
 * LT-5495: Liquidation stops and finishes after the next platform opening.
-
-
 
 
 ## 2.33.0 - Nova 2. Delivery 44 (August 19, 2024)
