@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <Version>1.56.7</Version>
+    <Version>2.35.0</Version>
     <PackageId>Lykke.MarginTrading.BackendSnow.Contracts</PackageId>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
@@ -13,7 +13,6 @@
     <NoWarn>1701;1702;1705;1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="JetBrains.Annotations" developmentDependency="true" />
     <PackageReference Include="Lykke.Contracts" />
     <PackageReference Include="MessagePack" />
     <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" />

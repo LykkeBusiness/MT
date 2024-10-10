@@ -6,7 +6,7 @@
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-    <Version>2.34.0</Version>
+    <Version>2.35.0</Version>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
   <PropertyGroup>
@@ -32,6 +32,7 @@
     <PackageReference Include="Lykke.Snow.Mdm.Contracts" />
     <PackageReference Include="LykkeBiz.Snow.Cqrs" />
     <PackageReference Include="LykkeBiz.RabbitMqBroker" />
+    <PackageReference Include="LykkeBiz.Messaging.RabbitMq" />
     <PackageReference Include="Lykke.Service.ClientAccount.Client" />
     <PackageReference Include="Lykke.Service.EmailSender" />
     <PackageReference Include="Lykke.Service.Session" />
