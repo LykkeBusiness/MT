@@ -11,6 +11,7 @@
   <ItemGroup>
     <PackageReference Include="Dapper" />
     <PackageReference Include="LykkeBiz.MarginTrading.BrokerBase" />
+    <PackageReference Include="LykkeBiz.RabbitMqBroker" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" />
     <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
@@ -32,7 +33,7 @@
     </None>
   </ItemGroup>
   <Target Name="CopySerilogConfig" AfterTargets="AfterBuild">
-  <Copy SourceFiles="appsettings.Serilog.json" DestinationFolder="$(OutDir)" />
+    <Copy SourceFiles="appsettings.Serilog.json" DestinationFolder="$(OutDir)" />
   </Target>
   <Target Name="CopySerilogConfigOnPublish" AfterTargets="Publish">
     <Copy SourceFiles="appsettings.Serilog.json" DestinationFolder="$(PublishDir)" />
