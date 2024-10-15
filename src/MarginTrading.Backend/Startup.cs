@@ -366,11 +366,11 @@ namespace MarginTrading.Backend
 
             return deduplicationService;
         }
-
+        
         private static void OverrideEmptyRabbitMqConnectionStrings(MtBackendSettings cfg)
         {
             var defaultRabbitMqConnString = cfg.MtBackend.MtRabbitMqConnString;
-
+            
             // set main RabbitMq connection string if it was not configured on
             // particular publisher/subscriber level
             cfg.GetPropertiesOfType<RabbitMqConfigurationBase>()
