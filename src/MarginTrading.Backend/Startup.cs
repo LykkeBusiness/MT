@@ -208,10 +208,6 @@ namespace MarginTrading.Backend
                         .Resolve<ICqrsEngine>()
                         .StartAll();
                     
-                    ApplicationContainer
-                        .Resolve<AssemblyLogger>()
-                        .StartLogging();
-                    
                     Program.AppHost.WriteLogs(Environment, LogLocator.CommonLog);
                     LogLocator.CommonLog?.WriteMonitorAsync("", "", $"{Configuration.ServerType()} Started");
                 }
