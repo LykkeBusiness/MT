@@ -15,7 +15,7 @@
         <PackageVersion Include="FluentScheduler" Version="5.5.1" />
         <PackageVersion Include="FsCheck.NUnit" Version="2.16.5" />
         <PackageVersion Include="Lykke.AzureStorage" Version="8.13.4" />
-        <PackageVersion Include="Lykke.Contracts" Version="3.0.0" />
+        <PackageVersion Include="Lykke.Contracts" Version="4.0.1" />
         <PackageVersion Include="Lykke.MarginTrading.AccountsManagement.Contracts" Version="7.16.0" />
         <PackageVersion Include="Lykke.MarginTrading.AssetService.Contracts" Version="11.7.6" />
         <PackageVersion Include="Lykke.MarginTrading.BookKeeper.Contracts" Version="1.6.1" />
@@ -62,10 +62,9 @@
         <PackageVersion Include="Refit" Version="5.2.4" />
         <PackageVersion Include="Serilog.Sinks.Elasticsearch" Version="8.4.1" />
         <PackageVersion Include="StackExchange.Redis" Version="2.6.66" />
-        <PackageVersion Include="Swashbuckle.AspNetCore.Newtonsoft" Version="6.6.2" />
+        <PackageVersion Include="Swashbuckle.AspNetCore.Newtonsoft" Version="6.7.0" />
         <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.7.0" />
         <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerUI" Version="6.7.0" />
-        <PackageVersion Include="System.ComponentModel.Annotations" Version="5.0.0" />
         <PackageVersion Include="System.ComponentModel.TypeConverter" Version="4.3.0" />
         <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
     </ItemGroup>
