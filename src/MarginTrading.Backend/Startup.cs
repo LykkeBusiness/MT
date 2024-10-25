@@ -200,9 +200,9 @@ namespace MarginTrading.Backend
                         .Resolve<IConfigurationValidator>()
                         .WarnIfInvalidAsync();
 
-                    ApplicationContainer
+                    await ApplicationContainer
                         .Resolve<IClientProfileSettingsCache>()
-                        .Start();
+                        .StartAsync();
 
                     ApplicationContainer
                         .Resolve<ICqrsEngine>()
