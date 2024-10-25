@@ -14,7 +14,6 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Lykke.MarginTrading.AssetService.Contracts" />
-    <PackageReference Include="Lykke.MarginTrading.OrderbookAggregator.Contracts" />
     <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Refit" />

@@ -12,8 +12,8 @@ using MarginTrading.Backend.Core.Settings;
 using MarginTrading.Backend.MessageHandlers;
 using MarginTrading.Backend.Services.AssetPairs;
 using MarginTrading.Backend.Services.Events;
+using MarginTrading.Backend.Services.Events.ExternalContracts;
 using MarginTrading.Backend.Services.Stp;
-using MarginTrading.OrderbookAggregator.Contracts.Messages;
 
 using Microsoft.Extensions.Logging;
 
