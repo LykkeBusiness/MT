@@ -20,7 +20,6 @@ namespace MarginTrading.Backend
     public class Program
     {
         internal static IHost AppHost { get; private set; }
-        internal static CancellationTokenSource CancellationTokenSource;
 
         public static async Task Main(string[] args)
         {
@@ -45,7 +44,6 @@ namespace MarginTrading.Backend
             {
                 try
                 {
-                    CancellationTokenSource = new CancellationTokenSource();
                     fatalErrorOccured = false;
 
                     var configuration = new ConfigurationBuilder()
@@ -67,11 +65,10 @@ namespace MarginTrading.Backend
                         })
                         .Build();
 
-                    await AppHost.RunAsync(CancellationTokenSource.Token);
+                    await AppHost.RunAsync();
                 }
                 catch (Exception e)
                 {
-                    CancellationTokenSource.Dispose();
                     fatalErrorOccured = true;
                     Console.WriteLine(
                         $@"Error: {e.Message}{Environment.NewLine}{e.StackTrace}{Environment.NewLine}Restarting...");

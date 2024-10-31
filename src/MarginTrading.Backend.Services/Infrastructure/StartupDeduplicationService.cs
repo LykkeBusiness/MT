@@ -15,13 +15,15 @@ namespace MarginTrading.Backend.Services.Infrastructure
     /// <summary>
     /// Ensure that only single instance of the app is running.
     /// </summary>
-    public class StartupDeduplicationService: IDisposable
+    public class StartupDeduplicationService : IDisposable
     {
         private const string LockKey = "TradingEngine:DeduplicationLock";
         private readonly string _lockValue = Environment.MachineName;
         private readonly IWebHostEnvironment _hostingEnvironment; 
         private readonly MarginTradingSettings _marginTradingSettings;
         private readonly IDatabase _database;
+
+        private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
         public StartupDeduplicationService(
             IWebHostEnvironment hostingEnvironment,
@@ -45,7 +47,7 @@ namespace MarginTrading.Backend.Services.Infrastructure
         /// But the probability of such situation is extremely small, so current implementation neglects it.
         /// In case if it is required to assure safety in clustered/replicated mode RedLock algorithm may be used.
         /// </summary>
-        public void HoldLock(CancellationTokenSource cancellationTokenSource)
+        public void HoldLock()
         {
             if (_hostingEnvironment.IsDevelopment())
             {
@@ -58,6 +60,10 @@ namespace MarginTrading.Backend.Services.Infrastructure
                 // exception is logged by the global handler
             }
 
+            Exception workerException = null;
+            // ReSharper disable once PossibleNullReferenceException
+            _cancellationTokenSource.Token.Register(() => throw workerException);
+            
             Task.Run(async () =>
             {
                 try
@@ -73,13 +79,15 @@ namespace MarginTrading.Backend.Services.Infrastructure
                 }
                 catch (Exception exception)
                 {
-                    cancellationTokenSource.Cancel();
+                    workerException = exception;
+                    _cancellationTokenSource.Cancel();
                 }
             });
         }
 
         public void Dispose()
         {
+            _cancellationTokenSource.Dispose();
         }
     }
 }

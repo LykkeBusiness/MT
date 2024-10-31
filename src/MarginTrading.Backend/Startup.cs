@@ -358,7 +358,7 @@ namespace MarginTrading.Backend
                 marginTradingSettings,
                 redis);
 
-            deduplicationService.HoldLock(Program.CancellationTokenSource);
+            deduplicationService.HoldLock();
 
             new QueueValidationService(marginTradingSettings.StartupQueuesChecker.ConnectionString,
                     new[]
