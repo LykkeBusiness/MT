@@ -4,9 +4,15 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+
+using Lykke.Common.Log;
+
 using MarginTrading.Backend.Core.Settings;
+using MarginTrading.Common.Services;
+
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
+
 using StackExchange.Redis;
 
 namespace MarginTrading.Backend.Services.Infrastructure
@@ -19,17 +25,18 @@ namespace MarginTrading.Backend.Services.Infrastructure
     {
         private const string LockKey = "TradingEngine:DeduplicationLock";
         private readonly string _lockValue = Environment.MachineName;
+        private readonly WebHostProcessTerminator _processTerminator; 
         private readonly IWebHostEnvironment _hostingEnvironment; 
         private readonly MarginTradingSettings _marginTradingSettings;
         private readonly IDatabase _database;
 
-        private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
-
         public StartupDeduplicationService(
+            WebHostProcessTerminator processTerminator,
             IWebHostEnvironment hostingEnvironment,
             MarginTradingSettings marginTradingSettings,
             IConnectionMultiplexer redis)
         {
+            _processTerminator = processTerminator;
             _hostingEnvironment = hostingEnvironment;
             _marginTradingSettings = marginTradingSettings;
             _database = redis.GetDatabase();
@@ -60,34 +67,38 @@ namespace MarginTrading.Backend.Services.Infrastructure
                 // exception is logged by the global handler
             }
 
-            Exception workerException = null;
-            // ReSharper disable once PossibleNullReferenceException
-            _cancellationTokenSource.Token.Register(() => throw workerException);
-            
-            Task.Run(async () =>
-            {
-                try
+            Task.Run(
+                async () =>
                 {
-                    while (true)
+                    var run = true;
+                    while (run)
                     {
-                        // wait and extend lock
-                        await Task.Delay(_marginTradingSettings.DeduplicationLockExtensionPeriod);
+                        try
+                        {
+                            // wait and extend lock
+                            await Task.Delay(_marginTradingSettings.DeduplicationLockExtensionPeriod);
 
-                        await _database.LockExtendAsync(LockKey, _lockValue,
-                            _marginTradingSettings.DeduplicationLockExpiryPeriod);
+                            var extendResult = await _database.LockExtendAsync(
+                                LockKey,
+                                _lockValue,
+                                _marginTradingSettings.DeduplicationLockExpiryPeriod);
+                            if (!extendResult)
+                            {
+                                LogLocator.CommonLog?.Error("DeduplicationService", message: "Lock is taken already.");
+                                _processTerminator.TerminateProcess();
+                                run = false;
+                            }
+                        }
+                        catch (Exception exception)
+                        {
+                            LogLocator.CommonLog?.Warning("DeduplicationService","Failed to extend lock.", exception);
+                        }
                     }
-                }
-                catch (Exception exception)
-                {
-                    workerException = exception;
-                    _cancellationTokenSource.Cancel();
-                }
-            });
+                });
         }
 
         public void Dispose()
         {
-            _cancellationTokenSource.Dispose();
         }
     }
 }
