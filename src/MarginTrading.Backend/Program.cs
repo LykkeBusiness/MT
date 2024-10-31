@@ -6,9 +6,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Autofac.Extensions.DependencyInjection;
 using JetBrains.Annotations;
+
+using MarginTrading.Backend.Services.Infrastructure;
 using MarginTrading.Common.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.PlatformAbstractions;
 
@@ -20,6 +23,7 @@ namespace MarginTrading.Backend
     public class Program
     {
         internal static IHost AppHost { get; private set; }
+        internal static WebHostProcessTerminator ProcessTerminator { get; private set; }
 
         public static async Task Main(string[] args)
         {
@@ -46,26 +50,29 @@ namespace MarginTrading.Backend
                 {
                     fatalErrorOccured = false;
 
-                    var configuration = new ConfigurationBuilder()
-                        .AddJsonFile("appsettings.json", optional: true)
-                        .AddUserSecrets<Startup>()
-                        .AddEnvironmentVariables()
-                        .Build();
+                    using (ProcessTerminator = new WebHostProcessTerminator())
+                    {
+                        var configuration = new ConfigurationBuilder()
+                            .AddJsonFile("appsettings.json", optional: true)
+                            .AddUserSecrets<Startup>()
+                            .AddEnvironmentVariables()
+                            .Build();
 
-                    AppHost = Host.CreateDefaultBuilder(args)
-                        .UseServiceProviderFactory(new AutofacServiceProviderFactory())
-                        .ConfigureWebHostDefaults(webBuilder =>
-                        {
-                            webBuilder.ConfigureKestrel(serverOptions =>
-                                {
-                                    // Set properties and call methods on options
-                                })
-                                .UseConfiguration(configuration)
-                                .UseStartup<Startup>();
-                        })
-                        .Build();
+                        AppHost = Host.CreateDefaultBuilder(args)
+                            .UseServiceProviderFactory(new AutofacServiceProviderFactory())
+                            .ConfigureWebHostDefaults(webBuilder =>
+                            {
+                                webBuilder.ConfigureKestrel(serverOptions =>
+                                    {
+                                        // Set properties and call methods on options
+                                    })
+                                    .UseConfiguration(configuration)
+                                    .UseStartup<Startup>();
+                            })
+                            .Build();
 
-                    await AppHost.RunAsync();
+                        await AppHost.RunAsync(ProcessTerminator.CancellationToken);   
+                    }
                 }
                 catch (Exception e)
                 {
