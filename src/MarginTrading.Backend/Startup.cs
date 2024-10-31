@@ -350,11 +350,13 @@ namespace MarginTrading.Backend
 
         private StartupDeduplicationService RunHealthChecks(IConnectionMultiplexer redis, MarginTradingSettings marginTradingSettings)
         {
-            var deduplicationService = new StartupDeduplicationService(Environment,
+            var deduplicationService = new StartupDeduplicationService(
+                Program.ProcessTerminator,
+                Environment,
                 marginTradingSettings,
                 redis);
 
-            deduplicationService.HoldLock(Program.CancellationTokenSource);
+            deduplicationService.HoldLock();
 
             new QueueValidationService(marginTradingSettings.StartupQueuesChecker.ConnectionString,
                     new[]
