@@ -14,11 +14,6 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Lykke.Contracts" />
-    <PackageReference Include="MessagePack" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
-    <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="Refit" />
-    <PackageReference Include="System.ComponentModel.Annotations" />
   </ItemGroup>
 </Project>

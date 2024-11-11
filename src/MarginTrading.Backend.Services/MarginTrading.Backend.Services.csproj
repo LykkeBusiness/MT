@@ -25,7 +25,6 @@
     <PackageReference Include="Lykke.MarginTrading.AccountsManagement.Contracts" />
     <PackageReference Include="Lykke.MarginTrading.AssetService.Contracts" />
     <PackageReference Include="Lykke.MarginTrading.BookKeeper.Contracts" />
-    <PackageReference Include="Lykke.MarginTrading.OrderbookAggregator.Contracts" />
     <PackageReference Include="Lykke.MarginTrading.OrderBookService.Contracts" />
     <PackageReference Include="Lykke.Rocks.Caching" />
     <PackageReference Include="Lykke.Snow.Domain" />
