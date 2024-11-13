@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Autofac.Extensions.DependencyInjection;
 using JetBrains.Annotations;
+using Lykke.SettingsReader.ConfigurationProvider;
 
 using MarginTrading.Backend.Services.Infrastructure;
 using MarginTrading.Common.Services;
@@ -55,6 +56,7 @@ namespace MarginTrading.Backend
                         var configuration = new ConfigurationBuilder()
                             .AddJsonFile("appsettings.json", optional: true)
                             .AddUserSecrets<Startup>()
+                            .AddHttpSourceConfiguration()
                             .AddEnvironmentVariables()
                             .Build();
 
@@ -71,7 +73,7 @@ namespace MarginTrading.Backend
                             })
                             .Build();
 
-                        await AppHost.RunAsync(ProcessTerminator.CancellationToken);   
+                        await AppHost.RunAsync(ProcessTerminator.CancellationToken);
                     }
                 }
                 catch (Exception e)

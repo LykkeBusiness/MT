@@ -14,6 +14,7 @@ using Lykke.Logs.MsSql;
 using Lykke.Logs.MsSql.Repositories;
 using Lykke.Logs.Serilog;
 using Lykke.SettingsReader;
+using Lykke.SettingsReader.SettingsTemplate;
 using Lykke.Snow.Common.AssemblyLogging;
 using Lykke.Snow.Common.Correlation;
 using Lykke.Snow.Common.Correlation.Cqrs;
@@ -132,6 +133,8 @@ namespace MarginTrading.Backend
             SetupLoggers(Configuration, services, _mtSettingsManager, correlationContextAccessor);
 
             services.AddHostedService<SnapshotMonitoringService>();
+
+            services.AddSettingsTemplateGenerator();
         }
 
         [UsedImplicitly]
@@ -179,6 +182,7 @@ namespace MarginTrading.Backend
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.AddSettingsTemplateEndpoint();
             });
 
             app.UseSwagger(c =>
@@ -207,7 +211,7 @@ namespace MarginTrading.Backend
                     ApplicationContainer
                         .Resolve<ICqrsEngine>()
                         .StartAll();
-                    
+
                     Program.AppHost.WriteLogs(Environment, LogLocator.CommonLog);
                     LogLocator.CommonLog?.WriteMonitorAsync("", "", $"{Configuration.ServerType()} Started");
                 }
@@ -368,11 +372,11 @@ namespace MarginTrading.Backend
 
             return deduplicationService;
         }
-        
+
         private static void OverrideEmptyRabbitMqConnectionStrings(MtBackendSettings cfg)
         {
             var defaultRabbitMqConnString = cfg.MtBackend.MtRabbitMqConnString;
-            
+
             // set main RabbitMq connection string if it was not configured on
             // particular publisher/subscriber level
             cfg.GetPropertiesOfType<RabbitMqConfigurationBase>()
