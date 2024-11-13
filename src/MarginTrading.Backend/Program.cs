@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Autofac.Extensions.DependencyInjection;
 using JetBrains.Annotations;
+using Lykke.SettingsReader.ConfigurationProvider;
 using MarginTrading.Common.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -49,6 +50,7 @@ namespace MarginTrading.Backend
                     var configuration = new ConfigurationBuilder()
                         .AddJsonFile("appsettings.json", optional: true)
                         .AddUserSecrets<Startup>()
+                        .AddHttpSourceConfiguration()
                         .AddEnvironmentVariables()
                         .Build();
 
