@@ -182,7 +182,7 @@ namespace MarginTrading.Backend
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                endpoints.AddSettingsTemplateEndpoint();
+                endpoints.MapSettingsTemplate();
             });
 
             app.UseSwagger(c =>
