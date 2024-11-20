@@ -34,7 +34,7 @@
     <PackageVersion Include="LykkeBiz.MarginTrading.BrokerBase" Version="8.9.0" />
     <PackageVersion Include="LykkeBiz.Messaging.RabbitMq" Version="10.0.1" />
     <PackageVersion Include="LykkeBiz.RabbitMqBroker" Version="16.0.0" />
-    <PackageVersion Include="LykkeBiz.SettingsReader" Version="9.1.0" />
+    <PackageVersion Include="LykkeBiz.SettingsReader" Version="9.2.0" />
     <PackageVersion Include="LykkeBiz.Snow.Cqrs" Version="7.0.1" />
     <PackageVersion Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.10" />
