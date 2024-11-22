@@ -16,7 +16,13 @@
     <PackageReference Include="Lykke.MarginTrading.AssetService.Contracts" />
     <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
-    <PackageReference Include="Refit" />
+    <!-- 
+    Temporarily override the version of Refit to 5.2.4 
+    to not stop the Trading Core on dev environment
+    Version tag has to be removed once all the dependencies are updated
+    to use Refit >= 8.x
+    -->
+    <PackageReference Include="Refit" Version="5.2.4" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MarginTrading.Backend.Contracts\MarginTrading.Backend.Contracts.csproj" />
