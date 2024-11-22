@@ -8,7 +8,7 @@ using MarginTrading.Backend.Core.Trading;
 
 namespace MarginTrading.Backend.Core.Snapshots
 {
-    public class InMemorySnapshot : IOrderReader
+    public class InMemorySnapshot : IOrderReaderBase
     {
         private readonly ImmutableArray<Order> _orders;
         private readonly ImmutableArray<Position> _positions;
@@ -27,21 +27,6 @@ namespace MarginTrading.Backend.Core.Snapshots
         public ImmutableArray<Position> GetPositions()
         {
             return _positions;
-        }
-
-        public ImmutableArray<Position> GetPositions(string instrument)
-        {
-            return _positions.Where(x => x.AssetPairId == instrument).ToImmutableArray();
-        }
-
-        public ImmutableArray<Position> GetPositionsByFxAssetPairId(string fxAssetPairId)
-        {
-            return _positions.Where(x => x.FxAssetPairId == fxAssetPairId).ToImmutableArray();
-        }
-
-        public ImmutableArray<Order> GetPending()
-        {
-            return _orders.Where(x => x.Status == OrderStatus.Active).ToImmutableArray();
         }
 
         public bool TryGetOrderById(string orderId, out Order order)
