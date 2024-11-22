@@ -10,10 +10,13 @@ using MarginTrading.AccountMarginEventsBroker.Repositories.SqlRepositories;
 using Lykke.MarginTrading.BrokerBase;
 using Lykke.MarginTrading.BrokerBase.Models;
 using Lykke.MarginTrading.BrokerBase.Settings;
+using Lykke.SettingsReader.SettingsTemplate;
 
 using MarginTrading.Backend.Contracts.Events;
 
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -28,12 +31,23 @@ namespace MarginTrading.AccountMarginEventsBroker
         {
         }
 
+        public override void ConfigureServices(IServiceCollection services)
+        {
+            base.ConfigureServices(services);
+            services.AddSettingsTemplateGenerator();
+        }
+
+        protected override void ConfigureEndpoints(IEndpointRouteBuilder endpointRouteBuilder)
+        {
+            endpointRouteBuilder.MapSettingsTemplate();
+        }
+
         protected override void RegisterCustomServices(
             ContainerBuilder builder,
             IReloadingManager<Settings> settings)
         {
             builder.AddJsonBrokerMessagingFactory<MarginEventMessage>();
-            
+
             builder
                 .RegisterType<Application>()
                 .As<IBrokerApplication>()
