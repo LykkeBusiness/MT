@@ -10,6 +10,7 @@ using Common;
 using Common.Log;
 using MarginTrading.Backend.Contracts.Prices;
 using MarginTrading.Backend.Core;
+using MarginTrading.Backend.Core.Exceptions;
 using MarginTrading.Backend.Core.Repositories;
 using MarginTrading.Backend.Core.Services;
 using MarginTrading.Backend.Core.Settings;
@@ -19,6 +20,7 @@ using MarginTrading.Backend.Services.Mappers;
 using MarginTrading.Backend.Services.Policies;
 using MarginTrading.Common.Services;
 using MoreLinq;
+using Polly;
 using Polly.Retry;
 
 namespace MarginTrading.Backend.Services.Infrastructure
@@ -43,7 +45,7 @@ namespace MarginTrading.Backend.Services.Infrastructure
         private static readonly SemaphoreSlim Lock = new SemaphoreSlim(1, 1);
         public static bool IsMakingSnapshotInProgress => Lock.CurrentCount == 0;
 
-        private AsyncRetryPolicy _policy;
+        private AsyncRetryPolicy<SnapshotValidationResult> _policy;
 
         public SnapshotService(
             IScheduleSettingsCacheService scheduleSettingsCacheService,
@@ -113,6 +115,14 @@ namespace MarginTrading.Backend.Services.Infrastructure
                 _snapshotStatusTracker.SnapshotInProgress();
                 
                 var validationResult = await _policy.ExecuteAsync(() => Validate(correlationId));
+                if (!validationResult.IsValid)
+                {
+                    await _log.WriteFatalErrorAsync(nameof(SnapshotService), 
+                        nameof(MakeTradingDataSnapshot),
+                        validationResult.ToJson(),
+                        validationResult.Exception);
+                    throw validationResult.Exception;
+                }
                 
                 // orders and positions are fixed at the moment of validation
                 var orders = validationResult.Cache.GetAllOrders();
@@ -206,26 +216,38 @@ namespace MarginTrading.Backend.Services.Infrastructure
 
         private async Task<SnapshotValidationResult> Validate(string correlationId)
         {
-            // Before starting snapshot creation the current state should be validated.
-            var validationResult = await _snapshotValidationService.ValidateCurrentStateAsync();
-
-            if (!validationResult.IsValid)
+            try
             {
-                var ex = new InvalidOperationException(
-                    $"The trading data snapshot might be corrupted. The current state of orders and positions is incorrect. Check the dbo.BlobData table for more info: container {LykkeConstants.MtCoreSnapshotBlobContainer}, correlationId {correlationId}");
-                await _log.WriteFatalErrorAsync(nameof(SnapshotService), 
-                    nameof(MakeTradingDataSnapshot),
-                    validationResult.ToJson(),
-                    ex);
-                await _blobRepository.WriteAsync(LykkeConstants.MtCoreSnapshotBlobContainer, correlationId, validationResult);
-            }
-            else
-            {
-                await _log.WriteInfoAsync(nameof(SnapshotService), nameof(MakeTradingDataSnapshot),
-                    "The current state of orders and positions is correct.");
-            }
+                // Before starting snapshot creation the current state should be validated.
+                var validationResult = await _snapshotValidationService.ValidateCurrentStateAsync();
 
-            return validationResult;
+                if (!validationResult.IsValid)
+                {
+                    var errorMessage =
+                        "The trading data snapshot might be corrupted. The current state of orders and positions is incorrect. Check the dbo.BlobData table for more info: container {LykkeConstants.MtCoreSnapshotBlobContainer}, correlationId {correlationId}";
+                    var ex = new SnapshotValidationException(errorMessage,
+                        SnapshotValidationError.InvalidOrderOrPositionState);
+                    validationResult.Exception = ex;
+                    await _blobRepository.WriteAsync(LykkeConstants.MtCoreSnapshotBlobContainer, correlationId, validationResult);
+                }
+                else
+                {
+                    await _log.WriteInfoAsync(nameof(SnapshotService), nameof(MakeTradingDataSnapshot),
+                        "The current state of orders and positions is correct.");
+                }
+            
+                return validationResult;
+            }
+            catch (Exception e)
+            {
+                // in case validation fails for some reason (not related to orders / positions inconsistency, e.g. a network error during validation)
+                var result = new SnapshotValidationResult
+                {
+                    Exception = new SnapshotValidationException("Snapshot validation failed", SnapshotValidationError.Unknown, e),
+                };
+
+                return result;
+            }
         }
 
         /// <inheritdoc />
