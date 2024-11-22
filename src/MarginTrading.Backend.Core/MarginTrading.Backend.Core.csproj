@@ -22,7 +22,7 @@
     Version tag has to be removed once all the dependencies are updated
     to use Refit >= 8.x
     -->
-    <PackageReference Include="Refit" Version="5.2.4" />
+    <PackageReference Include="Refit" VersionOverride="5.2.4" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MarginTrading.Backend.Contracts\MarginTrading.Backend.Contracts.csproj" />
