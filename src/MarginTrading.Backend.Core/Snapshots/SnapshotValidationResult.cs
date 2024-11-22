@@ -19,6 +19,6 @@ namespace MarginTrading.Backend.Core.Snapshots
         
         public string PreviousSnapshotCorrelationId { get; set; }
         
-        public IOrderReader Cache { get; set; }
+        public IOrderReaderBase Cache { get; set; }
     }
 }
