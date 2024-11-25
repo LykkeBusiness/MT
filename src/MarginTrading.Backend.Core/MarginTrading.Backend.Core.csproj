@@ -14,12 +14,12 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Lykke.MarginTrading.AssetService.Contracts" />
+    <PackageReference Include="Lykke.MarginTrading.BackendSnow.Contracts" />
     <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Refit" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MarginTrading.Backend.Contracts\MarginTrading.Backend.Contracts.csproj" />
     <ProjectReference Include="..\MarginTrading.Common\MarginTrading.Common.csproj" />
   </ItemGroup>
 </Project>

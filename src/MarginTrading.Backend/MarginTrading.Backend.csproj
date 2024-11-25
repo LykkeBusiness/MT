@@ -29,7 +29,6 @@
     <None Remove="logs\**" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MarginTrading.Backend.Contracts\MarginTrading.Backend.Contracts.csproj" />
     <ProjectReference Include="..\MarginTrading.Backend.Core.Mappers\MarginTrading.Backend.Core.Mappers.csproj" />
     <ProjectReference Include="..\MarginTrading.Common\MarginTrading.Common.csproj" />
     <ProjectReference Include="..\MarginTrading.AzureRepositories\MarginTrading.AzureRepositories.csproj" />
@@ -92,11 +91,12 @@
     <WCFMetadata Include="Connected Services" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\MarginTrading.SqlRepositories\Scripts\**" CopyToOutputDirectory="PreserveNewest" LinkBase="Scripts" />
+    <None Include="..\MarginTrading.SqlRepositories\Scripts\**" CopyToOutputDirectory="PreserveNewest"
+      LinkBase="Scripts" />
   </ItemGroup>
   <ItemGroup>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
-        <_Parameter1>MarginTradingTests</_Parameter1>
+      <_Parameter1>MarginTradingTests</_Parameter1>
     </AssemblyAttribute>
   </ItemGroup>
   <ItemGroup>

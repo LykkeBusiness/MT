@@ -9,14 +9,12 @@
     <NoWarn>1701;1702;1705;CA2007;0612;0618;1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MarginTrading.Backend.Contracts\MarginTrading.Backend.Contracts.csproj" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="Autofac" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" />
     <PackageReference Include="LykkeBiz.HttpClientGenerator" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="Lykke.MarginTrading.BackendSnow.Contracts" />
   </ItemGroup>
 </Project>

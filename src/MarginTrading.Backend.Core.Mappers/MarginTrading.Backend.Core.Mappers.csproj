@@ -8,11 +8,11 @@
     <NoWarn>1701;1702;1705;CA2007;0612;0618;1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MarginTrading.Backend.Contracts\MarginTrading.Backend.Contracts.csproj" />
     <ProjectReference Include="..\MarginTrading.Backend.Core\MarginTrading.Backend.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Lykke.MarginTrading.BackendSnow.Contracts" />
   </ItemGroup>
 </Project>
