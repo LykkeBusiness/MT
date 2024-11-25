@@ -89,8 +89,288 @@ The service checks `OrdersHistory` and `PositionsHistory` queues on startup. If 
 
 MtBackend settings schema is:
 <!-- MARKDOWN-AUTO-DOCS:START (CODE:src=./template.json) -->
+<!-- The below code snippet is automatically added from ./template.json -->
+```json
+{
+  "AccountsManagementServiceClient": {
+    "ApiKey": "String",
+    "ServiceUrl": "String"
+  },
+  "APP_UID": "Integer",
+  "ASPNETCORE_ENVIRONMENT": "String",
+  "ASPNETCORE_ENVIRONMENT_TEST1": "String",
+  "BookKeeperServiceClient": {
+    "ServiceUrl": "String"
+  },
+  "Env": "String",
+  "ENVIRONMENT": "String",
+  "ENVIRONMENT_TEST1": "String",
+  "IsLive": "Boolean",
+  "Kestrel": {
+    "EndPoints": {
+      "Http": {
+        "Url": "String"
+      }
+    }
+  },
+  "MdmServiceClient": {
+    "ApiKey": "String",
+    "ServiceUrl": "String"
+  },
+  "MtBackend": {
+    "ApiKey": "String",
+    "BlobPersistence": {
+      "FxRatesDumpPeriodMilliseconds": "Integer",
+      "OrderbooksDumpPeriodMilliseconds": "Integer",
+      "OrdersDumpPeriodMilliseconds": "Integer",
+      "QuotesDumpPeriodMilliseconds": "Integer"
+    },
+    "BrokerDefaultCcVolume": "Integer",
+    "BrokerDonationShare": "Double",
+    "BrokerId": "String",
+    "BrokerSettingsRabbitMqSettings": {
+      "ConnectionString": "String",
+      "ExchangeName": "String",
+      "IsDurable": "Boolean",
+      "RoutingKey": "String"
+    },
+    "ChaosKitty": {
+      "StateOfChaos": "Integer"
+    },
+    "Cqrs": {
+      "ConnectionString": "String",
+      "EnvironmentName": "String",
+      "RetryDelay": "DateTime"
+    },
+    "Db": {
+      "HistoryConnString": "String",
+      "LogsConnString": "String",
+      "MarginTradingConnString": "String",
+      "OrdersHistorySqlConnectionString": "String",
+      "OrdersHistoryTableName": "String",
+      "PositionsHistorySqlConnectionString": "String",
+      "PositionsHistoryTableName": "String",
+      "SqlConnectionString": "String",
+      "StateConnString": "String",
+      "StorageMode": "String"
+    },
+    "DefaultExternalExchangeId": "String",
+    "DefaultLegalEntitySettings": {
+      "DefaultLegalEntity": "String"
+    },
+    "ExchangeConnector": "String",
+    "FeatureManagement": {
+      "CompiledSchedulePublishing": "Boolean",
+      "TradeContractPublishing": "Boolean"
+    },
+    "FxRateRabbitMqSettings": {
+      "ConnectionString": "String",
+      "ExchangeName": "String"
+    },
+    "GavelTimeout": "DateTime",
+    "LogBlockedMarginCalculation": "Boolean",
+    "MtRabbitMqConnString": "String",
+    "OrderbookValidation": {
+      "ValidateInstrumentStatusForEodFx": "Boolean",
+      "ValidateInstrumentStatusForEodQuotes": "Boolean",
+      "ValidateInstrumentStatusForTradingFx": "Boolean",
+      "ValidateInstrumentStatusForTradingQuotes": "Boolean"
+    },
+    "OvernightMargin": {
+      "ActivationPeriodMinutes": "Integer",
+      "ScheduleMarketId": "String",
+      "WarnPeriodMinutes": "Integer"
+    },
+    "PerformanceLoggerEnabled": "Boolean",
+    "RabbitMqPublishers": {
+      "AccountMarginEvents": {
+        "ExchangeName": "String"
+      },
+      "AccountStats": {
+        "ExchangeName": "String"
+      },
+      "ExternalOrder": {
+        "ExchangeName": "String"
+      },
+      "MarginTradingEnabledChanged": {
+        "ExchangeName": "String"
+      },
+      "OrderbookPrices": {
+        "ExchangeName": "String"
+      },
+      "OrderHistory": {
+        "ExchangeName": "String"
+      },
+      "OrderRejected": {
+        "ExchangeName": "String"
+      },
+      "PositionHistory": {
+        "ExchangeName": "String"
+      },
+      "RfqChanged": {
+        "ExchangeName": "String",
+        "MtRabbitMainMqConnectionString": "String"
+      },
+      "RfqChangedRabbitMqSettings": {
+        "ExchangeName": "String"
+      },
+      "Trades": {
+        "ExchangeName": "String"
+      }
+    },
+    "RabbitMqRetryPolicy": {
+      "InitialConnectionSleepIntervals": [
+        "DateTime"
+      ],
+      "RegularSleepIntervals": [
+        "DateTime"
+      ]
+    },
+    "RedisSettings": {
+      "Configuration": "String"
+    },
+    "ReportingEquivalentPricesSettings": [
+      {
+        "EquivalentAsset": "String",
+        "LegalEntity": "String"
+      }
+    ],
+    "RequestLoggerSettings": {
+      "Enabled": "Boolean",
+      "MaxPartSize": "Integer"
+    },
+    "SettingsChangedRabbitMqSettings": {
+      "ConnectionString": "String",
+      "ExchangeName": "String"
+    },
+    "SnapshotMonitorSettings": {
+      "DelayBeforeFallbackSnapshot": "DateTime",
+      "MonitoringDelay": "DateTime"
+    },
+    "SpecialLiquidation": {
+      "Enabled": "Boolean",
+      "FakePrice": "Integer",
+      "FakePriceRequestAutoApproval": "Boolean",
+      "PriceRequestRetryTimeout": "DateTime",
+      "PriceRequestTimeoutCheckPeriod": "DateTime",
+      "PriceRequestTimeoutSec": "Integer",
+      "RetryPriceRequestForCorporateActions": "Boolean",
+      "VolumeThreshold": "Integer",
+      "VolumeThresholdCurrency": "String"
+    },
+    "StartupQueuesChecker": {
+      "ConnectionString": "String",
+      "OrderHistoryQueueName": "String",
+      "PositionHistoryQueueName": "String"
+    },
+    "StpAggregatorRabbitMqSettings": {
+      "ConnectionString": "String",
+      "ConsumerCount": "Integer",
+      "ExchangeName": "String"
+    },
+    "Telemetry": {
+      "LockMetricThreshold": "Integer"
+    },
+    "TestSettings": {
+      "ProtectionKey": "String"
+    },
+    "Throttling": {
+      "MarginCallThrottlingPeriodMin": "Integer",
+      "StopOutThrottlingPeriodMin": "Integer"
+    },
+    "UseAzureIdentityGenerator": "Boolean",
+    "UseSerilog": "Boolean",
+    "WriteOperationLog": "Boolean"
+  },
+  "MtStpExchangeConnectorClient": {
+    "ApiKey": "String",
+    "ServiceUrl": "String"
+  },
+  "NOVA_DISABLE_OUTGOING_MESSAGE_PERSISTENCE": "Boolean",
+  "NOVA_FILTERED_MESSAGE_TYPES": "String",
+  "OrderBookServiceClient": {
+    "ApiKey": "String",
+    "ServiceUrl": "String",
+    "UseSerilog": "Boolean"
+  },
+  "serilog": {
+    "minimumLevel": {
+      "default": "String"
+    },
+    "writeTo": [
+      {
+        "Args": {
+          "indexFormat": "String",
+          "nodeUris": "String"
+        }
+      }
+    ]
+  },
+  "SettingsServiceClient": {
+    "ApiKey": "String",
+    "ServiceUrl": "String"
+  },
+  "TZ": "String"
+}
+```
 <!-- MARKDOWN-AUTO-DOCS:END -->
 
 AccountMarginEventsBroker settings schema is:
 <!-- MARKDOWN-AUTO-DOCS:START (CODE:src=./accountMarginEventsBroker.json) -->
+<!-- The below code snippet is automatically added from ./accountMarginEventsBroker.json -->
+```json
+{
+  "APP_UID": "Integer",
+  "ASPNETCORE_ENVIRONMENT": "String",
+  "ENVIRONMENT": "String",
+  "IsLive": "Boolean",
+  "MtBrokerSettings": {
+    "Db": {
+      "ConnString": "String",
+      "StorageMode": "String"
+    },
+    "MtRabbitMqConnString": "String",
+    "RabbitMqQueues": {
+      "AccountMarginEvents": {
+        "ExchangeName": "String"
+      }
+    }
+  },
+  "MtBrokersLogs": {
+    "LogsConnString": "String",
+    "StorageMode": "String",
+    "UseSerilog": "Boolean"
+  },
+  "serilog": {
+    "Enrich": [
+      "String"
+    ],
+    "minimumLevel": {
+      "default": "String"
+    },
+    "Properties": {
+      "Application": "String"
+    },
+    "Using": [
+      "String"
+    ],
+    "writeTo": [
+      {
+        "Args": {
+          "configure": [
+            {
+              "Args": {
+                "outputTemplate": "String"
+              },
+              "Name": "String"
+            }
+          ]
+        },
+        "Name": "String"
+      }
+    ]
+  },
+  "TZ": "String"
+}
+```
 <!-- MARKDOWN-AUTO-DOCS:END -->
