@@ -62,11 +62,11 @@ namespace MarginTradingTests.Infrastructure
             _orderCacheMock.Setup(o => o.GetPositions())
                 .Returns(() => _currentPositions.ToImmutableArray());
 
-            _ordersHistoryRepositoryMock.Setup(o => o.GetLastSnapshot(It.IsAny<DateTime>(), null))
-                .ReturnsAsync((DateTime date) => _ordersHistory);
+            _ordersHistoryRepositoryMock.Setup(o => o.GetLastSnapshot(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
+                .ReturnsAsync((DateTime from, DateTime to) => _ordersHistory);
 
-            _positionsHistoryRepositoryMock.Setup(o => o.GetLastSnapshot(It.IsAny<DateTime>(), null))
-                .ReturnsAsync((DateTime date) => _positionsHistory);
+            _positionsHistoryRepositoryMock.Setup(o => o.GetLastSnapshot(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
+                .ReturnsAsync((DateTime from, DateTime to) => _positionsHistory);
 
             _service = new SnapshotValidationService(
                 _tradingEngineSnapshotsRepositoryMock.Object,
