@@ -322,7 +322,9 @@ AccountMarginEventsBroker settings schema is:
 {
   "APP_UID": "Integer",
   "ASPNETCORE_ENVIRONMENT": "String",
+  "ASPNETCORE_ENVIRONMENT_TEST1": "String",
   "ENVIRONMENT": "String",
+  "ENVIRONMENT_TEST1": "String",
   "IsLive": "Boolean",
   "MtBrokerSettings": {
     "Db": {
