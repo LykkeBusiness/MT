@@ -22,10 +22,10 @@ namespace MarginTrading.Backend.Contracts
         /// </summary>
         /// <returns>Snapshot statistics.</returns>
         [Post("/api/service/make-trading-data-snapshot")]
-        Task<string> MakeTradingDataSnapshot([Query] DateTime tradingDay, 
+        Task<string> MakeTradingDataSnapshot([Query] DateTime tradingDay,
             [Query, CanBeNull] string correlationId = null,
             [Query] SnapshotStatusContract status = SnapshotStatusContract.Final);
-        
+
         /// <summary>
         /// Get current state of overnight margin parameter.
         /// </summary>
@@ -41,15 +41,15 @@ namespace MarginTrading.Backend.Contracts
         [Get("/api/service/overnight-margin-parameter")]
         Task<Dictionary<string, Dictionary<string, decimal>>> GetOvernightMarginParameterValues(
             [Query, CanBeNull] string[] instruments = null);
-        
+
         /// <summary>
         /// Get unconfirmed margin current state for the account
         /// </summary>
         /// <param name="accountId"></param>
         /// <returns></returns>
         [Get("/api/service/unconfirmed-margin")]
-        Dictionary<string, decimal> GetUnconfirmedMargin([Query] string accountId);
-        
+        Task<Dictionary<string, decimal>> GetUnconfirmedMargin([Query] string accountId);
+
         /// <summary>
         /// Freezes amount of margin attached to operationId and account
         /// </summary>
@@ -59,7 +59,7 @@ namespace MarginTrading.Backend.Contracts
         /// <returns></returns>
         [Post("/api/service/unconfirmed-margin")]
         Task FreezeUnconfirmedMargin([Query] string accountId, [Query] string operationId, [Query] decimal amount);
-        
+
         /// <summary>
         /// Unfreezes amount of margin attached to operationId and account
         /// </summary>
