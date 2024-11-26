@@ -104,17 +104,19 @@ namespace MarginTrading.Backend.Controllers
 
         /// <inheritdoc />
         [HttpGet("unconfirmed-margin")]
-        public Dictionary<string, decimal> GetUnconfirmedMargin([FromQuery] string accountId)
+        public Task<Dictionary<string, decimal>> GetUnconfirmedMargin([FromQuery] string accountId)
         {
             var account = _accountsProvider.GetAccountById(accountId);
 
             if (account == null)
-                return new Dictionary<string, decimal>();
+                return Task.FromResult(new Dictionary<string, decimal>());
 
-            return account
-                .AccountFpl
-                .UnconfirmedMarginData
-                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+            return Task.FromResult(
+                account
+                    .AccountFpl
+                    .UnconfirmedMarginData
+                    .ToDictionary(kvp => kvp.Key, kvp => kvp.Value)
+            );
         }
 
         /// <inheritdoc />
