@@ -31,7 +31,7 @@ namespace MarginTrading.Backend.Services.Builders
         {
             base.AddIdentity();
 
-            Deal.DealId = AlphanumericIdentityGenerator.GenerateAlphanumericId();
+            Deal.DealId = AlphanumericIdentityGenerator.Generate();
             Deal.Volume = _closedVolume;
 
             return this;
