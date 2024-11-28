@@ -14,7 +14,7 @@ public class AlphanumericIdentityGeneratorTests
     [TestCase("AB", "B", "A")]
     public void Generate_WithPredicate_ShallRespectPrefixRestriction(string pool, string restrictedPrefix, string expected)
     {
-        var id = AlphanumericIdentitySafeGenerator.Generate(pool, [x => x.StartsWith(restrictedPrefix)], length: 1);
+        var id = AlphanumericIdentityGenerator.Generate(pool, [x => x.StartsWith(restrictedPrefix)], length: 1);
 
         id.Should().BeEquivalentTo(expected);
     }
@@ -22,7 +22,7 @@ public class AlphanumericIdentityGeneratorTests
     [Test]
     public void Generate_WithImpossibleConditions_IgnoresRestrictions()
     {
-        var id = AlphanumericIdentitySafeGenerator.Generate("A", [x => x.StartsWith("A")], length: 1);
+        var id = AlphanumericIdentityGenerator.Generate("A", [x => x.StartsWith("A")], length: 1);
 
         id.Should().BeEquivalentTo("A");
     }

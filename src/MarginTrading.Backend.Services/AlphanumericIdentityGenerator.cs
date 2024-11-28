@@ -7,7 +7,7 @@ using System.Linq;
 using Serilog;
 
 namespace MarginTrading.Backend.Services;
-public static class AlphanumericIdentitySafeGenerator
+public static class AlphanumericIdentityGenerator
 {
     // we must not generate id's starting with these keywords, it causes situations like `POSPOS` in reporting. Valid situations, but mind-blowing.
     private static readonly string[] RestrictedBeginnings = ["POS", "TRD", "ORD", "CLS", "KOM", "DIV", "UEW", "TCC"];
@@ -16,7 +16,7 @@ public static class AlphanumericIdentitySafeGenerator
 
     private static readonly Random Random = new();
     private static readonly object LockObject = new();
-    private static readonly ILogger Log = Serilog.Log.ForContext(typeof(AlphanumericIdentitySafeGenerator));
+    private static readonly ILogger Log = Serilog.Log.ForContext(typeof(AlphanumericIdentityGenerator));
 
     public static string Generate(string pool = DefaultPool, Func<string, bool>[] restrictions = null, int length = 10)
     {
