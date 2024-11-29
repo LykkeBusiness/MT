@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 using Common;
@@ -36,7 +37,7 @@ namespace MarginTrading.Backend.Services.EventsConsumers
 
         private static readonly ConcurrentDictionary<string, object> LockObjects =
             new ConcurrentDictionary<string, object>();
-        
+
         public int ConsumerRank => 100;
 
         public PositionsConsumer(OrdersCache ordersCache,
@@ -59,7 +60,7 @@ namespace MarginTrading.Backend.Services.EventsConsumers
             _positionHistoryHandler = positionHistoryHandler;
             _accountUpdateService = accountUpdateService;
         }
-        
+
         // todo: move business logic out of consumer
         public void ConsumeEvent(object sender, OrderExecutedEventArgs ea)
         {
@@ -79,10 +80,10 @@ namespace MarginTrading.Backend.Services.EventsConsumers
                     foreach (var positionId in order.PositionsToBeClosed)
                     {
                         var position = _ordersCache.Positions.GetPositionById(positionId);
-                    
+
                         CloseExistingPosition(order, position).GetAwaiter().GetResult();
                     }
-                    
+
                     return;
                 }
 
@@ -113,7 +114,7 @@ namespace MarginTrading.Backend.Services.EventsConsumers
             {
                 reason = OrderCancellationReason.ConnectedOrderExecuted;
             }
-            
+
             CancelRelatedOrdersForPosition(position, reason);
         }
 
@@ -131,7 +132,7 @@ namespace MarginTrading.Backend.Services.EventsConsumers
                 order.Executed.Value, order.Id, order.OrderType, order.Volume, order.ExecutionPrice.Value, order.FxRate,
                 order.EquivalentAsset, order.EquivalentRate, order.RelatedOrders, order.LegalEntity, order.Originator,
                 order.ExternalProviderId, order.FxAssetPairId, order.FxToAssetPairDirection, order.AdditionalInfo, order.ForceOpen);
-            
+
             var defaultMatchingEngine = _meRouter.GetMatchingEngineForClose(position.OpenMatchingEngineId);
 
             var closePrice = defaultMatchingEngine.GetPriceForClose(position.AssetPairId, position.Volume,
@@ -149,7 +150,7 @@ namespace MarginTrading.Backend.Services.EventsConsumers
                 new PositionOpenMetadata { ExistingPositionIncreased = isPositionAlreadyExist });
 
             ActivateRelatedOrders(position);
-            
+
         }
 
         private async Task MatchOrderOnExistingPositions(Order order)
@@ -160,7 +161,7 @@ namespace MarginTrading.Backend.Services.EventsConsumers
                 _ordersCache.Positions.GetPositionsByInstrumentAndAccount(order.AssetPairId, order.AccountId)
                     .Where(p => p.Status == PositionStatus.Active &&
                                 p.Direction == order.Direction.GetClosePositionDirection());
-            
+
             foreach (var openedPosition in openedPositions)
             {
                 var (closingStarted, reasonIfNot) = openedPosition.TryStartClosing(_dateService.Now(),
@@ -180,13 +181,13 @@ namespace MarginTrading.Backend.Services.EventsConsumers
                 if (absVolume <= leftVolumeToMatch)
                 {
                     await CloseExistingPosition(order, openedPosition);
-                
+
                     leftVolumeToMatch = leftVolumeToMatch - absVolume;
                 }
                 else
                 {
                     var chargedPnl = leftVolumeToMatch / absVolume * openedPosition.ChargedPnL;
-                    
+
                     openedPosition.PartiallyClose(order.Executed.Value, leftVolumeToMatch, order.Id, chargedPnl);
 
                     var deal = DealDirector.Construct(new PartialDealBuilder(openedPosition, order, Math.Abs(leftVolumeToMatch)));
@@ -194,11 +195,11 @@ namespace MarginTrading.Backend.Services.EventsConsumers
                     await _positionHistoryHandler.HandlePartialClosePosition(openedPosition, deal, order.AdditionalInfo);
 
                     ChangeRelatedOrderVolume(openedPosition.RelatedOrders, -openedPosition.Volume);
-                    
+
                     CancelRelatedOrdersForOrder(order, OrderCancellationReason.ParentPositionClosed);
-                
+
                     openedPosition.CancelClosing(_dateService.Now());
-                    
+
                     leftVolumeToMatch = 0;
                 }
 
@@ -209,7 +210,7 @@ namespace MarginTrading.Backend.Services.EventsConsumers
             if (leftVolumeToMatch > 0)
             {
                 var volume = order.Volume > 0 ? leftVolumeToMatch : -leftVolumeToMatch;
-                
+
                 await OpenNewPosition(order, volume);
             }
         }
@@ -226,11 +227,11 @@ namespace MarginTrading.Backend.Services.EventsConsumers
                 }
             }
         }
-        
+
         private void CancelRelatedOrdersForPosition(Position position, OrderCancellationReason reason)
         {
             var metadata = new OrderCancelledMetadata {Reason = reason.ToType<OrderCancellationReasonContract>()};
-            
+
             foreach (var relatedOrderInfo in position.RelatedOrders)
             {
                 if (_ordersCache.Active.TryPopById(relatedOrderInfo.Id, out var relatedOrder))
@@ -240,11 +241,11 @@ namespace MarginTrading.Backend.Services.EventsConsumers
                 }
             }
         }
-        
+
         private void CancelRelatedOrdersForOrder(Order order, OrderCancellationReason reason)
         {
             var metadata = new OrderCancelledMetadata {Reason = reason.ToType<OrderCancellationReasonContract>()};
-            
+
             foreach (var relatedOrderInfo in order.RelatedOrders)
             {
                 if (_ordersCache.Inactive.TryPopById(relatedOrderInfo.Id, out var relatedOrder))
@@ -254,8 +255,8 @@ namespace MarginTrading.Backend.Services.EventsConsumers
                 }
             }
         }
-        
-        private void ChangeRelatedOrderVolume(List<RelatedOrderInfo> relatedOrderInfos, decimal newVolume)
+
+        private void ChangeRelatedOrderVolume(ImmutableArray<RelatedOrderInfo> relatedOrderInfos, decimal newVolume)
         {
             foreach (var relatedOrderInfo in relatedOrderInfos)
             {
@@ -263,7 +264,7 @@ namespace MarginTrading.Backend.Services.EventsConsumers
                     && relatedOrder.Volume != newVolume)
                 {
                     var oldVolume = relatedOrder.Volume;
-                    
+
                     relatedOrder.ChangeVolume(newVolume, _dateService.Now(), OriginatorType.System);
                     var metadata = new OrderChangedMetadata
                     {
@@ -275,7 +276,7 @@ namespace MarginTrading.Backend.Services.EventsConsumers
                 }
             }
         }
-        
+
         private object GetLockObject(Order order)
         {
             return LockObjects.GetOrAdd(order.AccountId, new object());

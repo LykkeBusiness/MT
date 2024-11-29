@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -406,7 +407,7 @@ namespace MarginTrading.Backend.Services
                 return;
             }
 
-            // there is no any global lock of positions / orders, that's why it is possible to have concurrency 
+            // there is no any global lock of positions / orders, that's why it is possible to have concurrency
             // in position close process
             // since orders, that have not empty PositionsToBeClosed should close positions and not open new ones
             // volume of executed order should be equal to position volume, but should have opposite sign
@@ -794,7 +795,7 @@ namespace MarginTrading.Backend.Services
                 initialParameters.FxToAssetPairDirection,
                 OrderStatus.Placed,
                 closeData.AdditionalInfo,
-                positionIds,
+                positionIds.ToImmutableHashSet(),
                 closeData.ExternalProviderId);
 
             _orderPlacedEventChannel.SendEvent(this, new OrderPlacedEventArgs(order));
