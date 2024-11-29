@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -40,7 +41,7 @@ namespace MarginTradingTests
         private OrdersCache _ordersCache;
         private Mock<ILog> _logMock;
         private Mock<Position> _fakePosition;
-        
+
         private int _logCounter;
 
         private static readonly AccountContract[] Accounts =
@@ -82,7 +83,7 @@ namespace MarginTradingTests
         {
             var account = Accounts[1];
             var time = DateService.Now();
-            
+
             var accountsProjection = AssertEnv();
 
             await accountsProjection.Handle(new AccountChangedEvent(time, "test",
@@ -145,24 +146,24 @@ namespace MarginTradingTests
                 int expectedLogMessageCnt)
         {
             //Arrange
-            var accountId = Accounts[0].Id; 
+            var accountId = Accounts[0].Id;
             var modificationTimestamp = DateTime.UtcNow.AddMinutes(addMinutesToModificationTimestamp);
             var clientModificationTimestamp = DateTime.UtcNow.AddMinutes(addMinutesToClientModificationTimestamp);
 
             var accountProjection = AssertEnv(failMessage: $"Account with id {accountId} is in newer state then the event");
 
-            var accountContract = new AccountContract() 
-            { 
+            var accountContract = new AccountContract()
+            {
                 Id = accountId,
                 TradingConditionId = updatedClientTradingCondition,
-                ModificationTimestamp = modificationTimestamp, 
-                ClientModificationTimestamp = clientModificationTimestamp 
+                ModificationTimestamp = modificationTimestamp,
+                ClientModificationTimestamp = clientModificationTimestamp
             };
             var @event = new AccountChangedEvent(changeTimestamp: DateService.Now(), "", accountContract, AccountChangedEventTypeContract.Updated);
 
             // Act
             await accountProjection.Handle(@event);
-        
+
             // Assert
             var updatedAccount = _accountsCacheService.Get(accountId);
 
@@ -177,7 +178,7 @@ namespace MarginTradingTests
             //arrange
             var account = Accounts[0];
             var time = DateService.Now().AddMinutes(1);
-            
+
             var accountsProjection = AssertEnv();
 
             var manualResetEvent = new ManualResetEvent(false);
@@ -247,7 +248,7 @@ namespace MarginTradingTests
             t2.Join();
 
             var updatedAccount = _accountsCacheService.Get(account.Id);
-            
+
             //assert
             Assert.AreEqual("new", updatedAccount.TradingConditionId);
             Assert.AreEqual(1, updatedAccount.WithdrawTransferLimit);
@@ -263,9 +264,9 @@ namespace MarginTradingTests
         {
             var account = Accounts.Single(x => x.Id == accountId);
             var time = DateService.Now();
-            
+
             var accountsProjection = AssertEnv(failMessage: failMessage);
-            
+
             var updatedContract = new AccountContract()
             {
                 Id = accountId,
@@ -287,7 +288,7 @@ namespace MarginTradingTests
 
             Assert.AreEqual(1, _logCounter);
         }
-        
+
         [Test]
         [TestCase("testAccount1", 1, AccountBalanceChangeReasonTypeContract.Withdraw, null)]
         [TestCase("testAccount1", 5000, AccountBalanceChangeReasonTypeContract.UnrealizedDailyPnL, null)]
@@ -298,9 +299,9 @@ namespace MarginTradingTests
         {
             var account = Accounts.Single(x => x.Id == accountId);
             var time = DateService.Now().AddMinutes(1);
-            
+
             var accountsProjection = AssertEnv(accountId: accountId);
-            
+
             var updatedContract = new AccountContract()
             {
                 Id = accountId,
@@ -316,10 +317,10 @@ namespace MarginTradingTests
                 IsDeleted = false,
                 AdditionalInfo = "{}"
             };
-            
+
             await accountsProjection.Handle(new AccountChangedEvent(time, "test",
                 updatedContract, AccountChangedEventTypeContract.BalanceUpdated,
-                new AccountBalanceChangeContract("test", time, accountId, account.ClientId, changeAmount, 
+                new AccountBalanceChangeContract("test", time, accountId, account.ClientId, changeAmount,
                     account.Balance + changeAmount, account.WithdrawTransferLimit, "test", balanceChangeReasonType,
                     "test", "Default", auditLog, null, time)));
 
@@ -344,8 +345,8 @@ namespace MarginTradingTests
                     _fakePosition.Verify(s => s.SetChargedPnL("test", metadata.RawTotalPnl), Times.Once);
                 }
             }
-            
-            _accountBalanceChangedEventChannelMock.Verify(s => s.SendEvent(It.IsAny<object>(), 
+
+            _accountBalanceChangedEventChannelMock.Verify(s => s.SendEvent(It.IsAny<object>(),
                 It.IsAny<AccountBalanceChangedEventArgs>()), Times.Once);
         }
 
@@ -366,20 +367,20 @@ namespace MarginTradingTests
 
             var accountProjection = AssertEnv(accountsCacheServiceArg: mockAccountCacheService.Object);
 
-            var accountContract = new AccountContract() { ModificationTimestamp = accountModificationTimestamp, 
+            var accountContract = new AccountContract() { ModificationTimestamp = accountModificationTimestamp,
                 ClientModificationTimestamp = clientModificationTimestamp };
             var @event = new AccountChangedEvent(accountModificationTimestamp, "", accountContract, AccountChangedEventTypeContract.Updated);
 
             // Act
             await accountProjection.Handle(@event);
-        
+
             // Assert
-            mockAccountCacheService.Verify(svc => svc.TryUpdateAccountChanges(It.IsAny<string>(), 
-                It.IsAny<string>(), It.IsAny<decimal>(), It.IsAny<bool>(), It.IsAny<bool>(), 
+            mockAccountCacheService.Verify(svc => svc.TryUpdateAccountChanges(It.IsAny<string>(),
+                It.IsAny<string>(), It.IsAny<decimal>(), It.IsAny<bool>(), It.IsAny<bool>(),
                 It.Is<DateTime>(dt => dt == greater), It.IsAny<string>()));
         }
 
-        private AccountsProjection AssertEnv(string accountId = null, string failMessage = null, 
+        private AccountsProjection AssertEnv(string accountId = null, string failMessage = null,
             IAccountsCacheService accountsCacheServiceArg = null)
         {
             _accountBalanceChangedEventChannelMock = new Mock<IEventChannel<AccountBalanceChangedEventArgs>>();
@@ -394,25 +395,25 @@ namespace MarginTradingTests
                     lastModified: DateService.Now(),
                     data: new OperationData {State = OperationState.Initiated}
                 ), true));
-            
+
             _logMock = new Mock<ILog>();
             if (failMessage != null)
             {
                 _logCounter = 0;
-                _logMock.Setup(s => s.WriteInfoAsync(It.IsAny<string>(), It.IsAny<string>(), 
+                _logMock.Setup(s => s.WriteInfoAsync(It.IsAny<string>(), It.IsAny<string>(),
                     It.Is<string>(x => x == failMessage), It.IsAny<DateTime?>()))
                     .Callback(() => _logCounter++).Returns(Task.CompletedTask);
-                _logMock.Setup(s => s.WriteWarningAsync(It.IsAny<string>(), It.IsAny<string>(), 
+                _logMock.Setup(s => s.WriteWarningAsync(It.IsAny<string>(), It.IsAny<string>(),
                     It.Is<string>(x => x == failMessage), It.IsAny<DateTime?>()))
                     .Callback(() => _logCounter++).Returns(Task.CompletedTask);
             }
-            
+
             if(accountsCacheServiceArg == null)
             {
                 _accountsCacheService = new AccountsCacheService(DateService, new RunningLiquidationRepositoryFake(), _logMock.Object);
                 _accountsCacheService.TryAdd(Convert(Accounts[0]));
             }
-            else 
+            else
             {
                 _accountsCacheService = accountsCacheServiceArg;
             }
@@ -423,16 +424,16 @@ namespace MarginTradingTests
             _fakePosition.SetupProperty(s => s.AccountId, Accounts[0].Id);
             _fakePosition.SetupProperty(s => s.AssetPairId, "test");
             _fakePosition.SetupProperty(s => s.FxAssetPairId, "test");
-            _fakePosition.SetupProperty(s => s.ChargePnlOperations, new HashSet<string>());
+            _fakePosition.SetupProperty(s => s.ChargePnlOperations, []);
             _fakePosition.Setup(s => s.ChargePnL(It.Is<string>(x => x == "test"), It.IsAny<decimal>()));
             _ordersCache.Positions.Add(_fakePosition.Object);
 
             return new AccountsProjection(_accountsCacheService,
-                _accountBalanceChangedEventChannelMock.Object, ConvertService, _accountUpdateServiceMock.Object, 
-                DateService, _operationExecutionInfoRepositoryMock.Object, Mock.Of<IChaosKitty>(), 
+                _accountBalanceChangedEventChannelMock.Object, ConvertService, _accountUpdateServiceMock.Object,
+                DateService, _operationExecutionInfoRepositoryMock.Object, Mock.Of<IChaosKitty>(),
                 _ordersCache, _logMock.Object);
         }
-        
+
         private static MarginTradingAccount Convert(AccountContract accountContract)
         {
             return ConvertService.Convert<AccountContract, MarginTradingAccount>(accountContract);

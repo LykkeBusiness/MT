@@ -2,7 +2,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using MarginTrading.Backend.Core.MatchedOrders;
 using MarginTrading.Backend.Core.Orders;
@@ -13,102 +13,102 @@ namespace MarginTrading.Backend.Core.Trading
 {
     public class Order : StatefulObject<OrderStatus, OrderCommand>
     {
-        private List<string> _positionsToBeClosed;
+        private ImmutableHashSet<string> _positionsToBeClosed = [];
         private string _parentPositionId;
 
         #region Properties
-        
-        
+
+
         /// <summary>
         /// Order ID
         /// </summary>
         [JsonProperty]
         public string Id { get; private set; }
-        
+
         /// <summary>
         /// Digit order code
         /// </summary>
         [JsonProperty]
         public long Code { get; private set; }
-        
+
         /// <summary>
-        /// Asset Pair ID (eg. EURUSD) 
+        /// Asset Pair ID (eg. EURUSD)
         /// </summary>
         [JsonProperty]
         public string AssetPairId { get; private set; }
-        
+
         /// <summary>
-        /// Order size 
+        /// Order size
         /// </summary>
         [JsonProperty]
         public decimal Volume { get; private set; }
-        
+
         /// <summary>
         /// Ordr direction (Buy/Sell)
         /// </summary>
         [JsonProperty]
         public OrderDirection Direction { get; private set; }
-        
+
         /// <summary>
-        /// Date when order was created 
+        /// Date when order was created
         /// </summary>
         [JsonProperty]
         public DateTime Created { get; private set; }
-        
+
         /// <summary>
-        /// Date when order was activated 
+        /// Date when order was activated
         /// </summary>
         [JsonProperty]
         public DateTime? Activated { get; private set; }
-        
+
         /// <summary>
-        /// Date when order was modified 
+        /// Date when order was modified
         /// </summary>
         [JsonProperty]
         public DateTime LastModified { get; private set; }
-        
+
         /// <summary>
         /// Date when order will expire (null for Market)
         /// </summary>
         [JsonProperty]
         public DateTime? Validity { get; private set; }
-        
+
         /// <summary>
         /// Date when order started execution
         /// </summary>
         [JsonProperty]
         public DateTime? ExecutionStarted { get; private set; }
-        
+
         /// <summary>
         /// Date when order was executed
         /// </summary>
         [JsonProperty]
         public DateTime? Executed { get; private set; }
-        
+
         /// <summary>
         /// Date when order was canceled
         /// </summary>
         [JsonProperty]
         public DateTime? Canceled { get; private set; }
-        
+
         /// <summary>
         /// Date when order was rejected
         /// </summary>
         [JsonProperty]
         public DateTime? Rejected { get; private set; }
-        
+
         /// <summary>
         /// Trading account ID
         /// </summary>
         [JsonProperty]
         public string AccountId { get; private set; }
-        
+
         /// <summary>
         /// Trading conditions ID
         /// </summary>
         [JsonProperty]
         public string TradingConditionId { get; private set; }
-        
+
         /// <summary>
         /// Account base asset ID
         /// </summary>
@@ -120,37 +120,37 @@ namespace MarginTrading.Backend.Core.Trading
         /// </summary>
         [JsonProperty]
         public decimal? Price { get; private set; }
-        
+
         /// <summary>
         /// Price of order execution
         /// </summary>
         [JsonProperty]
         public decimal? ExecutionPrice { get; private set; }
-        
+
         /// <summary>
         /// Asset for representation of equivalent price
         /// </summary>
         [JsonProperty]
         public string EquivalentAsset { get; private set; }
-        
+
         /// <summary>
         /// Rate for calculation of equivalent price
         /// </summary>
         [JsonProperty]
         public decimal EquivalentRate { get; private set; }
-        
+
         /// <summary>
         /// Rate for calculation of price in account asset
         /// </summary>
         [JsonProperty]
         public decimal FxRate { get; private set; }
-        
+
         /// <summary>
         /// FX asset pair id
         /// </summary>
         [JsonProperty]
         public string FxAssetPairId { get; protected set; }
-        
+
         /// <summary>
         /// Shows if account asset id is directly related on asset pair quote asset.
         /// I.e. AssetPair is {BaseId, QuoteId} and FxAssetPair is {QuoteId, AccountAssetId} => Straight
@@ -158,7 +158,7 @@ namespace MarginTrading.Backend.Core.Trading
         /// </summary>
         [JsonProperty]
         public FxToAssetPairDirection FxToAssetPairDirection { get; protected set; }
-        
+
         /// <summary>
         /// Current order status
         /// </summary>
@@ -172,61 +172,61 @@ namespace MarginTrading.Backend.Core.Trading
         /// </summary>
         [JsonProperty]
         public OrderFillType FillType { get; private set; }
-        
+
         /// <summary>
         /// Reject reason
         /// </summary>
         [JsonProperty]
         public OrderRejectReason RejectReason { get; private set; }
-        
+
         /// <summary>
         /// Human-readable reject reason
         /// </summary>
         [JsonProperty]
         public string RejectReasonText { get; private set; }
-        
+
         /// <summary>
         /// Additional comment
         /// </summary>
         [JsonProperty]
         public string Comment { get; private set; }
-        
+
         /// <summary>
         /// ID of external order (for STP mode)
         /// </summary>
         [JsonProperty]
         public string ExternalOrderId { get; private set; }
-        
+
         /// <summary>
         /// ID of external LP (for STP mode)
         /// </summary>
         [JsonProperty]
         public string ExternalProviderId { get; private set; }
-        
+
         /// <summary>
         /// Matching engine ID
         /// </summary>
         [JsonProperty]
         public string MatchingEngineId { get; private set; }
-        
+
         /// <summary>
         /// Legal Entity ID
         /// </summary>
         [JsonProperty]
         public string LegalEntity { get; private set; }
-        
+
         /// <summary>
         /// Force open of new position
         /// </summary>
         [JsonProperty]
         public bool ForceOpen { get; private set; }
-        
+
         /// <summary>
         /// Order type
         /// </summary>
         [JsonProperty]
         public OrderType OrderType { get; private set; }
-        
+
         /// <summary>
         /// ID of parent order (for related orders)
         /// </summary>
@@ -250,14 +250,8 @@ namespace MarginTrading.Backend.Core.Trading
                 {
                     return;
                 }
-                
-                if (_positionsToBeClosed == null)
-                    _positionsToBeClosed = new List<string>();
 
-                if (!_positionsToBeClosed.Contains(value))
-                {
-                    _positionsToBeClosed.Add(value);
-                }
+                _positionsToBeClosed = _positionsToBeClosed.Add(value);
             }
         }
 
@@ -266,18 +260,18 @@ namespace MarginTrading.Backend.Core.Trading
         /// </summary>
         [JsonProperty]
         public OriginatorType Originator { get; private set; }
-        
+
         /// <summary>
         /// Matched orders for execution
         /// </summary>
         [JsonProperty]
         public MatchedOrderCollection MatchedOrders { get; private set; }
-        
+
         /// <summary>
         /// Related orders
         /// </summary>
         [JsonProperty]
-        public List<RelatedOrderInfo> RelatedOrders { get; private set; }
+        public ImmutableArray<RelatedOrderInfo> RelatedOrders { get; private set; }
 
         private string _additionalInfo;
         /// <summary>
@@ -301,11 +295,11 @@ namespace MarginTrading.Backend.Core.Trading
         public decimal? TrailingDistance { get; private set; }
 
         [JsonProperty]
-        public List<string> PositionsToBeClosed
+        public ImmutableHashSet<string> PositionsToBeClosed
         {
-            get => _positionsToBeClosed.Distinct().ToList();
+            get => _positionsToBeClosed;
 
-            private set => _positionsToBeClosed = value?.Distinct().ToList() ?? new List<string>();
+            private set => _positionsToBeClosed = value;
         }
 
         /// <summary>
@@ -313,27 +307,27 @@ namespace MarginTrading.Backend.Core.Trading
         /// </summary>
         [JsonProperty]
         public byte ExecutionRank { get; private set; }
-        
+
         /// <summary>
         /// Order execution price rank, calculated based on type, direction and price
         /// </summary>
         [JsonProperty]
         public decimal? ExecutionPriceRank { get; private set; }
-        
+
         /// <summary>
         /// Number of pending order retries passed
         /// </summary>
         [JsonProperty]
         public int PendingOrderRetriesCount { get; private set; }
-        
+
         /// <summary>
         /// Show if order was managed on behalf at least once
         /// </summary>
         [JsonProperty]
         public bool HasOnBehalf { get; set; }
-        
+
         #endregion
-        
+
         /// <summary>
         /// For testing and deserialization
         /// </summary>
@@ -341,17 +335,17 @@ namespace MarginTrading.Backend.Core.Trading
         protected Order()
         {
             MatchedOrders = new MatchedOrderCollection();
-            RelatedOrders = new List<RelatedOrderInfo>();
-            _positionsToBeClosed = new List<string>();
+            RelatedOrders = [];
+            _positionsToBeClosed = [];
         }
 
         public Order(string id, long code, string assetPairId, decimal volume,
-            DateTime created, DateTime lastModified, DateTime? validity, string accountId, string tradingConditionId, 
-            string accountAssetId, decimal? price, string equivalentAsset, OrderFillType fillType, string comment, 
-            string legalEntity, bool forceOpen, OrderType orderType, string parentOrderId, string parentPositionId, 
-            OriginatorType originator, decimal equivalentRate, decimal fxRate, 
-            string fxAssetPairId, FxToAssetPairDirection fxToAssetPairDirection, OrderStatus status, 
-            string additionalInfo, List<string> positionsToBeClosed = null, 
+            DateTime created, DateTime lastModified, DateTime? validity, string accountId, string tradingConditionId,
+            string accountAssetId, decimal? price, string equivalentAsset, OrderFillType fillType, string comment,
+            string legalEntity, bool forceOpen, OrderType orderType, string parentOrderId, string parentPositionId,
+            OriginatorType originator, decimal equivalentRate, decimal fxRate,
+            string fxAssetPairId, FxToAssetPairDirection fxToAssetPairDirection, OrderStatus status,
+            string additionalInfo, ImmutableHashSet<string> positionsToBeClosed = null,
             string externalProviderId = null)
         {
             Id = id;
@@ -381,14 +375,14 @@ namespace MarginTrading.Backend.Core.Trading
             Direction = volume.GetOrderDirection();
             Status = status;
             AdditionalInfo = additionalInfo;
-            _positionsToBeClosed = positionsToBeClosed?.Distinct().ToList() ?? (string.IsNullOrEmpty(parentPositionId)
-                                       ? new List<string>()
-                                       : new List<string> {parentPositionId});
+            _positionsToBeClosed = positionsToBeClosed ?? (string.IsNullOrEmpty(parentPositionId)
+                                       ? []
+                                       : [parentPositionId]);
             ExternalProviderId = externalProviderId;
             ExecutionRank = (byte) (OrderType.GetExecutionRank() | Direction.GetExecutionRank());
             SetExecutionSortRank();
             MatchedOrders = new MatchedOrderCollection();
-            RelatedOrders = new List<RelatedOrderInfo>();
+            RelatedOrders = [];
         }
 
         #region Actions
@@ -400,14 +394,14 @@ namespace MarginTrading.Backend.Core.Trading
             {
                 TrailingDistance += newPrice - Price;
             }
-            
+
             LastModified = dateTime;
             Price = newPrice;
             Originator = originator;
             AdditionalInfo = additionalInfo ?? AdditionalInfo;
             SetExecutionSortRank();
         }
-        
+
         public void ChangeValidity(DateTime? newValidity, DateTime dateTime, OriginatorType originator, string additionalInfo)
         {
             LastModified = dateTime;
@@ -420,7 +414,7 @@ namespace MarginTrading.Backend.Core.Trading
         {
             ChangeValidity(newValidity, LastModified, Originator, AdditionalInfo);
         }
-        
+
         public void ChangeForceOpen(bool newForceOpen, DateTime dateTime, OriginatorType originator, string additionalInfo)
         {
             LastModified = dateTime;
@@ -428,7 +422,7 @@ namespace MarginTrading.Backend.Core.Trading
             Originator = originator;
             AdditionalInfo = additionalInfo ?? AdditionalInfo;
         }
-        
+
         public void ChangeVolume(decimal newVolume, DateTime dateTime, OriginatorType originator)
         {
             LastModified = dateTime;
@@ -453,17 +447,17 @@ namespace MarginTrading.Backend.Core.Trading
         public void AddRelatedOrder(Order order)
         {
             var info = new RelatedOrderInfo {Type = order.OrderType, Id = order.Id};
-            
+
             if (!RelatedOrders.Contains(info))
-                RelatedOrders.Add(info);
+                RelatedOrders = RelatedOrders.Add(info);
         }
-        
+
         public void RemoveRelatedOrder(string relatedOrderId)
         {
             var relatedOrder = RelatedOrders.FirstOrDefault(o => o.Id == relatedOrderId);
 
             if (relatedOrder != null)
-                RelatedOrders.Remove(relatedOrder);
+                RelatedOrders = RelatedOrders.Remove(relatedOrder);
         }
 
         private void SetExecutionSortRank()
@@ -480,10 +474,10 @@ namespace MarginTrading.Backend.Core.Trading
             }
             else
             {
-                ExecutionPriceRank = Price;    
+                ExecutionPriceRank = Price;
             }
         }
-        
+
         public void PartiallyExecute(DateTime dateTime, MatchedOrderCollection matchedOrders)
         {
             LastModified = dateTime;
@@ -501,7 +495,7 @@ namespace MarginTrading.Backend.Core.Trading
                 LastModified = dateTime;
             });
         }
-                
+
         public void Activate(DateTime dateTime, bool relinkFromOrderToPosition, decimal? positionClosePrice)
         {
             ChangeState(OrderCommand.Activate, () =>
@@ -513,10 +507,7 @@ namespace MarginTrading.Backend.Core.Trading
                 {
                     ParentPositionId = ParentOrderId;
 
-                    if (!PositionsToBeClosed.Contains(ParentOrderId))
-                    {
-                        PositionsToBeClosed.Add(ParentOrderId);
-                    }
+                    _positionsToBeClosed = _positionsToBeClosed.Add(ParentOrderId);
                 }
 
                 if (positionClosePrice.HasValue && OrderType == OrderType.TrailingStop)
@@ -535,7 +526,7 @@ namespace MarginTrading.Backend.Core.Trading
                 MatchingEngineId = matchingEngineId;
             });
         }
-        
+
         public void CancelExecution(DateTime dateTime)
         {
             ChangeState(OrderCommand.CancelExecution, () =>
@@ -543,11 +534,11 @@ namespace MarginTrading.Backend.Core.Trading
                 ExecutionStarted = null;
                 LastModified = dateTime;
                 MatchingEngineId = null;
-                
+
                 PendingOrderRetriesCount++;
             });
         }
-        
+
         public void Execute(DateTime dateTime, MatchedOrderCollection matchedOrders, int assetPairAccuracy)
         {
             ChangeState(OrderCommand.FinishExecution, () =>
@@ -574,7 +565,7 @@ namespace MarginTrading.Backend.Core.Trading
                 MatchedOrders.AddRange(matchedOrders);
             });
         }
-        
+
         public void Reject(OrderRejectReason reason, string reasonText, string comment, DateTime dateTime)
         {
             ChangeState(OrderCommand.Reject, () =>
@@ -630,7 +621,7 @@ namespace MarginTrading.Backend.Core.Trading
                 return false;
             }
         }
-        
+
         #endregion Helpers
     }
 }
