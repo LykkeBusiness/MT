@@ -12,7 +12,7 @@ public class AlphanumericIdentityGeneratorTests
     [Theory]
     [TestCase("AB", "A", "A")]
     [TestCase("AB", "B", "B")]
-    [TestCase("ABEFGHIJLMNQRSVWXYZ0123456789PTOCKDU", "#", "#")]
+    [TestCase("ABEFGHIJLMNQRSVWXYZ0123456789DUCKPOT", "#", "#")]
     public void Generate_FistLetter_MatchesPool(string pool, string firstLetterPool, string expected)
     {
         var id = AlphanumericIdentityGenerator.Generate(pool, firstLetterPool, length: 10);
@@ -21,14 +21,12 @@ public class AlphanumericIdentityGeneratorTests
     }
 
     [Test]
+    [Repeat(100)]
     public void Generate_DefaultConfig_AlwaysInExpectedFormat()
     {
-        for (var i = 1; i < 100; i++)
-        {
-            var id = AlphanumericIdentityGenerator.Generate();
+        var id = AlphanumericIdentityGenerator.Generate();
 
-            id.Should().MatchRegex("[A-Z0-9]{10}");
-            id.Should().NotMatchRegex("[PTOCKDU]{1}[A-Z0-9]{9}");
-        }
+        id.Should().MatchRegex("[A-Z0-9]{10}");
+        id.Should().NotMatchRegex("[PTOCKDU]{1}[A-Z0-9]{9}");
     }
 }
