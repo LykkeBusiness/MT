@@ -10,20 +10,33 @@ namespace MarginTradingTests;
 public class AlphanumericIdentityGeneratorTests
 {
     [Theory]
-    [TestCase("AB", "A", "B")]
-    [TestCase("AB", "B", "A")]
-    public void Generate_WithPredicate_ShallRespectPrefixRestriction(string pool, string restrictedPrefix, string expected)
+    [TestCase("AB", "A", "A")]
+    [TestCase("AB", "B", "B")]
+    [TestCase("ABEFGHIJLMNQRSVWXYZ0123456789PTOCKDU", "#", "#")]
+    public void Generate_FistLetter_MatchesPool(string pool, string firstLetterPool, string expected)
     {
-        var id = AlphanumericIdentityGenerator.Generate(pool, [x => x.StartsWith(restrictedPrefix)], length: 1);
+        var id = AlphanumericIdentityGenerator.Generate(pool, firstLetterPool, length: 10);
 
-        id.Should().BeEquivalentTo(expected);
+        id.Should().StartWith(expected);
     }
 
     [Test]
     public void Generate_WithImpossibleConditions_IgnoresRestrictions()
     {
-        var id = AlphanumericIdentityGenerator.Generate("A", [x => x.StartsWith("A")], length: 1);
+        var id = AlphanumericIdentityGenerator.Generate("A", "A", length: 1);
 
         id.Should().BeEquivalentTo("A");
+    }
+    
+    [Test]
+    public void Generate_DefaultConfig_AlwaysInExpectedFormat()
+    {
+        for (var i = 1; i < 100; i++)
+        {
+            var id = AlphanumericIdentityGenerator.Generate();
+
+            id.Should().MatchRegex("[A-Z0-9]{10}");
+            id.Should().NotMatchRegex("[PTOCKDU]{1}[A-Z0-9]{9}");
+        }
     }
 }
