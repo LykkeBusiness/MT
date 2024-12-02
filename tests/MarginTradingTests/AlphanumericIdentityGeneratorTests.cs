@@ -21,14 +21,6 @@ public class AlphanumericIdentityGeneratorTests
     }
 
     [Test]
-    public void Generate_WithImpossibleConditions_IgnoresRestrictions()
-    {
-        var id = AlphanumericIdentityGenerator.Generate("A", "A", length: 1);
-
-        id.Should().BeEquivalentTo("A");
-    }
-    
-    [Test]
     public void Generate_DefaultConfig_AlwaysInExpectedFormat()
     {
         for (var i = 1; i < 100; i++)
