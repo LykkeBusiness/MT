@@ -101,7 +101,7 @@ namespace MarginTrading.Backend.Controllers
                 {
                     await _log.WriteWarningAsync(nameof(OrdersController), nameof(UpdateRelatedOrderBulkAsync),
                         $"Failed to update related order for position {id}", ex);
-                    
+
                     var errorCode = PublicErrorCodeMap.Map(ex.RejectReason);
                     if (errorCode == PublicErrorCodeMap.UnsupportedError)
                     {
@@ -139,10 +139,10 @@ namespace MarginTrading.Backend.Controllers
                     PositionValidationError.PositionNotFound);
             }
 
-            ValidationHelper.ValidateAccountId(position, request.AccountId); 
+            ValidationHelper.ValidateAccountId(position, request.AccountId);
 
-            var takeProfit = position.RelatedOrders?.FirstOrDefault(x => x.Type == OrderType.TakeProfit);
-            var stopLoss = position.RelatedOrders?.FirstOrDefault(x => x.Type == OrderType.StopLoss || x.Type == OrderType.TrailingStop);
+            var takeProfit = position.RelatedOrders.FirstOrDefault(x => x.Type == OrderType.TakeProfit);
+            var stopLoss = position.RelatedOrders.FirstOrDefault(x => x.Type == OrderType.StopLoss || x.Type == OrderType.TrailingStop);
 
             var relatedOrderShouldBeRemoved = request.NewPrice == default;
             var relatedOrderId = request.OrderType == RelatedOrderTypeContract.TakeProfit ? takeProfit?.Id : stopLoss?.Id;
@@ -203,7 +203,7 @@ namespace MarginTrading.Backend.Controllers
             }
             else if (relatedOrderExists)
             {
-                await CancelAsync(relatedOrderId, 
+                await CancelAsync(relatedOrderId,
                     new OrderCancelRequest
                     {
                         Originator = request.Originator,
@@ -402,7 +402,7 @@ namespace MarginTrading.Backend.Controllers
             _operationsLogService.AddLog("action order.changeLimits", order.AccountId,
                 new { orderId = orderId, request = request.ToJson() }.ToJson(), "");
         }
-        
+
         /// <summary>
         /// Change validity on existing order
         /// </summary>
@@ -430,7 +430,7 @@ namespace MarginTrading.Backend.Controllers
             _operationsLogService.AddLog("action order.changeLimits", order.AccountId,
                 new { orderId = orderId, request = request.ToJson() }.ToJson(), "");
         }
-        
+
         /// <summary>
         /// Remove validity on existing order
         /// </summary>
@@ -460,7 +460,7 @@ namespace MarginTrading.Backend.Controllers
         }
 
         /// <summary>
-        /// Get order by id 
+        /// Get order by id
         /// </summary>
         [HttpGet, Route("{orderId}")]
         public Task<OrderContract> GetAsync(string orderId)
@@ -478,12 +478,12 @@ namespace MarginTrading.Backend.Controllers
             [FromQuery] string assetPairId = null, [FromQuery] string parentPositionId = null,
             [FromQuery] string parentOrderId = null)
         {
-            // do not call get by account, it's slower for single account 
+            // do not call get by account, it's slower for single account
             IEnumerable<Order> orders = _ordersCache.GetAllOrders();
-            
+
             if (!string.IsNullOrWhiteSpace(accountId))
                 orders = orders.Where(o => o.AccountId == accountId);
-            
+
             if (!string.IsNullOrWhiteSpace(assetPairId))
                 orders = orders.Where(o => o.AssetPairId == assetPairId);
 

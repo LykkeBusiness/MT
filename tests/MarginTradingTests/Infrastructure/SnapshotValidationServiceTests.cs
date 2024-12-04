@@ -382,7 +382,7 @@ namespace MarginTradingTests.Infrastructure
 
         private static Position CreatePosition(string id, decimal volume)
             => new Position(id, 0, string.Empty, volume, string.Empty, string.Empty, string.Empty, 0, string.Empty,
-                DateTime.Now, string.Empty, OrderType.Limit, 0, 0, 0, string.Empty, 0, new List<RelatedOrderInfo>(),
+                DateTime.Now, string.Empty, OrderType.Limit, 0, 0, 0, string.Empty, 0, new ImmutableArray<RelatedOrderInfo>(),
                 string.Empty, OriginatorType.Investor, string.Empty, string.Empty, FxToAssetPairDirection.Reverse,
                 string.Empty,
                 false);
