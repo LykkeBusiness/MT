@@ -13,9 +13,6 @@ namespace MarginTrading.Backend.Core.Trading
 {
     public class Order : StatefulObject<OrderStatus, OrderCommand>
     {
-        private ImmutableHashSet<string> _positionsToBeClosed = [];
-        private string _parentPositionId;
-
         #region Properties
 
 
@@ -237,23 +234,7 @@ namespace MarginTrading.Backend.Core.Trading
         /// ID of parent position (for related orders)
         /// </summary>
         [JsonProperty]
-        public string ParentPositionId
-        {
-            get => _parentPositionId;
-
-            //TODO: remove after version is applied and data is migrated
-            private set
-            {
-                _parentPositionId = value;
-
-                if (string.IsNullOrEmpty(value))
-                {
-                    return;
-                }
-
-                _positionsToBeClosed = _positionsToBeClosed.Add(value);
-            }
-        }
+        public string ParentPositionId { get; private set; }
 
         /// <summary>
         /// Order initiator
@@ -295,12 +276,7 @@ namespace MarginTrading.Backend.Core.Trading
         public decimal? TrailingDistance { get; private set; }
 
         [JsonProperty]
-        public ImmutableHashSet<string> PositionsToBeClosed
-        {
-            get => _positionsToBeClosed;
-
-            private set => _positionsToBeClosed = value;
-        }
+        public ImmutableArray<string> PositionsToBeClosed {get; private set;}
 
         /// <summary>
         /// Order execution rank, calculated based on type and direction
@@ -334,9 +310,9 @@ namespace MarginTrading.Backend.Core.Trading
         [JsonConstructor]
         protected Order()
         {
-            MatchedOrders = new MatchedOrderCollection();
+            MatchedOrders = [];
             RelatedOrders = [];
-            _positionsToBeClosed = [];
+            PositionsToBeClosed = [];
         }
 
         public Order(string id, long code, string assetPairId, decimal volume,
@@ -345,7 +321,7 @@ namespace MarginTrading.Backend.Core.Trading
             string legalEntity, bool forceOpen, OrderType orderType, string parentOrderId, string parentPositionId,
             OriginatorType originator, decimal equivalentRate, decimal fxRate,
             string fxAssetPairId, FxToAssetPairDirection fxToAssetPairDirection, OrderStatus status,
-            string additionalInfo, ImmutableHashSet<string> positionsToBeClosed = null,
+            string additionalInfo, ImmutableArray<string>? positionsToBeClosed = null,
             string externalProviderId = null)
         {
             Id = id;
@@ -375,13 +351,15 @@ namespace MarginTrading.Backend.Core.Trading
             Direction = volume.GetOrderDirection();
             Status = status;
             AdditionalInfo = additionalInfo;
-            _positionsToBeClosed = positionsToBeClosed ?? (string.IsNullOrEmpty(parentPositionId)
+            // PositionsToBeClosed must be sorted by pnl
+            PositionsToBeClosed = positionsToBeClosed?.Distinct().ToImmutableArray()
+                                  ?? (string.IsNullOrEmpty(parentPositionId)
                                        ? []
                                        : [parentPositionId]);
             ExternalProviderId = externalProviderId;
             ExecutionRank = (byte) (OrderType.GetExecutionRank() | Direction.GetExecutionRank());
             SetExecutionSortRank();
-            MatchedOrders = new MatchedOrderCollection();
+            MatchedOrders = [];
             RelatedOrders = [];
         }
 
@@ -507,7 +485,7 @@ namespace MarginTrading.Backend.Core.Trading
                 {
                     ParentPositionId = ParentOrderId;
 
-                    _positionsToBeClosed = _positionsToBeClosed.Add(ParentOrderId);
+                    PositionsToBeClosed = PositionsToBeClosed.Add(ParentOrderId);
                 }
 
                 if (positionClosePrice.HasValue && OrderType == OrderType.TrailingStop)

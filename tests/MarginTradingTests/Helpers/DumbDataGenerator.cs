@@ -55,7 +55,7 @@ namespace MarginTradingTests.Helpers
         public static Order GenerateOrder(string assetPairId = null,
             decimal? volume = null,
             string accountId = null,
-            ImmutableHashSet<string> positionsToBeClosed = null,
+            ImmutableArray<string>? positionsToBeClosed = null,
             OrderStatus? status = null) =>
             new Order(
                 "1",

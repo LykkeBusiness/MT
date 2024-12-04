@@ -795,7 +795,7 @@ namespace MarginTrading.Backend.Services
                 initialParameters.FxToAssetPairDirection,
                 OrderStatus.Placed,
                 closeData.AdditionalInfo,
-                positionIds.ToImmutableHashSet(),
+                positionIds.ToImmutableArray(),
                 closeData.ExternalProviderId);
 
             _orderPlacedEventChannel.SendEvent(this, new OrderPlacedEventArgs(order));
