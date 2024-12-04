@@ -4,14 +4,17 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using AsyncFriendlyStackTrace;
+
 using Lykke.HttpClientGenerator;
 using Lykke.HttpClientGenerator.Retries;
+
 using MarginTrading.Backend.Contracts;
 using MarginTrading.Backend.Contracts.Orders;
 using MarginTrading.Backend.Contracts.Positions;
 using MarginTrading.Backend.Contracts.Prices;
+
 using Newtonsoft.Json;
+
 using Refit;
 
 namespace MarginTrading.Backend.TestClient
@@ -35,7 +38,7 @@ namespace MarginTrading.Backend.TestClient
                 }
 
                 Console.WriteLine(str);
-                Console.WriteLine(e.ToAsyncString());
+                Console.WriteLine(e.ToString());
             }
         }
 
@@ -59,7 +62,7 @@ namespace MarginTrading.Backend.TestClient
                 .WithRetriesStrategy(retryStrategy).Create();
 
             await CheckMarginParametersAsync(generator);
-            
+
             //await CheckAccountsAsync(generator);
             //await CheckOrdersAsync(generator);
             //await CheckPricesAsync(generator);
@@ -70,9 +73,9 @@ namespace MarginTrading.Backend.TestClient
         private static async Task CheckPricesAsync(HttpClientGenerator generator)
         {
             var api = generator.Generate<IPricesApi>();
-            await api.GetBestAsync(new InitPricesBackendRequest {AssetIds = new[] {"EURUSD"}}).Dump();
+            await api.GetBestAsync(new InitPricesBackendRequest { AssetIds = new[] { "EURUSD" } }).Dump();
         }
-        
+
         private static async Task CheckOrdersAsync(HttpClientGenerator generator)
         {
             var api = generator.Generate<IOrdersApi>();
@@ -80,9 +83,9 @@ namespace MarginTrading.Backend.TestClient
 
             if (orders.Any())
             {
-                await api.CancelAsync(orders.First().Id, new OrderCancelRequest() {AdditionalInfo = "test"});
+                await api.CancelAsync(orders.First().Id, new OrderCancelRequest() { AdditionalInfo = "test" });
             }
-            
+
         }
 
         private static async Task CheckPositionsAsync(HttpClientGenerator generator)
@@ -93,7 +96,7 @@ namespace MarginTrading.Backend.TestClient
             if (anyPosition != null)
             {
                 await api.CloseAsync(anyPosition.Id,
-                    new PositionCloseRequest {Comment = "111", Originator = OriginatorTypeContract.Investor}).Dump();
+                    new PositionCloseRequest { Comment = "111", Originator = OriginatorTypeContract.Investor }).Dump();
             }
         }
 
@@ -102,7 +105,7 @@ namespace MarginTrading.Backend.TestClient
             var api = generator.Generate<IAccountsApi>();
             await api.GetAllAccountStats().Dump();
         }
-        
+
         private static async Task CheckMarginParametersAsync(HttpClientGenerator generator)
         {
             var api = generator.Generate<IServiceApi>();

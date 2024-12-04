@@ -98,25 +98,27 @@ namespace MarginTrading.Backend.Controllers
                 .OrderBy(x => x.Any(p => p.Value > 1) ? 0 : 1)
                 .ThenBy(x => x.Key)
                 .ToDictionary(x => x.Key, x => x.ToDictionary(p => p.Key.Item1, p => p.Value));
-            
+
             return Task.FromResult(result);
         }
 
         /// <inheritdoc />
         [HttpGet("unconfirmed-margin")]
-        public Dictionary<string, decimal> GetUnconfirmedMargin([FromQuery] string accountId)
+        public Task<Dictionary<string, decimal>> GetUnconfirmedMargin([FromQuery] string accountId)
         {
             var account = _accountsProvider.GetAccountById(accountId);
 
             if (account == null)
-                return new Dictionary<string, decimal>();
+                return Task.FromResult(new Dictionary<string, decimal>());
 
-            return account
-                .AccountFpl
-                .UnconfirmedMarginData
-                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+            return Task.FromResult(
+                account
+                    .AccountFpl
+                    .UnconfirmedMarginData
+                    .ToDictionary(kvp => kvp.Key, kvp => kvp.Value)
+            );
         }
-        
+
         /// <inheritdoc />
         [HttpPost("unconfirmed-margin")]
         public Task FreezeUnconfirmedMargin(string accountId, string operationId, decimal amount)

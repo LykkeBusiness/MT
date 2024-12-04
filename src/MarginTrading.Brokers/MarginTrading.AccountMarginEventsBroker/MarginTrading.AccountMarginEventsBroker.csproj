@@ -11,6 +11,7 @@
   <ItemGroup>
     <PackageReference Include="Dapper" />
     <PackageReference Include="LykkeBiz.MarginTrading.BrokerBase" />
+    <PackageReference Include="Lykke.MarginTrading.BackendSnow.Contracts" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" />
     <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
@@ -23,7 +24,6 @@
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\MarginTrading.Backend.Contracts\MarginTrading.Backend.Contracts.csproj" />
     <ProjectReference Include="..\..\MarginTrading.Common\MarginTrading.Common.csproj" />
   </ItemGroup>
   <ItemGroup>
@@ -32,7 +32,7 @@
     </None>
   </ItemGroup>
   <Target Name="CopySerilogConfig" AfterTargets="AfterBuild">
-  <Copy SourceFiles="appsettings.Serilog.json" DestinationFolder="$(OutDir)" />
+    <Copy SourceFiles="appsettings.Serilog.json" DestinationFolder="$(OutDir)" />
   </Target>
   <Target Name="CopySerilogConfigOnPublish" AfterTargets="Publish">
     <Copy SourceFiles="appsettings.Serilog.json" DestinationFolder="$(PublishDir)" />

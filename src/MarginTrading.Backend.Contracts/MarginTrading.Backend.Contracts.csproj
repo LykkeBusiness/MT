@@ -3,17 +3,18 @@
     <TargetFramework>net8.0</TargetFramework>
     <Version>2.32.7</Version>
     <PackageId>Lykke.MarginTrading.BackendSnow.Contracts</PackageId>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <NoWarn>1701;1702;1705;1591</NoWarn>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <NoWarn>1701;1702;1705;1591</NoWarn>
+    <Company>Lykke Business</Company>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Lykke.Contracts" />
     <PackageReference Include="Refit" />
+    <PackageReference Include="Refit.Newtonsoft.Json" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="README.md" />
   </ItemGroup>
 </Project>
