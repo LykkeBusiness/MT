@@ -22,7 +22,7 @@ namespace MarginTrading.Backend.Services.Mappers
 {
     public static class DomainToContractMappers
     {
-        public static OrderContract ConvertToContract(this Order order, IOrderReader orderReader)
+        public static OrderContract ConvertToContract(this Order order, IOrderReaderBase orderReader)
         {
             var relatedOrders = new List<Order>();
 
@@ -44,7 +44,7 @@ namespace MarginTrading.Backend.Services.Mappers
         /// <param name="status">Snapshot status</param>
         /// <param name="orderReader"></param>
         /// <returns></returns>
-        public static object ConvertToSnapshotContract(this Order order, IOrderReader orderReader, SnapshotStatus status = SnapshotStatus.Final)
+        public static object ConvertToSnapshotContract(this Order order, IOrderReaderBase orderReader, SnapshotStatus status = SnapshotStatus.Final)
         {
             return status == SnapshotStatus.Draft
                 ? (object) order
@@ -132,7 +132,7 @@ namespace MarginTrading.Backend.Services.Mappers
             };
         }
 
-        public static OpenPositionContract ConvertToContract(this Position position, IOrderReader orderReader)
+        public static OpenPositionContract ConvertToContract(this Position position, IOrderReaderBase orderReader)
         {
             var relatedOrders = new List<RelatedOrderInfoContract>();
 
@@ -193,7 +193,7 @@ namespace MarginTrading.Backend.Services.Mappers
         /// <param name="status">Snapshot status</param>
         /// <param name="orderReader"></param>
         /// <returns></returns>
-        public static object ConvertToSnapshotContract(this Position position, IOrderReader orderReader, SnapshotStatus status = SnapshotStatus.Final)
+        public static object ConvertToSnapshotContract(this Position position, IOrderReaderBase orderReader, SnapshotStatus status = SnapshotStatus.Final)
         {
             return status == SnapshotStatus.Draft
                 ? (object) position
