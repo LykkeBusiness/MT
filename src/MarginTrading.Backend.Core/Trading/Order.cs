@@ -351,7 +351,8 @@ namespace MarginTrading.Backend.Core.Trading
             Direction = volume.GetOrderDirection();
             Status = status;
             AdditionalInfo = additionalInfo;
-            // PositionsToBeClosed must be sorted by pnl
+            // PositionsToBeClosed comes pre-sorted by the caller. The order must be preserved due to some regulation requirements.
+            // Distinct() in general does not affect sorting, but some other operations do (e.g. ToImmutableHashSet)
             PositionsToBeClosed = positionsToBeClosed?.Distinct().ToImmutableArray()
                                   ?? (string.IsNullOrEmpty(parentPositionId)
                                        ? []
