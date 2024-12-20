@@ -1,3 +1,10 @@
+## 2.37.0 - Nova 2. Delivery 48 (December 20, 2024)
+### What's changed
+* LT-5921: Update refit to 8.x version.
+* LT-5886: Keep schema for appsettings.json up to date.
+* LT-5884: Keep schema for appsettings.json up to date.
+
+
 ## 2.36.0 - Nova 2. Delivery 47 (November 18, 2024)
 ### What's changed
 * LT-5817: Update messagepack to 2.x version.
