@@ -11,16 +11,6 @@ using MarginTrading.Backend.Core.Trading;
 
 namespace MarginTrading.Backend.Services
 {
-    public interface IOrderReader
-    {
-        ImmutableArray<Order> GetAllOrders();
-        ImmutableArray<Position> GetPositions();
-        ImmutableArray<Position> GetPositions(string instrument);
-        ImmutableArray<Position> GetPositionsByFxAssetPairId(string fxAssetPairId);
-        ImmutableArray<Order> GetPending();
-        bool TryGetOrderById(string orderId, out Order order);
-    }
-
     public class OrdersCache : IOrderReader
     {
         public OrdersCache()
