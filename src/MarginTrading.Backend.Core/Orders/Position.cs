@@ -187,7 +187,7 @@ namespace MarginTrading.Backend.Core.Orders
             CloseFxPrice = openFxPrice;
             EquivalentAsset = equivalentAsset;
             OpenPriceEquivalent = openPriceEquivalent;
-            RelatedOrders = relatedOrders;
+            RelatedOrders = relatedOrders.IsDefault ? [] : relatedOrders;
             LegalEntity = legalEntity;
             OpenOriginator = openOriginator;
             ExternalProviderId = externalProviderId;

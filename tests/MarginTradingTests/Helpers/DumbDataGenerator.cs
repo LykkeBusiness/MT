@@ -37,7 +37,7 @@ namespace MarginTradingTests.Helpers
                 default,
                 string.Empty,
                 default,
-                new ImmutableArray<RelatedOrderInfo>(),
+                [],
                 string.Empty,
                 default,
                 string.Empty,
