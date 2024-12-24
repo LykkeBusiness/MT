@@ -130,7 +130,7 @@ namespace MarginTrading.Backend.Services.Helpers
                 openFxPrice: positionHistory.OpenFxPrice,
                 equivalentAsset: positionHistory.EquivalentAsset,
                 openPriceEquivalent: positionHistory.OpenPriceEquivalent,
-                relatedOrders: [..positionHistory.RelatedOrders],
+                relatedOrders: positionHistory.RelatedOrders?.ToImmutableArray() ?? [],
                 legalEntity: positionHistory.LegalEntity,
                 openOriginator: positionHistory.OpenOriginator,
                 externalProviderId: positionHistory.ExternalProviderId,
