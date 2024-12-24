@@ -19,5 +19,6 @@ namespace MarginTrading.Backend.Core
         public LiquidationType LiquidationType { get; set; }
         public OriginatorType OriginatorType { get; set; }
         public string AdditionalInfo { get; set; }
+        public string AccountMetadata { get; set; }
     }
 }

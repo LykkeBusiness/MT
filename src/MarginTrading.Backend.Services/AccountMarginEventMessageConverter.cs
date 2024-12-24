@@ -10,11 +10,12 @@ namespace MarginTrading.Backend.Services
     class AccountMarginEventMessageConverter
     {
         public static MarginEventMessage Create(IMarginTradingAccount account, MarginEventTypeContract eventType,
-            DateTime eventTime)
+            DateTime eventTime, string correlationId = null)
         {
             return new MarginEventMessage
             {
                 EventId = Guid.NewGuid().ToString("N"),
+                // CorrelationId = correlationId,
                 EventTime = eventTime,
                 EventType = eventType,
 

@@ -406,7 +406,7 @@ namespace MarginTrading.Backend.Services
                 return;
             }
 
-            // there is no any global lock of positions / orders, that's why it is possible to have concurrency 
+            // there is no any global lock of positions / orders, that's why it is possible to have concurrency
             // in position close process
             // since orders, that have not empty PositionsToBeClosed should close positions and not open new ones
             // volume of executed order should be equal to position volume, but should have opposite sign
@@ -696,17 +696,35 @@ namespace MarginTrading.Backend.Services
                 ? LiquidationType.Normal
                 : LiquidationType.Mco;
 
+
+            var accountMetadata = new
+            {
+                MarginCall1Level = account.GetMarginCall1Level(),
+                MarginCall2Level = account.GetMarginCall2Level(),
+                StopOutLevel = account.GetStopOutLevel(),
+                TotalCapital = account.GetTotalCapital(),
+                FreeMargin = account.GetFreeMargin(),
+                MarginAvailable = account.GetMarginAvailable(),
+                UsedMargin = account.GetUsedMargin(),
+                MarginInit = account.GetMarginInit(),
+                PnL = account.GetPnl(),
+                OpenPositionsCount = account.GetOpenPositionsCount(),
+                MarginUsageLevel = account.GetMarginUsageLevel(),
+            };
+
+            var operationId = _identityGenerator.GenerateGuid();
             _cqrsSender.SendCommandToSelf(new StartLiquidationInternalCommand
             {
-                OperationId = _identityGenerator.GenerateGuid(),
+                OperationId = operationId,
                 AccountId = account.Id,
                 CreationTime = _dateService.Now(),
                 QuoteInfo = quote?.ToJson(),
                 LiquidationType = liquidationType,
                 OriginatorType = OriginatorType.System,
+                AccountMetadata = accountMetadata.ToJson()
             });
 
-            _stopOutEventChannel.SendEvent(this, new StopOutEventArgs(account));
+            _stopOutEventChannel.SendEvent(this, new StopOutEventArgs(account, operationId));
         }
 
         public async Task<(PositionCloseResult, Order)> ClosePositionsAsync(PositionsCloseData closeData, bool specialLiquidationEnabled)

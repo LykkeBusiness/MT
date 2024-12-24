@@ -72,8 +72,7 @@ namespace MarginTrading.Backend.Services.Workflow.Liquidation
         }
 
         [UsedImplicitly]
-        public async Task Handle(StartLiquidationInternalCommand command,
-            IEventPublisher publisher)
+        public async Task Handle(StartLiquidationInternalCommand command, IEventPublisher publisher)
         {
             #region Private Methods
 
@@ -137,7 +136,8 @@ namespace MarginTrading.Backend.Services.Workflow.Liquidation
                         LiquidationType = command.LiquidationType,
                         OriginatorType = command.OriginatorType,
                         AdditionalInfo = command.AdditionalInfo,
-                        StartedAt = command.CreationTime
+                        StartedAt = command.CreationTime,
+                        AccountMetadata = command.AccountMetadata
                     }
                 ));
 
