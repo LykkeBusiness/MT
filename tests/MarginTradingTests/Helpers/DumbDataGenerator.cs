@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+
 using MarginTrading.Backend.Core.Orders;
 using MarginTrading.Backend.Core.Trading;
 
@@ -35,7 +37,7 @@ namespace MarginTradingTests.Helpers
                 default,
                 string.Empty,
                 default,
-                new List<RelatedOrderInfo>(),
+                [],
                 string.Empty,
                 default,
                 string.Empty,
@@ -53,7 +55,7 @@ namespace MarginTradingTests.Helpers
         public static Order GenerateOrder(string assetPairId = null,
             decimal? volume = null,
             string accountId = null,
-            List<string> positionsToBeClosed = null,
+            ImmutableArray<string>? positionsToBeClosed = null,
             OrderStatus? status = null) =>
             new Order(
                 "1",

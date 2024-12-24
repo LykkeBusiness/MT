@@ -2,6 +2,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.Collections.Immutable;
+
 using MarginTrading.Backend.Core.Helpers;
 using MarginTrading.Backend.Core.Orders;
 using MarginTrading.Backend.Core.Trading;
@@ -74,12 +76,12 @@ namespace MarginTrading.Backend.Services.Helpers
                 status: orderHistory.Status,
                 additionalInfo: orderHistory.AdditionalInfo,
                 positionsToBeClosed: string.IsNullOrWhiteSpace(orderHistory.PositionId)
-                    ? new List<string>()
-                    : new List<string> {orderHistory.PositionId},
+                    ? []
+                    : [orderHistory.PositionId],
                 externalProviderId: orderHistory.ExternalProviderId
             );
         }
-        
+
         /// <summary>
         /// Return true if there was difference, false if items were the same.
         /// </summary>
@@ -128,7 +130,7 @@ namespace MarginTrading.Backend.Services.Helpers
                 openFxPrice: positionHistory.OpenFxPrice,
                 equivalentAsset: positionHistory.EquivalentAsset,
                 openPriceEquivalent: positionHistory.OpenPriceEquivalent,
-                relatedOrders: positionHistory.RelatedOrders,
+                relatedOrders: positionHistory.RelatedOrders?.ToImmutableArray() ?? [],
                 legalEntity: positionHistory.LegalEntity,
                 openOriginator: positionHistory.OpenOriginator,
                 externalProviderId: positionHistory.ExternalProviderId,

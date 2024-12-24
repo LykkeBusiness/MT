@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Newtonsoft.Json;
 
@@ -12,12 +13,12 @@ namespace MarginTrading.Backend.Core.MatchedOrders
     [JsonConverter(typeof(MatchedOrderCollectionConverter))]
     public class MatchedOrderCollection : IReadOnlyCollection<MatchedOrder>
     {
-        private IReadOnlyList<MatchedOrder> _items;
+        private ImmutableList<MatchedOrder> _items;
 
         public decimal SummaryVolume { get; private set; }
         public decimal WeightedAveragePrice { get; private set; }
 
-        public IReadOnlyList<MatchedOrder> Items
+        public ImmutableList<MatchedOrder> Items
         {
             get => _items;
             private set
@@ -35,19 +36,18 @@ namespace MarginTrading.Backend.Core.MatchedOrders
 
         public MatchedOrderCollection(IEnumerable<MatchedOrder> orders = null)
         {
-            Items = orders?.ToList() ?? new List<MatchedOrder>();
+            Items = orders?.ToImmutableList() ?? [];
         }
 
         public void Add(MatchedOrder order)
         {
-            AddRange(new[] {order});
+            Items = Items.Add(order);
         }
 
         public void AddRange(IEnumerable<MatchedOrder> orders)
         {
-            Items = Items.Union(orders).ToList();
+            Items = Items.AddRange(orders);
         }
-
 
         #region IReadOnlyCollection
 
