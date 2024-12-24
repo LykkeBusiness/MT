@@ -2,6 +2,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Security.Cryptography;
 using MarginTrading.Backend.Contracts.Activities;
 using MarginTrading.Backend.Core.Orders;
@@ -59,21 +60,21 @@ namespace MarginTrading.Backend.Services.EventsConsumers
                 ea.UpdateType,
                 ea.ActivitiesMetadata);
         }
-        
-        private void CancelRelatedOrders(List<RelatedOrderInfo> relatedOrderInfos, OrderCancellationReason reason)
+
+        private void CancelRelatedOrders(ImmutableArray<RelatedOrderInfo> relatedOrderInfos, OrderCancellationReason reason)
         {
             var metadata = new OrderCancelledMetadata
             {
                 Reason = reason.ToType<OrderCancellationReasonContract>()
             };
-            
+
             foreach (var relatedOrderInfo in relatedOrderInfos)
             {
                 if (_ordersCache.Inactive.TryPopById(relatedOrderInfo.Id, out var inactiveRelatedOrder))
                 {
                     inactiveRelatedOrder.Cancel(_dateService.Now(), null);
                     _orderCancelledEventChannel.SendEvent(this, new OrderCancelledEventArgs(inactiveRelatedOrder, metadata));
-                } 
+                }
                 else if (_ordersCache.Active.TryPopById(relatedOrderInfo.Id, out var activeRelatedOrder))
                 {
                     activeRelatedOrder.Cancel(_dateService.Now(), null);
@@ -92,11 +93,11 @@ namespace MarginTrading.Backend.Services.EventsConsumers
                     UpdatedProperty = OrderChangedProperty.RelatedOrderRemoved,
                     OldValue = order.Id
                 };
-                
+
                 parentOrder.RemoveRelatedOrder(order.Id);
                 _orderChangedEventChannel.SendEvent(this, new OrderChangedEventArgs(parentOrder, metadata));
             }
-            
+
             if (!string.IsNullOrEmpty(order.ParentPositionId)
                 && _ordersCache.Positions.TryGetPositionById(order.ParentPositionId, out var parentPosition))
             {
