@@ -15,7 +15,7 @@ namespace MarginTrading.Backend.Services
             return new MarginEventMessage
             {
                 EventId = Guid.NewGuid().ToString("N"),
-                // CorrelationId = correlationId,
+                CorrelationId = correlationId,
                 EventTime = eventTime,
                 EventType = eventType,
 
