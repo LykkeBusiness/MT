@@ -8,6 +8,7 @@ namespace MarginTrading.Backend.Contracts.Events
     public class MarginEventMessage
     {
         public string EventId { get; set; }
+        public string CorrelationId { get; set; }
         public DateTime EventTime { get; set; }
         public MarginEventTypeContract EventType { get; set; }
 
