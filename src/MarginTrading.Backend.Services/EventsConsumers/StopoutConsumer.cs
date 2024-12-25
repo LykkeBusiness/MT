@@ -4,16 +4,19 @@
 using System;
 using System.Collections.Concurrent;
 using System.Linq;
+
 using Common;
 using Common.Log;
+
 using Lykke.Common;
+
 using MarginTrading.Backend.Contracts.Events;
 using MarginTrading.Backend.Core.Settings;
 using MarginTrading.Backend.Services.Events;
 using MarginTrading.Backend.Services.Notifications;
 using MarginTrading.Common.Services;
 
-namespace MarginTrading.Backend.Services
+namespace MarginTrading.Backend.Services.EventsConsumers
 {
     public class StopOutConsumer : IEventConsumer<StopOutEventArgs>,
         IEventConsumer<LiquidationEndEventArgs>
@@ -25,8 +28,7 @@ namespace MarginTrading.Backend.Services
         private readonly MarginTradingSettings _settings;
         private readonly ILog _log;
 
-        private readonly ConcurrentDictionary<string, DateTime> _lastNotifications = 
-            new ConcurrentDictionary<string, DateTime>();
+        private readonly ConcurrentDictionary<string, DateTime> _lastNotifications = new();
 
         public StopOutConsumer(IThreadSwitcher threadSwitcher,
             IOperationsLogService operationsLogService,
@@ -50,8 +52,7 @@ namespace MarginTrading.Backend.Services
         {
             var account = ea.Account;
             var eventTime = _dateService.Now();
-            var accountMarginEventMessage =
-                AccountMarginEventMessageConverter.Create(account, MarginEventTypeContract.Stopout, eventTime);
+            var accountMarginEventMessage = AccountMarginEventMessageConverter.Create(account, MarginEventTypeContract.Stopout, eventTime, ea.CorrelationId);
 
             _threadSwitcher.SwitchThread(async () =>
             {
@@ -62,11 +63,11 @@ namespace MarginTrading.Backend.Services
                         $"StopOut event is ignored for accountId {account.Id} because of throttling: event time {eventTime}, last notification was sent at {lastNotification}");
                     return;
                 }
-                
+
                 _operationsLogService.AddLog("stopout", account.Id, "", ea.ToJson());
 
                 await _rabbitMqNotifyService.AccountMarginEvent(accountMarginEventMessage);
-                
+
                 _lastNotifications.AddOrUpdate(account.Id, eventTime, (s, times) => eventTime);
             });
         }
