@@ -1,3 +1,8 @@
+## 2.36.1 - Nova 2. Delivery 47. Hotfix 2 (January 16, 2025)
+### What's changed
+* LT-5991: Bump LykkeBiz.RabbitMqBroker to 8.11.1
+
+
 ## 2.36.0 - Nova 2. Delivery 47 (November 18, 2024)
 ### What's changed
 * LT-5817: Update messagepack to 2.x version.
