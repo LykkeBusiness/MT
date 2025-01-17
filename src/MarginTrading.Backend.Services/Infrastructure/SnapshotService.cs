@@ -10,14 +10,17 @@ using Common;
 using Common.Log;
 using MarginTrading.Backend.Contracts.Prices;
 using MarginTrading.Backend.Core;
+using MarginTrading.Backend.Core.Exceptions;
 using MarginTrading.Backend.Core.Repositories;
 using MarginTrading.Backend.Core.Services;
 using MarginTrading.Backend.Core.Settings;
 using MarginTrading.Backend.Core.Snapshots;
 using MarginTrading.Backend.Services.AssetPairs;
 using MarginTrading.Backend.Services.Mappers;
+using MarginTrading.Backend.Services.Policies;
 using MarginTrading.Common.Services;
 using MoreLinq;
+using Polly.Retry;
 
 namespace MarginTrading.Backend.Services.Infrastructure
 {
@@ -27,7 +30,6 @@ namespace MarginTrading.Backend.Services.Infrastructure
         private readonly IAccountsCacheService _accountsCacheService;
         private readonly IQuoteCacheService _quoteCacheService;
         private readonly IFxRateCacheService _fxRateCacheService;
-        private readonly IOrderReader _orderReader;
         private readonly IDateService _dateService;
 
         private readonly ITradingEngineSnapshotsRepository _tradingEngineSnapshotsRepository;
@@ -43,12 +45,13 @@ namespace MarginTrading.Backend.Services.Infrastructure
         private static readonly SemaphoreSlim Lock = new SemaphoreSlim(1, 1);
         public static bool IsMakingSnapshotInProgress => Lock.CurrentCount == 0;
 
+        private AsyncRetryPolicy<SnapshotValidationResult> _policy;
+
         public SnapshotService(
             IScheduleSettingsCacheService scheduleSettingsCacheService,
             IAccountsCacheService accountsCacheService,
             IQuoteCacheService quoteCacheService,
             IFxRateCacheService fxRateCacheService,
-            IOrderReader orderReader,
             IDateService dateService,
             ITradingEngineSnapshotsRepository tradingEngineSnapshotsRepository,
             ISnapshotValidationService snapshotValidationService,
@@ -64,7 +67,6 @@ namespace MarginTrading.Backend.Services.Infrastructure
             _accountsCacheService = accountsCacheService;
             _quoteCacheService = quoteCacheService;
             _fxRateCacheService = fxRateCacheService;
-            _orderReader = orderReader;
             _dateService = dateService;
             _tradingEngineSnapshotsRepository = tradingEngineSnapshotsRepository;
             _snapshotValidationService = snapshotValidationService;
@@ -75,6 +77,8 @@ namespace MarginTrading.Backend.Services.Infrastructure
             _snapshotStatusTracker = snapshotStatusTracker;
             _snapshotTrackerService = snapshotTrackerService;
             _settings = settings;
+
+            _policy = SnapshotStateValidationPolicy.BuildPolicy(log);
         }
 
         /// <inheritdoc />
@@ -84,7 +88,7 @@ namespace MarginTrading.Backend.Services.Infrastructure
             {
                 //TODO: remove later (if everything will work and we will never go to this branch)
                 _scheduleSettingsCacheService.MarketsCacheWarmUp();
-                
+
                 if (!_scheduleSettingsCacheService.TryGetPlatformCurrentDisabledInterval(out disabledInterval))
                 {
                     throw new Exception($"Trading should be stopped for whole platform in order to make trading data snapshot.");
@@ -103,44 +107,38 @@ namespace MarginTrading.Backend.Services.Infrastructure
             }
 
             // We must be sure all messages have been processed by history brokers before starting current state validation.
-            // If one or more queues contain not delivered messages the snapshot can not be created.  
+            // If one or more queues contain not delivered messages the snapshot can not be created.
             _queueValidationService.ThrowExceptionIfQueuesNotEmpty(true);
-
-            // Before starting snapshot creation the current state should be validated.
-            var validationResult = await _snapshotValidationService.ValidateCurrentStateAsync();
-
-            if (!validationResult.IsValid)
-            {
-                var ex = new InvalidOperationException(
-                    $"The trading data snapshot might be corrupted. The current state of orders and positions is incorrect. Check the dbo.BlobData table for more info: container {LykkeConstants.MtCoreSnapshotBlobContainer}, correlationId {correlationId}");
-                await _log.WriteFatalErrorAsync(nameof(SnapshotService), 
-                    nameof(MakeTradingDataSnapshot),
-                    validationResult.ToJson(),
-                    ex);
-                await _blobRepository.WriteAsync(LykkeConstants.MtCoreSnapshotBlobContainer, correlationId, validationResult);
-            }
-            else
-            {
-                await _log.WriteInfoAsync(nameof(SnapshotService), nameof(MakeTradingDataSnapshot),
-                    "The current state of orders and positions is correct.");
-            }
 
             await Lock.WaitAsync();
 
             try
             {
                 _snapshotStatusTracker.SnapshotInProgress();
-                
-                var orders = _orderReader.GetAllOrders();
-                var ordersJson = orders.Select(o => o.ConvertToSnapshotContract(_orderReader, status)).ToJson();
+
+                var validationResult = await _policy.ExecuteAsync(() => Validate(correlationId));
+                if (!validationResult.IsValid)
+                {
+                    await _log.WriteFatalErrorAsync(nameof(SnapshotService),
+                        nameof(MakeTradingDataSnapshot),
+                        validationResult.ToJson(),
+                        validationResult.Exception);
+                    throw validationResult.Exception;
+                }
+
+                // orders and positions are fixed at the moment of validation
+                var orders = validationResult.Cache.GetAllOrders();
+                var ordersJson = orders
+                    .Select(o => o.ConvertToSnapshotContract(validationResult.Cache, status)).ToJson();
                 await _log.WriteInfoAsync(nameof(SnapshotService), nameof(MakeTradingDataSnapshot),
                     $"Preparing data... {orders.Length} orders prepared.");
-                
-                var positions = _orderReader.GetPositions();
-                var positionsJson = positions.Select(p => p.ConvertToSnapshotContract(_orderReader, status)).ToJson();
+
+                var positions = validationResult.Cache.GetPositions();
+                var positionsJson = positions
+                    .Select(p => p.ConvertToSnapshotContract(validationResult.Cache, status)).ToJson();
                 await _log.WriteInfoAsync(nameof(SnapshotService), nameof(MakeTradingDataSnapshot),
                     $"Preparing data... {positions.Length} positions prepared.");
-                
+
                 var accountStats = _accountsCacheService.GetAll();
 
                 if (_settings.LogBlockedMarginCalculation)
@@ -153,7 +151,7 @@ namespace MarginTrading.Backend.Services.Infrastructure
                             @$"Account {accountStat.Id}, TotalBlockedMargin {margin}, {accountStat.LogInfo}");
 
                         var accountPositions = positions.Where(p => p.AccountId == accountStat.Id);
-                        
+
                         foreach(var p in accountPositions)
                         {
                             await _log.WriteInfoAsync(nameof(SnapshotService), nameof(MakeTradingDataSnapshot),
@@ -170,24 +168,24 @@ namespace MarginTrading.Backend.Services.Infrastructure
                 var accountsJson = accountStats
                     .Select(a => a.ConvertToSnapshotContract(accountsInLiquidation.Contains(a), status))
                     .ToJson();
-                
+
                 // timestamp will be used as an eod border
                 // setting it as close as possible to accountStats retrieval
                 var timestamp = _dateService.Now();
 
                 await _log.WriteInfoAsync(nameof(SnapshotService), nameof(MakeTradingDataSnapshot),
                     $"Preparing data... {accountStats.Count} accounts prepared.");
-                
+
                 var bestFxPrices = _fxRateCacheService.GetAllQuotes();
                 var bestFxPricesData = bestFxPrices.ToDictionary(q => q.Key, q => q.Value.ConvertToContract()).ToJson();
                 await _log.WriteInfoAsync(nameof(SnapshotService), nameof(MakeTradingDataSnapshot),
                     $"Preparing data... {bestFxPrices.Count} best FX prices prepared.");
-                
+
                 var bestPrices = _quoteCacheService.GetAllQuotes();
                 var bestPricesData = bestPrices.ToDictionary(q => q.Key, q => q.Value.ConvertToContract()).ToJson();
                 await _log.WriteInfoAsync(nameof(SnapshotService), nameof(MakeTradingDataSnapshot),
                     $"Preparing data... {bestPrices.Count} best trading prices prepared.");
-                
+
                 var msg = $"TradingDay: {tradingDay:yyyy-MM-dd}, Orders: {orders.Length}, positions: {positions.Length}, accounts: {accountStats.Count}, best FX prices: {bestFxPrices.Count}, best trading prices: {bestPrices.Count}.";
 
                 await _log.WriteInfoAsync(nameof(SnapshotService), nameof(MakeTradingDataSnapshot),
@@ -205,20 +203,56 @@ namespace MarginTrading.Backend.Services.Infrastructure
                     status: status);
 
                 await _tradingEngineSnapshotsRepository.AddAsync(snapshot);
-                
+
                 _snapshotStatusTracker.SnapshotCreated();
                 if (status == SnapshotStatus.Draft)
                 {
-                    await _snapshotTrackerService.SetShouldRecreateSnapshot(false);   
+                    await _snapshotTrackerService.SetShouldRecreateSnapshot(false);
                 }
 
                 await _log.WriteInfoAsync(nameof(SnapshotService), nameof(MakeTradingDataSnapshot),
-                    $"Trading data snapshot was written to the storage. {msg}");   
+                    $"Trading data snapshot was written to the storage. {msg}");
                 return $"Trading data snapshot was written to the storage. {msg}";
             }
             finally
             {
                 Lock.Release();
+            }
+        }
+
+        private async Task<SnapshotValidationResult> Validate(string correlationId)
+        {
+            try
+            {
+                // Before starting snapshot creation the current state should be validated.
+                var validationResult = await _snapshotValidationService.ValidateCurrentStateAsync();
+
+                if (!validationResult.IsValid)
+                {
+                    var errorMessage =
+                        "The trading data snapshot might be corrupted. The current state of orders and positions is incorrect. Check the dbo.BlobData table for more info: container {LykkeConstants.MtCoreSnapshotBlobContainer}, correlationId {correlationId}";
+                    var ex = new SnapshotValidationException(errorMessage,
+                        SnapshotValidationError.InvalidOrderOrPositionState);
+                    validationResult.Exception = ex;
+                    await _blobRepository.WriteAsync(LykkeConstants.MtCoreSnapshotBlobContainer, correlationId, validationResult);
+                }
+                else
+                {
+                    await _log.WriteInfoAsync(nameof(SnapshotService), nameof(MakeTradingDataSnapshot),
+                        "The current state of orders and positions is correct.");
+                }
+
+                return validationResult;
+            }
+            catch (Exception e)
+            {
+                // in case validation fails for some reason (not related to orders / positions inconsistency, e.g. a network error during validation)
+                var result = new SnapshotValidationResult
+                {
+                    Exception = new SnapshotValidationException("Snapshot validation failed", SnapshotValidationError.Unknown, e),
+                };
+
+                return result;
             }
         }
 
@@ -233,7 +267,7 @@ namespace MarginTrading.Backend.Services.Infrastructure
             {
                 throw new InvalidOperationException("Trading data snapshot manipulations are already in progress");
             }
-            
+
             await Lock.WaitAsync();
             try
             {
