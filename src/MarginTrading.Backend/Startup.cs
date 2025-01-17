@@ -158,9 +158,13 @@ namespace MarginTrading.Backend
         {
             ApplicationContainer = app.ApplicationServices.GetAutofacRoot();
 
+            // TODO: this is potentially dangerous because it triggers snapshot creation
+            // both IScheduleSettingsCacheService.UpdateAllSettingsAsync and InitializeJobs trigger snapshot creation
+            // possible solution: move them to appLifetime.ApplicationStarted.Register
+            LogLocator.CommonLog?.WriteInfoAsync(nameof(Startup), nameof(Configure), "Starting UpdateAllSettingsAsync");
             ApplicationContainer.Resolve<IScheduleSettingsCacheService>()
                 .UpdateAllSettingsAsync().GetAwaiter().GetResult();
-
+            LogLocator.CommonLog?.WriteInfoAsync(nameof(Startup), nameof(Configure), "Starting InitializeJobs");
             InitializeJobs();
 
             if (env.IsDevelopment())
