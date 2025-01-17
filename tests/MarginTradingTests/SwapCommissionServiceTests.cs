@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Autofac;
 using MarginTrading.Backend.Core;
@@ -55,25 +56,25 @@ namespace MarginTradingTests
                 .ReturnsAsync(new List<TradingInstrumentContract> {instrumentContract});
 
             await _accountAssetsManager.UpdateTradingInstrumentsCacheAsync();
-            
+
             var dayPosition = new Position(Guid.NewGuid().ToString("N"), 0, "EURUSD", 20, Accounts[0].Id,
                 MarginTradingTestsUtils.TradingConditionId, Accounts[0].BaseAssetId, null, MatchingEngineConstants.DefaultMm,
                 new DateTime(2017, 01, 01, 20, 50, 0), "OpenTrade", OrderType.Market, 20, 1, 1, "USD", 1,
-                new List<RelatedOrderInfo>(), "LYKKETEST", OriginatorType.Investor, "", "EURUSD", FxToAssetPairDirection.Straight, "", false);
+                [], "LYKKETEST", OriginatorType.Investor, "", "EURUSD", FxToAssetPairDirection.Straight, "", false);
 
             dayPosition.SetCommissionRates(100, 0, 0, 1);
 
-            dayPosition.StartClosing(new DateTime(2017, 01, 02, 20, 50, 0), PositionCloseReason.Close, 
+            dayPosition.StartClosing(new DateTime(2017, 01, 02, 20, 50, 0), PositionCloseReason.Close,
                 OriginatorType.Investor, "");
             dayPosition.Close(new DateTime(2017, 01, 02, 20, 50, 0), MatchingEngineConstants.DefaultMm, 2, 1, 1, OriginatorType.Investor,
                 PositionCloseReason.Close, "", "CloseTrade");
-            
+
             var swapsForDay = _swapService.GetSwaps(dayPosition);
 
             var twoDayPosition = new Position(Guid.NewGuid().ToString("N"), 0, "EURUSD", 20, Accounts[0].Id,
                 MarginTradingTestsUtils.TradingConditionId, Accounts[0].BaseAssetId, null, MatchingEngineConstants.DefaultMm,
                 new DateTime(2017, 01, 01, 20, 50, 0), "OpenTrade", OrderType.Market, 20, 1, 1, "USD", 1,
-                new List<RelatedOrderInfo>(), "LYKKETEST", OriginatorType.Investor, "", "EURUSD", FxToAssetPairDirection.Straight, "", false);
+                new ImmutableArray<RelatedOrderInfo>(), "LYKKETEST", OriginatorType.Investor, "", "EURUSD", FxToAssetPairDirection.Straight, "", false);
 
             twoDayPosition.SetCommissionRates(100, 0, 0, 1);
 
@@ -81,7 +82,7 @@ namespace MarginTradingTests
                 OriginatorType.Investor, "");
             twoDayPosition.Close(new DateTime(2017, 01, 03, 20, 50, 0), MatchingEngineConstants.DefaultMm, 2, 1, 1, OriginatorType.Investor,
                 PositionCloseReason.Close, "", "CloseTrade");
-            
+
             var swapsFor2Days = _swapService.GetSwaps(twoDayPosition);
 
             Assert.AreEqual(5.70m, swapsForDay);

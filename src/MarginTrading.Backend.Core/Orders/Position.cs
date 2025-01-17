@@ -2,7 +2,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Autofac;
 using MarginTrading.Backend.Core.Exceptions;
@@ -19,7 +19,7 @@ namespace MarginTrading.Backend.Core.Orders
         private decimal _closeFxPrice;
 
         #region Properties
-        
+
         [JsonProperty]
         public virtual string Id { get; protected set; }
         [JsonProperty]
@@ -68,9 +68,9 @@ namespace MarginTrading.Backend.Core.Orders
         [JsonProperty]
         public decimal OpenPriceEquivalent { get; private set; }
         [JsonProperty]
-        public List<RelatedOrderInfo> RelatedOrders { get; private set; }
+        public ImmutableArray<RelatedOrderInfo> RelatedOrders { get; private set; } = [];
         [JsonProperty]
-        public string LegalEntity { get; private set; }  
+        public string LegalEntity { get; private set; }
         [JsonProperty]
         public OriginatorType OpenOriginator { get; private set; }
         [JsonProperty]
@@ -87,7 +87,7 @@ namespace MarginTrading.Backend.Core.Orders
         public decimal CloseCommissionRate { get; private set; }
         [JsonProperty]
         public decimal CommissionLot { get; private set; }
-        
+
         [JsonProperty]
         public string CloseMatchingEngineId { get; private set; }
         [JsonProperty]
@@ -117,13 +117,13 @@ namespace MarginTrading.Backend.Core.Orders
         [JsonProperty]
         public string CloseComment { get; private set; }
         [JsonProperty]
-        public List<string> CloseTrades { get; private set; }
-        
+        public ImmutableArray<string> CloseTrades { get; private set; }
+
         [JsonProperty]
         public virtual string FxAssetPairId { get; protected set; }
         [JsonProperty]
         public virtual FxToAssetPairDirection FxToAssetPairDirection { get; protected set; }
-        
+
         [JsonProperty]
         public override PositionStatus Status { get; protected set; }
 
@@ -135,21 +135,21 @@ namespace MarginTrading.Backend.Core.Orders
 
         [JsonProperty]
         public bool ForceOpen { get; set; }
-        
+
         [JsonProperty]
-        public virtual HashSet<string> ChargePnlOperations { get; protected set; }
+        public virtual ImmutableHashSet<string> ChargePnlOperations { get; protected set; }
 
         [JsonProperty]
         public FplData FplData { get; private set; }
-        
+
         /// <summary>
         /// Additional information about the order, that opened position
         /// </summary>
         [JsonProperty]
         public string AdditionalInfo { get; private set; }
-        
+
         #endregion Properties
-        
+
         /// <summary>
         /// For testing and deserialization
         /// </summary>
@@ -159,11 +159,11 @@ namespace MarginTrading.Backend.Core.Orders
             FplData = new FplData {ActualHash = 1};
         }
 
-        public Position(string id, long code, string assetPairId, decimal volume, string accountId, 
-            string tradingConditionId, string accountAssetId, decimal? expectedOpenPrice, string openMatchingEngineId, 
-            DateTime openDate, string openTradeId, OrderType openOrderType, decimal openOrderVolume, decimal openPrice, decimal 
-            openFxPrice, string equivalentAsset, decimal openPriceEquivalent, List<RelatedOrderInfo> relatedOrders, string legalEntity, 
-            OriginatorType openOriginator, string externalProviderId, string fxAssetPairId, 
+        public Position(string id, long code, string assetPairId, decimal volume, string accountId,
+            string tradingConditionId, string accountAssetId, decimal? expectedOpenPrice, string openMatchingEngineId,
+            DateTime openDate, string openTradeId, OrderType openOrderType, decimal openOrderVolume, decimal openPrice, decimal
+            openFxPrice, string equivalentAsset, decimal openPriceEquivalent, ImmutableArray<RelatedOrderInfo> relatedOrders, string legalEntity,
+            OriginatorType openOriginator, string externalProviderId, string fxAssetPairId,
             FxToAssetPairDirection fxToAssetPairDirection, string additionalInfo, bool forceOpen)
         {
             // ReSharper disable VirtualMemberCallInConstructor
@@ -187,12 +187,12 @@ namespace MarginTrading.Backend.Core.Orders
             CloseFxPrice = openFxPrice;
             EquivalentAsset = equivalentAsset;
             OpenPriceEquivalent = openPriceEquivalent;
-            RelatedOrders = relatedOrders;
+            RelatedOrders = relatedOrders.IsDefault ? [] : relatedOrders;
             LegalEntity = legalEntity;
             OpenOriginator = openOriginator;
             ExternalProviderId = externalProviderId;
-            CloseTrades = new List<string>();
-            ChargePnlOperations = new HashSet<string>();
+            CloseTrades = [];
+            ChargePnlOperations = [];
             FxAssetPairId = fxAssetPairId;
             FxToAssetPairDirection = fxToAssetPairDirection;
             AdditionalInfo = additionalInfo;
@@ -210,7 +210,7 @@ namespace MarginTrading.Backend.Core.Orders
             var account = ContainerProvider.Container.Resolve<IAccountsCacheService>().Get(AccountId);
             account.CacheNeedsToBeUpdated();
         }
-        
+
         public void UpdateCloseFxPriceWithoutAccountUpdate(decimal closeFxPrice)
         {
             CloseFxPrice = closeFxPrice;
@@ -223,7 +223,7 @@ namespace MarginTrading.Backend.Core.Orders
             ClosePrice = closePrice;
             FplData.ActualHash++;
         }
-        
+
         public void UpdateClosePrice(decimal closePrice)
         {
             ClosePrice = closePrice;
@@ -245,21 +245,21 @@ namespace MarginTrading.Backend.Core.Orders
         {
             SwapTotal = swapTotal;
         }
-        
+
         public void AddRelatedOrder(Order order)
         {
             var info = new RelatedOrderInfo {Type = order.OrderType, Id = order.Id};
-            
+
             if (!RelatedOrders.Contains(info))
-                RelatedOrders.Add(info);
+                RelatedOrders = RelatedOrders.Add(info);
         }
-        
+
         public void RemoveRelatedOrder(string relatedOrderId)
         {
             var relatedOrder = RelatedOrders.FirstOrDefault(o => o.Id == relatedOrderId);
 
             if (relatedOrder != null)
-                RelatedOrders.Remove(relatedOrder);
+                RelatedOrders = RelatedOrders.Remove(relatedOrder);
         }
 
         public virtual void ChargePnL(string operationId, decimal value)
@@ -268,18 +268,18 @@ namespace MarginTrading.Backend.Core.Orders
             if (ChargePnlOperations.Contains(operationId))
                 return;
 
-            ChargePnlOperations.Add(operationId);
+            ChargePnlOperations = ChargePnlOperations.Add(operationId);
             ChargedPnL += value;
             FplData.ActualHash++;
         }
-        
+
         public virtual void SetChargedPnL(string operationId, decimal value)
         {
             //if operation was already processed - it is duplicated event
             if (ChargePnlOperations.Contains(operationId))
                 return;
 
-            ChargePnlOperations.Add(operationId);
+            ChargePnlOperations = ChargePnlOperations.Add(operationId);
             ChargedPnL = value;
             FplData.ActualHash++;
         }
@@ -288,7 +288,7 @@ namespace MarginTrading.Backend.Core.Orders
         {
             LastModified = date;
             Volume = Volume > 0 ? Volume - closedVolume : Volume + closedVolume;
-            CloseTrades.Add(tradeId);
+            CloseTrades = CloseTrades.Add(tradeId);
             ChargedPnL -= chargedPnl;
         }
 
@@ -320,7 +320,7 @@ namespace MarginTrading.Backend.Core.Orders
                 return (false, e.Message);
             }
         }
-        
+
         public void CancelClosing(DateTime date)
         {
             ChangeState(PositionCommand.CancelClosing, () =>
@@ -347,13 +347,13 @@ namespace MarginTrading.Backend.Core.Orders
                 CloseOriginator = CloseOriginator ?? originator;
                 CloseReason = closeReason;
                 CloseComment = comment;
-                CloseTrades.Add(tradeId);
+                CloseTrades = CloseTrades.Add(tradeId);
                 UpdateClosePrice(closePrice);
             });
         }
 
         #endregion State changes
-        
+
         # region Get data
 
         public virtual decimal GetUnrealisedPnl() => this.GetUnrealisedFpl();
