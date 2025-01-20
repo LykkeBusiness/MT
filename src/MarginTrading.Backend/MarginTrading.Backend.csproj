@@ -41,7 +41,7 @@
     <PackageReference Include="Lykke.Service.ClientAccount.Client" />
     <PackageReference Include="LykkeBiz.Logs.MsSql" />
     <PackageReference Include="LykkeBiz.Logs.Serilog" />
-    <PackageReference Include="LykkeBiz.RabbitMqBroker" />
+    <PackageReference Include="LykkeBiz.MarginTrading.BrokerBase" />
     <PackageReference Include="Lykke.Service.EmailSender" />
     <PackageReference Include="Lykke.Snow.Common.Startup" />
     <PackageReference Include="Lykke.MarginTrading.AccountsManagement.Contracts" />
