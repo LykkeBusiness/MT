@@ -29,7 +29,6 @@
     <PackageReference Include="Lykke.Snow.Domain" />
     <PackageReference Include="Lykke.Snow.Mdm.Contracts" />
     <PackageReference Include="LykkeBiz.Snow.Cqrs" />
-    <PackageReference Include="LykkeBiz.MarginTrading.BrokerBase" />
     <PackageReference Include="LykkeBiz.Messaging.RabbitMq" />
     <PackageReference Include="Lykke.Service.ClientAccount.Client" />
     <PackageReference Include="Lykke.Service.EmailSender" />
