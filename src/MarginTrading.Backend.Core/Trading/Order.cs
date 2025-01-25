@@ -4,9 +4,11 @@
 using System;
 using System.Collections.Immutable;
 using System.Linq;
+
 using MarginTrading.Backend.Core.MatchedOrders;
 using MarginTrading.Backend.Core.Orders;
 using MarginTrading.Backend.Core.StateMachines;
+
 using Newtonsoft.Json;
 
 namespace MarginTrading.Backend.Core.Trading
@@ -276,7 +278,7 @@ namespace MarginTrading.Backend.Core.Trading
         public decimal? TrailingDistance { get; private set; }
 
         [JsonProperty]
-        public ImmutableArray<string> PositionsToBeClosed {get; private set;}
+        public ImmutableArray<string> PositionsToBeClosed { get; private set; }
 
         /// <summary>
         /// Order execution rank, calculated based on type and direction
@@ -358,7 +360,7 @@ namespace MarginTrading.Backend.Core.Trading
                                        ? []
                                        : [parentPositionId]);
             ExternalProviderId = externalProviderId;
-            ExecutionRank = (byte) (OrderType.GetExecutionRank() | Direction.GetExecutionRank());
+            ExecutionRank = (byte)(OrderType.GetExecutionRank() | Direction.GetExecutionRank());
             SetExecutionSortRank();
             MatchedOrders = [];
             RelatedOrders = [];
@@ -425,7 +427,7 @@ namespace MarginTrading.Backend.Core.Trading
 
         public void AddRelatedOrder(Order order)
         {
-            var info = new RelatedOrderInfo {Type = order.OrderType, Id = order.Id};
+            var info = new RelatedOrderInfo { Type = order.OrderType, Id = order.Id };
 
             if (!RelatedOrders.Contains(info))
                 RelatedOrders = RelatedOrders.Add(info);
@@ -592,7 +594,7 @@ namespace MarginTrading.Backend.Core.Trading
 
             try
             {
-                return JsonConvert.DeserializeAnonymousType(additionalInfo, new {WithOnBehalfFees = false})
+                return JsonConvert.DeserializeAnonymousType(additionalInfo, new { WithOnBehalfFees = false })
                     .WithOnBehalfFees;
             }
             catch
