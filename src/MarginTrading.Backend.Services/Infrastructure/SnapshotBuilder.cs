@@ -116,117 +116,139 @@ namespace MarginTrading.Backend.Services.Infrastructure
 
             await Lock.WaitAsync();
 
-            try
+            try // lock block
             {
-                bool sucessfullyStarted = _draftSnapshotWorkflowTracker.TryStart();
-                if (!sucessfullyStarted)
+                if (!_draftSnapshotWorkflowTracker.TryStart())
                     throw new InvalidOperationException("Snapshot workflow state is not correct, can not start snapshot creation.");
 
-                var validationResult = await _policy.ExecuteAsync(() => Validate(correlationId));
-                if (!validationResult.IsValid)
+                string resultMessage = string.Empty;
+
+                try // workflow tracker block
                 {
-                    await _log.WriteFatalErrorAsync(nameof(SnapshotBuilder),
-                        nameof(MakeTradingDataSnapshot),
-                        validationResult.ToJson(),
-                        validationResult.Exception);
-                    _draftSnapshotWorkflowTracker.HardReset();
-                    throw validationResult.Exception;
-                }
-
-                // orders and positions are fixed at the moment of validation
-                var orders = validationResult.Cache.GetAllOrders();
-                var ordersJson = orders
-                    .Select(o => o.ConvertToSnapshotContract(validationResult.Cache, status)).ToJson();
-                await _log.WriteInfoAsync(nameof(SnapshotBuilder), nameof(MakeTradingDataSnapshot),
-                    $"Preparing data... {orders.Length} orders prepared.");
-
-                var positions = validationResult.Cache.GetPositions();
-                var positionsJson = positions
-                    .Select(p => p.ConvertToSnapshotContract(validationResult.Cache, status)).ToJson();
-                await _log.WriteInfoAsync(nameof(SnapshotBuilder), nameof(MakeTradingDataSnapshot),
-                    $"Preparing data... {positions.Length} positions prepared.");
-
-                var accountStats = _accountsCacheService.GetAll();
-
-                if (_settings.LogBlockedMarginCalculation)
-                {
-                    foreach (var accountStat in accountStats)
+                    var validationResult = await _policy.ExecuteAsync(() => Validate(correlationId));
+                    if (!validationResult.IsValid)
                     {
-                        var margin = accountStat.GetUsedMargin();
-                        if (margin == 0) continue;
-                        await _log.WriteInfoAsync(nameof(SnapshotBuilder), nameof(MakeTradingDataSnapshot),
-                            @$"Account {accountStat.Id}, TotalBlockedMargin {margin}, {accountStat.LogInfo}");
+                        await _log.WriteFatalErrorAsync(nameof(SnapshotBuilder),
+                            nameof(MakeTradingDataSnapshot),
+                            validationResult.ToJson(),
+                            validationResult.Exception);
+                        throw validationResult.Exception;
+                    }
 
-                        var accountPositions = positions.Where(p => p.AccountId == accountStat.Id);
+                    // orders and positions are fixed at the moment of validation
+                    var orders = validationResult.Cache.GetAllOrders();
+                    var ordersJson = orders
+                        .Select(o => o.ConvertToSnapshotContract(validationResult.Cache, status)).ToJson();
+                    await _log.WriteInfoAsync(nameof(SnapshotBuilder), nameof(MakeTradingDataSnapshot),
+                        $"Preparing data... {orders.Length} orders prepared.");
 
-                        foreach (var p in accountPositions)
+                    var positions = validationResult.Cache.GetPositions();
+                    var positionsJson = positions
+                        .Select(p => p.ConvertToSnapshotContract(validationResult.Cache, status)).ToJson();
+                    await _log.WriteInfoAsync(nameof(SnapshotBuilder), nameof(MakeTradingDataSnapshot),
+                        $"Preparing data... {positions.Length} positions prepared.");
+
+                    var accountStats = _accountsCacheService.GetAll();
+
+                    if (_settings.LogBlockedMarginCalculation)
+                    {
+                        foreach (var accountStat in accountStats)
                         {
+                            var margin = accountStat.GetUsedMargin();
+                            if (margin == 0) continue;
                             await _log.WriteInfoAsync(nameof(SnapshotBuilder), nameof(MakeTradingDataSnapshot),
-                                @$"Account {accountStat.Id}, Position {p.Id}, {p.FplData.LogInfo}");
+                                @$"Account {accountStat.Id}, TotalBlockedMargin {margin}, {accountStat.LogInfo}");
+
+                            var accountPositions = positions.Where(p => p.AccountId == accountStat.Id);
+
+                            foreach (var p in accountPositions)
+                            {
+                                await _log.WriteInfoAsync(nameof(SnapshotBuilder), nameof(MakeTradingDataSnapshot),
+                                    @$"Account {accountStat.Id}, Position {p.Id}, {p.FplData.LogInfo}");
+                            }
                         }
                     }
+
+                    // Forcing all account caches to be updated after trading is closed - after all events have been processed
+                    // To ensure all cache data is updated with most up-to date data for all accounts.
+                    accountStats.ForEach(a => a.CacheNeedsToBeUpdated());
+
+                    var accountsInLiquidation = await _accountsCacheService.GetAllWhereLiquidationIsRunning().ToListAsync();
+                    var accountsJson = accountStats
+                        .Select(a => a.ConvertToSnapshotContract(accountsInLiquidation.Contains(a), status))
+                        .ToJson();
+
+                    // timestamp will be used as an eod border
+                    // setting it as close as possible to accountStats retrieval
+                    var timestamp = _dateService.Now();
+
+                    await _log.WriteInfoAsync(nameof(SnapshotBuilder), nameof(MakeTradingDataSnapshot),
+                        $"Preparing data... {accountStats.Count} accounts prepared.");
+
+                    var bestFxPrices = _fxRateCacheService.GetAllQuotes();
+                    var bestFxPricesData = bestFxPrices.ToDictionary(q => q.Key, q => q.Value.ConvertToContract()).ToJson();
+                    await _log.WriteInfoAsync(nameof(SnapshotBuilder), nameof(MakeTradingDataSnapshot),
+                        $"Preparing data... {bestFxPrices.Count} best FX prices prepared.");
+
+                    var bestPrices = _quoteCacheService.GetAllQuotes();
+                    var bestPricesData = bestPrices.ToDictionary(q => q.Key, q => q.Value.ConvertToContract()).ToJson();
+                    await _log.WriteInfoAsync(nameof(SnapshotBuilder), nameof(MakeTradingDataSnapshot),
+                        $"Preparing data... {bestPrices.Count} best trading prices prepared.");
+
+                    resultMessage = $"TradingDay: {tradingDay:yyyy-MM-dd}, Orders: {orders.Length}, positions: {positions.Length}, accounts: {accountStats.Count}, best FX prices: {bestFxPrices.Count}, best trading prices: {bestPrices.Count}.";
+
+                    await _log.WriteInfoAsync(nameof(SnapshotBuilder), nameof(MakeTradingDataSnapshot),
+                        $"Starting to write trading data snapshot. {resultMessage}");
+
+                    var snapshot = new TradingEngineSnapshot(
+                        tradingDay,
+                        correlationId,
+                        timestamp,
+                        ordersJson: ordersJson,
+                        positionsJson: positionsJson,
+                        accountsJson: accountsJson,
+                        bestFxPricesJson: bestFxPricesData,
+                        bestTradingPricesJson: bestPricesData,
+                        status: status);
+
+                    await _tradingEngineSnapshotsRepository.AddAsync(snapshot);
+                }
+                catch (Exception e)
+                {
+                    if (!_draftSnapshotWorkflowTracker.TryReset())
+                    {
+                        await _log.WriteErrorAsync(nameof(SnapshotBuilder),
+                            nameof(MakeTradingDataSnapshot),
+                            $"Can't reset DRAFT snapshot creation for trading day {_draftSnapshotWorkflowTracker.TradingDay} due to exception. Current state is {_draftSnapshotWorkflowTracker.Current}", e);
+
+                        _draftSnapshotWorkflowTracker.HardReset();
+                        await _log.WriteWarningAsync(nameof(SnapshotBuilder),
+                            nameof(MakeTradingDataSnapshot),
+                            $"DRAFT snapshot creation was forced to reset for trading day {_draftSnapshotWorkflowTracker.TradingDay} due to exception. Current state is {_draftSnapshotWorkflowTracker.Current}");
+                    }
+
+                    if (!_draftSnapshotWorkflowTracker.TryRequest(_dateService.Now(), tradingDay))
+                    {
+                        await _log.WriteFatalErrorAsync(nameof(SnapshotBuilder),
+                            nameof(MakeTradingDataSnapshot),
+                            $"Can't request DRAFT snapshot creation for trading day {tradingDay}. Current state is {_draftSnapshotWorkflowTracker.Current}. Consider manual snapshot creation via API /api/service/make-trading-data-snapshot", e);
+                    }
+
+                    throw;
                 }
 
-                // Forcing all account caches to be updated after trading is closed - after all events have been processed
-                // To ensure all cache data is updated with most up-to date data for all accounts.
-                accountStats.ForEach(a => a.CacheNeedsToBeUpdated());
-
-                var accountsInLiquidation = await _accountsCacheService.GetAllWhereLiquidationIsRunning().ToListAsync();
-                var accountsJson = accountStats
-                    .Select(a => a.ConvertToSnapshotContract(accountsInLiquidation.Contains(a), status))
-                    .ToJson();
-
-                // timestamp will be used as an eod border
-                // setting it as close as possible to accountStats retrieval
-                var timestamp = _dateService.Now();
-
-                await _log.WriteInfoAsync(nameof(SnapshotBuilder), nameof(MakeTradingDataSnapshot),
-                    $"Preparing data... {accountStats.Count} accounts prepared.");
-
-                var bestFxPrices = _fxRateCacheService.GetAllQuotes();
-                var bestFxPricesData = bestFxPrices.ToDictionary(q => q.Key, q => q.Value.ConvertToContract()).ToJson();
-                await _log.WriteInfoAsync(nameof(SnapshotBuilder), nameof(MakeTradingDataSnapshot),
-                    $"Preparing data... {bestFxPrices.Count} best FX prices prepared.");
-
-                var bestPrices = _quoteCacheService.GetAllQuotes();
-                var bestPricesData = bestPrices.ToDictionary(q => q.Key, q => q.Value.ConvertToContract()).ToJson();
-                await _log.WriteInfoAsync(nameof(SnapshotBuilder), nameof(MakeTradingDataSnapshot),
-                    $"Preparing data... {bestPrices.Count} best trading prices prepared.");
-
-                var msg = $"TradingDay: {tradingDay:yyyy-MM-dd}, Orders: {orders.Length}, positions: {positions.Length}, accounts: {accountStats.Count}, best FX prices: {bestFxPrices.Count}, best trading prices: {bestPrices.Count}.";
-
-                await _log.WriteInfoAsync(nameof(SnapshotBuilder), nameof(MakeTradingDataSnapshot),
-                    $"Starting to write trading data snapshot. {msg}");
-
-                var snapshot = new TradingEngineSnapshot(
-                    tradingDay,
-                    correlationId,
-                    timestamp,
-                    ordersJson: ordersJson,
-                    positionsJson: positionsJson,
-                    accountsJson: accountsJson,
-                    bestFxPricesJson: bestFxPricesData,
-                    bestTradingPricesJson: bestPricesData,
-                    status: status);
-
-                await _tradingEngineSnapshotsRepository.AddAsync(snapshot);
-
-                bool sucessfullyReset = _draftSnapshotWorkflowTracker.TryReset();
-                if (!sucessfullyReset)
-                {
+                // once snapshot is created, update statuses
+                if (!_draftSnapshotWorkflowTracker.TryReset())
                     await _log.WriteWarningAsync(nameof(SnapshotBuilder),
                         nameof(MakeTradingDataSnapshot),
                         $"Snapshot workflow state is not correct, can not reset snapshot creation for trading day {_draftSnapshotWorkflowTracker.TradingDay}. Current state is {_draftSnapshotWorkflowTracker.Current}");
-                }
 
                 if (status == SnapshotStatus.Draft)
-                {
                     await _snapshotRecreateFlagKeeper.Set(false);
-                }
 
                 await _log.WriteInfoAsync(nameof(SnapshotBuilder), nameof(MakeTradingDataSnapshot),
-                    $"Trading data snapshot was written to the storage. {msg}");
-                return $"Trading data snapshot was written to the storage. {msg}";
+                    $"Trading data snapshot was written to the storage. {resultMessage}");
+                return $"Trading data snapshot was written to the storage. {resultMessage}";
             }
             finally
             {
