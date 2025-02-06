@@ -2,7 +2,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Threading.Tasks;
+
 using Common;
+
 using MarginTrading.Backend.Contracts.Activities;
 using MarginTrading.Backend.Contracts.Events;
 using MarginTrading.Backend.Contracts.Positions;
@@ -22,14 +24,14 @@ namespace MarginTrading.Backend.Services.Services
         private readonly IRabbitMqNotifyService _rabbitMqNotifyService;
         private readonly IDateService _dateService;
         private readonly IAccountsCacheService _accountsCacheService;
-        private readonly ISnapshotTrackerService _snapshotTrackerService;
+        private readonly ISnapshotRecreateFlagKeeper _snapshotTrackerService;
 
         public PositionHistoryHandler(ICqrsSender cqrsSender,
             IConvertService convertService,
             IRabbitMqNotifyService rabbitMqNotifyService,
             IDateService dateService,
             IAccountsCacheService accountsCacheService,
-            ISnapshotTrackerService snapshotTrackerService)
+            ISnapshotRecreateFlagKeeper snapshotTrackerService)
         {
             _cqrsSender = cqrsSender;
             _convertService = convertService;
@@ -41,10 +43,10 @@ namespace MarginTrading.Backend.Services.Services
 
         public Task HandleOpenPosition(Position position, string additionalInfo, PositionOpenMetadata metadata)
         {
-            var historyEvent = CreatePositionHistoryEvent(position, 
-                PositionHistoryTypeContract.Open, 
+            var historyEvent = CreatePositionHistoryEvent(position,
+                PositionHistoryTypeContract.Open,
                 null,
-                additionalInfo, 
+                additionalInfo,
                 metadata.ToJson());
             return _rabbitMqNotifyService.PositionHistory(historyEvent);
         }
@@ -54,27 +56,27 @@ namespace MarginTrading.Backend.Services.Services
             var positionClosedEvent = CreatePositionClosedEvent(position, deal);
             _cqrsSender.PublishEvent(positionClosedEvent);
 
-            var historyEvent = CreatePositionHistoryEvent(position, 
-                PositionHistoryTypeContract.Close, 
+            var historyEvent = CreatePositionHistoryEvent(position,
+                PositionHistoryTypeContract.Close,
                 deal,
                 additionalInfo);
             await _rabbitMqNotifyService.PositionHistory(historyEvent);
-            await _snapshotTrackerService.SetShouldRecreateSnapshot(true);
+            await _snapshotTrackerService.Set(true);
         }
-        
+
         public async Task HandlePartialClosePosition(Position position, DealContract deal, string additionalInfo)
         {
             var positionClosedEvent = CreatePositionClosedEvent(position, deal);
             _cqrsSender.PublishEvent(positionClosedEvent);
 
-            var historyEvent = CreatePositionHistoryEvent(position, 
-                PositionHistoryTypeContract.PartiallyClose, 
+            var historyEvent = CreatePositionHistoryEvent(position,
+                PositionHistoryTypeContract.PartiallyClose,
                 deal,
                 additionalInfo);
             await _rabbitMqNotifyService.PositionHistory(historyEvent);
-            await _snapshotTrackerService.SetShouldRecreateSnapshot(true);
+            await _snapshotTrackerService.Set(true);
         }
-        
+
         private PositionHistoryEvent CreatePositionHistoryEvent(Position position,
             PositionHistoryTypeContract type,
             DealContract deal = null,
@@ -93,15 +95,15 @@ namespace MarginTrading.Backend.Services.Services
                 OrderAdditionalInfo = additionalInfo
             };
         }
-        
+
         private PositionClosedEvent CreatePositionClosedEvent(Position position, DealContract deal)
         {
             var account = _accountsCacheService.Get(position.AccountId);
-            
-            return new PositionClosedEvent(account.Id, 
-                account.ClientId, 
-                deal.DealId, 
-                position.AssetPairId, 
+
+            return new PositionClosedEvent(account.Id,
+                account.ClientId,
+                deal.DealId,
+                position.AssetPairId,
                 deal.PnlOfTheLastDay);
         }
     }

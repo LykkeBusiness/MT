@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 
 namespace MarginTrading.Backend.Core.Services
 {
-    public interface ISnapshotTrackerService
+    public interface ISnapshotRecreateFlagKeeper
     {
-        Task SetShouldRecreateSnapshot(bool value);
-        Task<bool> GetShouldRecreateSnapshot();
+        Task Set(bool value);
+        Task<bool> Get();
     }
 }

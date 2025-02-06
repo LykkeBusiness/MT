@@ -3,9 +3,12 @@
 
 using System;
 using System.Threading.Tasks;
+
 using Common;
 using Common.Log;
+
 using JetBrains.Annotations;
+
 using MarginTrading.Backend.Contracts.TradingSchedule;
 using MarginTrading.Backend.Core.Repositories;
 using MarginTrading.Backend.Core.Services;
@@ -17,12 +20,12 @@ namespace MarginTrading.Backend.Services.Workflow
 {
     public class PlatformClosureProjection
     {
-        private readonly ISnapshotService _snapshotService;
+        private readonly ISnapshotBuilder _snapshotService;
         private readonly IIdentityGenerator _identityGenerator;
         private readonly ILog _log;
         private readonly IDateService _dateService;
 
-        public PlatformClosureProjection(ISnapshotService snapshotService,
+        public PlatformClosureProjection(ISnapshotBuilder snapshotService,
             ILog log,
             IIdentityGenerator identityGenerator,
             IDateService dateService)
@@ -38,7 +41,7 @@ namespace MarginTrading.Backend.Services.Workflow
         {
             if (e.IsNotPlatformClosureEvent())
                 return;
-            
+
             try
             {
                 var successMessage = await CreateDraftSnapshot(e.EventTimestamp.Date);
@@ -46,19 +49,19 @@ namespace MarginTrading.Backend.Services.Workflow
             }
             catch (Exception ex)
             {
-                var exceptionExpected = await IsExceptionExpected(ex, e); 
+                var exceptionExpected = await IsExceptionExpected(ex, e);
                 if (!exceptionExpected)
                 {
                     throw;
                 }
             }
         }
-        
+
         private async Task LogIfSucceeded(string successMessage, MarketStateChangedEvent evt)
         {
-            var failed = string.IsNullOrWhiteSpace(successMessage); 
+            var failed = string.IsNullOrWhiteSpace(successMessage);
             if (failed) return;
-            
+
             await _log.WriteInfoAsync(nameof(PlatformClosureProjection),
                 nameof(LogIfSucceeded),
                 evt.ToJson(),
@@ -83,20 +86,20 @@ namespace MarginTrading.Backend.Services.Workflow
                     "The event is for the past date, so the snapshot draft will not be created.", ex);
                 return true;
             }
-            
+
             var tradingDayFromEvent = DateOnly.FromDateTime(evt.EventTimestamp);
             await _log.WriteErrorAsync(nameof(PlatformClosureProjection),
                 nameof(IsExceptionExpected),
-                new {eventJson = evt.ToJson(), tradingDay = tradingDayFromEvent}.ToJson(),
+                new { eventJson = evt.ToJson(), tradingDay = tradingDayFromEvent }.ToJson(),
                 ex);
 
             return false;
         }
-        
+
         private bool IsEventForPastDate(MarketStateChangedEvent evt)
         {
             var tradingDayFromEvent = DateOnly.FromDateTime(evt.EventTimestamp);
             return tradingDayFromEvent < _dateService.NowDateOnly();
         }
-    }   
+    }
 }

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using MarginTrading.Backend.Contracts;
 using MarginTrading.Backend.Contracts.Snapshots;
 using MarginTrading.Backend.Core.Repositories;
@@ -13,6 +14,7 @@ using MarginTrading.Backend.Extensions;
 using MarginTrading.Backend.Services;
 using MarginTrading.Backend.Services.TradingConditions;
 using MarginTrading.Common.Middleware;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -26,14 +28,14 @@ namespace MarginTrading.Backend.Controllers
     {
         private readonly IOvernightMarginParameterContainer _overnightMarginParameterContainer;
         private readonly IIdentityGenerator _identityGenerator;
-        private readonly ISnapshotService _snapshotService;
+        private readonly ISnapshotBuilder _snapshotService;
         private readonly IAccountUpdateService _accountUpdateService;
         private readonly IAccountsProvider _accountsProvider;
 
         public ServiceController(
             IOvernightMarginParameterContainer overnightMarginParameterContainer,
             IIdentityGenerator identityGenerator,
-            ISnapshotService snapshotService,
+            ISnapshotBuilder snapshotService,
             IAccountUpdateService accountUpdateService,
             IAccountsProvider accountsProvider)
         {
