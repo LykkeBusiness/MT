@@ -51,20 +51,17 @@ namespace MarginTrading.Backend.Services
 
             while (!stoppingToken.IsCancellationRequested)
             {
+                if (_draftSnapshotWorkflowTracker.Current is not DraftSnapshotWorkflowState.Requested)
+                {
+                    await MonitoringDelay(stoppingToken);
+                    continue;
+                }
 
                 if (!_draftSnapshotWorkflowTracker.IsTimePassed(
                     _settings.DelayBeforeFallbackSnapshot,
                     _dateService.Now()))
                 {
-                    await Task.Delay(_settings.MonitoringDelay, stoppingToken);
-                }
-
-                if (_draftSnapshotWorkflowTracker.Current is not DraftSnapshotWorkflowState.Requested)
-                {
-                    _logger.LogWarning("{ServiceName}: Trading Snapshot Draft was NOT requested. Skipping.",
-                        nameof(DraftSnapshotMonitor));
-                    await Task.Delay(_settings.MonitoringDelay, stoppingToken);
-                    continue;
+                    await MonitoringDelay(stoppingToken);
                 }
 
                 _logger.LogWarning("{ServiceName}: Trading Snapshot Draft was requested, but timeout exceeded. Attempting to create the snapshot.",
@@ -88,5 +85,8 @@ namespace MarginTrading.Backend.Services
                 }
             }
         }
+
+        private Task MonitoringDelay(CancellationToken stoppingToken) =>
+            Task.Delay(_settings.MonitoringDelay, stoppingToken);
     }
 }
