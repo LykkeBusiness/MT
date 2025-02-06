@@ -3,22 +3,26 @@
 
 using System;
 using System.Threading.Tasks;
+
 using MarginTrading.Backend.Core.Services;
+
 using Microsoft.Extensions.Logging;
+
 using Polly;
 using Polly.Retry;
+
 using StackExchange.Redis;
 
 namespace MarginTrading.Backend.Services.Services
 {
-    public class SnapshotTrackerService : ISnapshotTrackerService
+    public class SnapshotRecreateFlagKeeper : ISnapshotRecreateFlagKeeper
     {
         private readonly IDatabase _database;
         private readonly AsyncRetryPolicy _retryPolicy;
-        
+
         private const string RedisKey = "core:snapshot:should-recreate";
-        
-        public SnapshotTrackerService(IConnectionMultiplexer redis, ILogger<SnapshotTrackerService> logger)
+
+        public SnapshotRecreateFlagKeeper(IConnectionMultiplexer redis, ILogger<SnapshotRecreateFlagKeeper> logger)
         {
             _database = redis.GetDatabase();
             _retryPolicy = Policy
@@ -28,15 +32,12 @@ namespace MarginTrading.Backend.Services.Services
                     (exception, span) => logger.LogWarning("Exception: {Message}", exception?.Message));
         }
 
-        public async Task SetShouldRecreateSnapshot(bool value)
+        public Task Set(bool value) =>
+            _retryPolicy.ExecuteAsync(() => _database.StringSetAsync(RedisKey, value.ToString(), when: When.Always));
+
+        public async Task<bool> Get()
         {
-            await _retryPolicy.ExecuteAsync(() => _database
-                .StringSetAsync(RedisKey, value.ToString(), when: When.Always)); 
-        }
-        
-        public async Task<bool> GetShouldRecreateSnapshot()
-        {
-            var value = await _retryPolicy.ExecuteAsync(() => 
+            var value = await _retryPolicy.ExecuteAsync(() =>
               _database.StringGetAsync(RedisKey));
 
             return value == bool.TrueString;

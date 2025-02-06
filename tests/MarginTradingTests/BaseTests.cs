@@ -59,7 +59,7 @@ namespace MarginTradingTests
                 throw;
             }
         }
-        
+
         private void RegisterDependenciesCore(bool mockEvents = false)
         {
             var builder = new ContainerBuilder();
@@ -113,9 +113,9 @@ namespace MarginTradingTests
             builder.RegisterModule(new MockRepositoriesModule());
 
             var brokerId = Guid.NewGuid().ToString();
-            
+
             builder.RegisterModule(new MockExternalServicesModule(Accounts, brokerId));
-            
+
             if (mockEvents)
             {
                 builder.RegisterModule(new MockEventModule());
@@ -128,7 +128,7 @@ namespace MarginTradingTests
             builder.RegisterModule(new CacheModule());
             builder.RegisterModule(new ServicesModule(marginSettings));
             builder.RegisterModule(new ManagersModule());
-            
+
             builder.RegisterType<EventChannel<AccountBalanceChangedEventArgs>>()
                 .As<IEventChannel<AccountBalanceChangedEventArgs>>()
                 .SingleInstance();
@@ -144,7 +144,7 @@ namespace MarginTradingTests
 
             var settingsServiceMock = new Mock<IMarginTradingSettingsCacheService>();
             settingsServiceMock.Setup(s => s.IsMarginTradingEnabled(It.IsAny<string>()))
-                .ReturnsAsync(new EnabledMarginTradingTypes {Live = true, Demo = true});
+                .ReturnsAsync(new EnabledMarginTradingTypes { Live = true, Demo = true });
             settingsServiceMock.Setup(s => s.IsMarginTradingEnabled(It.IsAny<string>(), It.IsAny<bool>()))
                 .ReturnsAsync(true);
 
@@ -167,10 +167,10 @@ namespace MarginTradingTests
                     }));
             clientAccountClientMock.Setup(s => s.GetByIdAsync(It.IsAny<string>()))
                 .ReturnsAsync(() =>
-                    new ClientModel {Email = "example@example.com", NotificationsId = Guid.NewGuid().ToString()});
+                    new ClientModel { Email = "example@example.com", NotificationsId = Guid.NewGuid().ToString() });
             clientAccountClientMock.Setup(s => s.GetPushNotificationAsync(It.IsAny<string>()))
-                .ReturnsAsync(() => new PushNotificationsSettingsModel {Enabled = true});
-            
+                .ReturnsAsync(() => new PushNotificationsSettingsModel { Enabled = true });
+
             builder.RegisterInstance(clientAccountClientMock.Object)
                 .As<IClientAccountClient>()
                 .SingleInstance();
@@ -178,14 +178,14 @@ namespace MarginTradingTests
             builder.RegisterInstance(new Mock<IOperationsLogService>().Object)
                 .As<IOperationsLogService>()
                 .SingleInstance();
-            
+
             builder.RegisterType<ConvertService>().As<IConvertService>().SingleInstance();
 
             var scheduleSettingsApiMock = new Mock<IScheduleSettingsApi>();
             scheduleSettingsApiMock.Setup(m => m.StateList(It.IsAny<string[]>()))
                 .ReturnsAsync(new List<CompiledScheduleContract>());
             scheduleSettingsApiMock.Setup(m => m.List(It.IsAny<string>()))
-                .ReturnsAsync(new List<ScheduleSettingsContract>() {AlwaysOnMarketSchedule});
+                .ReturnsAsync(new List<ScheduleSettingsContract>() { AlwaysOnMarketSchedule });
             builder.RegisterInstance(scheduleSettingsApiMock.Object).As<IScheduleSettingsApi>();
 
             var exchangeConnector = Mock.Of<IExchangeConnectorClient>();
@@ -193,13 +193,13 @@ namespace MarginTradingTests
             builder.RegisterInstance(Mock.Of<IRabbitMqService>()).As<IRabbitMqService>();
             builder.RegisterInstance(Mock.Of<IRfqService>()).As<IRfqService>();
 
-            builder.RegisterInstance(Mock.Of<ISnapshotTrackerService>())
-                .As<ISnapshotTrackerService>()
+            builder.RegisterInstance(Mock.Of<ISnapshotRecreateFlagKeeper>())
+                .As<ISnapshotRecreateFlagKeeper>()
                 .SingleInstance();
-            
+
             builder.RegisterBuildCallback(c =>
             {
-                void StartService<T>() where T: IStartable
+                void StartService<T>() where T : IStartable
                 {
                     c.Resolve<T>().Start();
                 }
@@ -217,7 +217,7 @@ namespace MarginTradingTests
 
             builder.RegisterType<SimpleIdentityGenerator>().As<IIdentityGenerator>();
             Container = builder.Build();
-            
+
             Container.Resolve<OrderBookList>().Init(null);
             Container.Resolve<IScheduleSettingsCacheService>().UpdateAllSettingsAsync().GetAwaiter().GetResult();
         }
@@ -230,7 +230,7 @@ namespace MarginTradingTests
                 TradingConditionId = "1",
                 BaseAssetId = "USD",
                 ClientId = ClientId1,
-                Balance = 1000, 
+                Balance = 1000,
                 LegalEntity = "LYKKETEST"
             },
             new MarginTradingAccount
@@ -239,7 +239,7 @@ namespace MarginTradingTests
                 TradingConditionId = "1",
                 BaseAssetId = "EUR",
                 ClientId = ClientId1,
-                Balance = 1000, 
+                Balance = 1000,
                 LegalEntity = "LYKKETEST"
             },
             new MarginTradingAccount
@@ -248,7 +248,7 @@ namespace MarginTradingTests
                 TradingConditionId = "1",
                 BaseAssetId = "CHF",
                 ClientId = ClientId1,
-                Balance = 1000, 
+                Balance = 1000,
                 LegalEntity = "LYKKETEST"
             },
 
@@ -258,7 +258,7 @@ namespace MarginTradingTests
                 TradingConditionId = "1",
                 BaseAssetId = "USD",
                 ClientId = ClientId2,
-                Balance = 1000, 
+                Balance = 1000,
                 LegalEntity = "LYKKETEST"
             },
             new MarginTradingAccount
@@ -267,7 +267,7 @@ namespace MarginTradingTests
                 TradingConditionId = "1",
                 BaseAssetId = "EUR",
                 ClientId = ClientId2,
-                Balance = 1000, 
+                Balance = 1000,
                 LegalEntity = "LYKKETEST"
             },
             new MarginTradingAccount
@@ -276,11 +276,11 @@ namespace MarginTradingTests
                 TradingConditionId = "1",
                 BaseAssetId = "CHF",
                 ClientId = ClientId2,
-                Balance = 1000, 
+                Balance = 1000,
                 LegalEntity = "LYKKETEST"
             }
         };
-        
+
         private static ScheduleSettingsContract AlwaysOnMarketSchedule = new ScheduleSettingsContract
         {
             Id = "AlwaysOnMarketSchedule",

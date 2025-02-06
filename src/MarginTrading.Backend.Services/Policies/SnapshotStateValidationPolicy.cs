@@ -3,9 +3,12 @@
 
 using System;
 using System.Threading.Tasks;
+
 using Common.Log;
+
 using MarginTrading.Backend.Core.Snapshots;
 using MarginTrading.Backend.Services.Infrastructure;
+
 using Polly;
 using Polly.Retry;
 
@@ -20,8 +23,8 @@ namespace MarginTrading.Backend.Services.Policies
                 .WaitAndRetryAsync(3,
                     x => TimeSpan.FromSeconds(x * 5),
                     (result, span) => logger?.WriteWarningAsync(
-                                          nameof(SnapshotService),
-                                          nameof(SnapshotService.MakeTradingDataSnapshot),
+                                          nameof(SnapshotBuilder),
+                                          nameof(SnapshotBuilder.MakeTradingDataSnapshot),
                                           $"Exception: {result?.Result?.Exception}",
                                           result?.Result?.Exception)
                                       // in case logger is not provided

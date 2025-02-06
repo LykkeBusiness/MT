@@ -5,13 +5,18 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using BookKeeper.Client;
 using BookKeeper.Client.Responses.Eod;
 using BookKeeper.Client.Workflow.Commands;
 using BookKeeper.Client.Workflow.Events;
+
 using Common.Log;
+
 using JetBrains.Annotations;
+
 using Lykke.Cqrs;
+
 using MarginTrading.Backend.Contracts.Prices;
 using MarginTrading.Backend.Core.Repositories;
 using MarginTrading.Backend.Core.Services;
@@ -24,20 +29,20 @@ namespace MarginTrading.Backend.Services.Workflow
     public class EodCommandsHandler
     {
         private readonly IQuotesApi _quotesApi;
-        private readonly ISnapshotService _snapshotService;
+        private readonly ISnapshotBuilder _snapshotService;
         private readonly IDateService _dateService;
         private readonly IDraftSnapshotKeeperFactory _draftSnapshotKeeperFactory;
         private readonly IIdentityGenerator _identityGenerator;
-        private readonly ISnapshotTrackerService _snapshotTrackerService;
+        private readonly ISnapshotRecreateFlagKeeper _snapshotTrackerService;
         private readonly ILog _log;
 
         public EodCommandsHandler(
             IQuotesApi quotesApi,
-            ISnapshotService snapshotService, 
+            ISnapshotBuilder snapshotService,
             IDateService dateService,
             IDraftSnapshotKeeperFactory draftSnapshotKeeperFactory,
             IIdentityGenerator identityGenerator,
-            ISnapshotTrackerService snapshotTrackerService,
+            ISnapshotRecreateFlagKeeper snapshotTrackerService,
             ILog log)
         {
             _quotesApi = quotesApi;
@@ -48,7 +53,7 @@ namespace MarginTrading.Backend.Services.Workflow
             _snapshotTrackerService = snapshotTrackerService;
             _log = log;
         }
-        
+
         [UsedImplicitly]
         private async Task Handle(CreateSnapshotCommand command, IEventPublisher publisher)
         {
@@ -62,22 +67,22 @@ namespace MarginTrading.Backend.Services.Workflow
                     throw new Exception($"Could not receive quotes from BookKeeper: {quotes.ErrorCode.ToString()}");
                 }
 
-                var shouldRecreateSnapshot = await _snapshotTrackerService.GetShouldRecreateSnapshot();
+                var shouldRecreateSnapshot = await _snapshotTrackerService.Get();
 
                 if (shouldRecreateSnapshot && !command.IsMissing)
                 {
-                    await _snapshotService.MakeTradingDataSnapshot(command.TradingDay, 
+                    await _snapshotService.MakeTradingDataSnapshot(command.TradingDay,
                         _identityGenerator.GenerateGuid(),
                         SnapshotStatus.Draft);
                 }
 
                 var draftSnapshotKeeper = _draftSnapshotKeeperFactory.Create(command.TradingDay);
-                
-                await _snapshotService.MakeTradingDataSnapshotFromDraft(command.OperationId, 
-                    MapQuotes(quotes.EodMarketData.Underlyings), 
+
+                await _snapshotService.MakeTradingDataSnapshotFromDraft(command.OperationId,
+                    MapQuotes(quotes.EodMarketData.Underlyings),
                     MapFxRates(quotes.EodMarketData.Forex),
                     draftSnapshotKeeper);
-                
+
                 publisher.PublishEvent(new SnapshotCreatedEvent
                 {
                     OperationId = command.OperationId,
@@ -86,9 +91,9 @@ namespace MarginTrading.Backend.Services.Workflow
             }
             catch (Exception exception)
             {
-                await _log.WriteErrorAsync(nameof(EodCommandsHandler), nameof(CreateSnapshotCommand), 
+                await _log.WriteErrorAsync(nameof(EodCommandsHandler), nameof(CreateSnapshotCommand),
                     exception);
-                
+
                 publisher.PublishEvent(new SnapshotCreationFailedEvent
                 {
                     OperationId = command.OperationId,
@@ -106,7 +111,7 @@ namespace MarginTrading.Backend.Services.Workflow
                 AssetId = x.Id,
             });
         }
-        
+
         private IEnumerable<ClosingFxRate> MapFxRates(IEnumerable<BestPriceContract> bestPrices)
         {
             return bestPrices.Select(x => new ClosingFxRate()

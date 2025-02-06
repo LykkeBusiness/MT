@@ -28,7 +28,7 @@ using Polly.Retry;
 
 namespace MarginTrading.Backend.Services.Infrastructure
 {
-    public class SnapshotService : ISnapshotService
+    public class SnapshotBuilder : ISnapshotBuilder
     {
         private readonly IScheduleSettingsCacheService _scheduleSettingsCacheService;
         private readonly IAccountsCacheService _accountsCacheService;
@@ -42,16 +42,16 @@ namespace MarginTrading.Backend.Services.Infrastructure
         private readonly IMarginTradingBlobRepository _blobRepository;
         private readonly ILog _log;
         private readonly IFinalSnapshotCalculator _finalSnapshotCalculator;
-        private readonly ISnapshotStatusTracker _snapshotStatusTracker;
-        private readonly ISnapshotTrackerService _snapshotTrackerService;
+        private readonly IDraftSnapshotWorkflowTracker _draftSnapshotWorkflowTracker;
+        private readonly ISnapshotRecreateFlagKeeper _snapshotTrackerService;
         private readonly MarginTradingSettings _settings;
+        private readonly AsyncRetryPolicy<SnapshotValidationResult> _policy;
 
         private static readonly SemaphoreSlim Lock = new SemaphoreSlim(1, 1);
         public static bool IsMakingSnapshotInProgress => Lock.CurrentCount == 0;
 
-        private AsyncRetryPolicy<SnapshotValidationResult> _policy;
 
-        public SnapshotService(
+        public SnapshotBuilder(
             IScheduleSettingsCacheService scheduleSettingsCacheService,
             IAccountsCacheService accountsCacheService,
             IQuoteCacheService quoteCacheService,
@@ -63,8 +63,8 @@ namespace MarginTrading.Backend.Services.Infrastructure
             IMarginTradingBlobRepository blobRepository,
             ILog log,
             IFinalSnapshotCalculator finalSnapshotCalculator,
-            ISnapshotStatusTracker snapshotStatusTracker,
-            ISnapshotTrackerService snapshotTrackerService,
+            IDraftSnapshotWorkflowTracker draftSnapshotWorkflowTracker,
+            ISnapshotRecreateFlagKeeper snapshotTrackerService,
             MarginTradingSettings settings)
         {
             _scheduleSettingsCacheService = scheduleSettingsCacheService;
@@ -78,7 +78,7 @@ namespace MarginTrading.Backend.Services.Infrastructure
             _blobRepository = blobRepository;
             _log = log;
             _finalSnapshotCalculator = finalSnapshotCalculator;
-            _snapshotStatusTracker = snapshotStatusTracker;
+            _draftSnapshotWorkflowTracker = draftSnapshotWorkflowTracker;
             _snapshotTrackerService = snapshotTrackerService;
             _settings = settings;
 
@@ -118,28 +118,32 @@ namespace MarginTrading.Backend.Services.Infrastructure
 
             try
             {
-                _snapshotStatusTracker.SnapshotInProgress();
+                bool sucessfullyStarted = _draftSnapshotWorkflowTracker.TryStart();
+                if (!sucessfullyStarted)
+                    throw new InvalidOperationException("Snapshot workflow state is not correct, can not start snapshot creation.");
 
                 var validationResult = await _policy.ExecuteAsync(() => Validate(correlationId));
                 if (!validationResult.IsValid)
                 {
-                    await _log.WriteErrorAsync(nameof(SnapshotService),
+                    await _log.WriteFatalErrorAsync(nameof(SnapshotBuilder),
                         nameof(MakeTradingDataSnapshot),
                         validationResult.ToJson(),
                         validationResult.Exception);
+                    _draftSnapshotWorkflowTracker.HardReset();
+                    throw validationResult.Exception;
                 }
 
                 // orders and positions are fixed at the moment of validation
                 var orders = validationResult.Cache.GetAllOrders();
                 var ordersJson = orders
                     .Select(o => o.ConvertToSnapshotContract(validationResult.Cache, status)).ToJson();
-                await _log.WriteInfoAsync(nameof(SnapshotService), nameof(MakeTradingDataSnapshot),
+                await _log.WriteInfoAsync(nameof(SnapshotBuilder), nameof(MakeTradingDataSnapshot),
                     $"Preparing data... {orders.Length} orders prepared.");
 
                 var positions = validationResult.Cache.GetPositions();
                 var positionsJson = positions
                     .Select(p => p.ConvertToSnapshotContract(validationResult.Cache, status)).ToJson();
-                await _log.WriteInfoAsync(nameof(SnapshotService), nameof(MakeTradingDataSnapshot),
+                await _log.WriteInfoAsync(nameof(SnapshotBuilder), nameof(MakeTradingDataSnapshot),
                     $"Preparing data... {positions.Length} positions prepared.");
 
                 var accountStats = _accountsCacheService.GetAll();
@@ -150,14 +154,14 @@ namespace MarginTrading.Backend.Services.Infrastructure
                     {
                         var margin = accountStat.GetUsedMargin();
                         if (margin == 0) continue;
-                        await _log.WriteInfoAsync(nameof(SnapshotService), nameof(MakeTradingDataSnapshot),
+                        await _log.WriteInfoAsync(nameof(SnapshotBuilder), nameof(MakeTradingDataSnapshot),
                             @$"Account {accountStat.Id}, TotalBlockedMargin {margin}, {accountStat.LogInfo}");
 
                         var accountPositions = positions.Where(p => p.AccountId == accountStat.Id);
 
                         foreach (var p in accountPositions)
                         {
-                            await _log.WriteInfoAsync(nameof(SnapshotService), nameof(MakeTradingDataSnapshot),
+                            await _log.WriteInfoAsync(nameof(SnapshotBuilder), nameof(MakeTradingDataSnapshot),
                                 @$"Account {accountStat.Id}, Position {p.Id}, {p.FplData.LogInfo}");
                         }
                     }
@@ -176,22 +180,22 @@ namespace MarginTrading.Backend.Services.Infrastructure
                 // setting it as close as possible to accountStats retrieval
                 var timestamp = _dateService.Now();
 
-                await _log.WriteInfoAsync(nameof(SnapshotService), nameof(MakeTradingDataSnapshot),
+                await _log.WriteInfoAsync(nameof(SnapshotBuilder), nameof(MakeTradingDataSnapshot),
                     $"Preparing data... {accountStats.Count} accounts prepared.");
 
                 var bestFxPrices = _fxRateCacheService.GetAllQuotes();
                 var bestFxPricesData = bestFxPrices.ToDictionary(q => q.Key, q => q.Value.ConvertToContract()).ToJson();
-                await _log.WriteInfoAsync(nameof(SnapshotService), nameof(MakeTradingDataSnapshot),
+                await _log.WriteInfoAsync(nameof(SnapshotBuilder), nameof(MakeTradingDataSnapshot),
                     $"Preparing data... {bestFxPrices.Count} best FX prices prepared.");
 
                 var bestPrices = _quoteCacheService.GetAllQuotes();
                 var bestPricesData = bestPrices.ToDictionary(q => q.Key, q => q.Value.ConvertToContract()).ToJson();
-                await _log.WriteInfoAsync(nameof(SnapshotService), nameof(MakeTradingDataSnapshot),
+                await _log.WriteInfoAsync(nameof(SnapshotBuilder), nameof(MakeTradingDataSnapshot),
                     $"Preparing data... {bestPrices.Count} best trading prices prepared.");
 
                 var msg = $"TradingDay: {tradingDay:yyyy-MM-dd}, Orders: {orders.Length}, positions: {positions.Length}, accounts: {accountStats.Count}, best FX prices: {bestFxPrices.Count}, best trading prices: {bestPrices.Count}.";
 
-                await _log.WriteInfoAsync(nameof(SnapshotService), nameof(MakeTradingDataSnapshot),
+                await _log.WriteInfoAsync(nameof(SnapshotBuilder), nameof(MakeTradingDataSnapshot),
                     $"Starting to write trading data snapshot. {msg}");
 
                 var snapshot = new TradingEngineSnapshot(
@@ -207,13 +211,20 @@ namespace MarginTrading.Backend.Services.Infrastructure
 
                 await _tradingEngineSnapshotsRepository.AddAsync(snapshot);
 
-                _snapshotStatusTracker.SnapshotCreated();
-                if (status == SnapshotStatus.Draft)
+                bool sucessfullyReset = _draftSnapshotWorkflowTracker.TryReset();
+                if (!sucessfullyReset)
                 {
-                    await _snapshotTrackerService.SetShouldRecreateSnapshot(false);
+                    await _log.WriteWarningAsync(nameof(SnapshotBuilder),
+                        nameof(MakeTradingDataSnapshot),
+                        $"Snapshot workflow state is not correct, can not reset snapshot creation for trading day {_draftSnapshotWorkflowTracker.TradingDay}. Current state is {_draftSnapshotWorkflowTracker.Current}");
                 }
 
-                await _log.WriteInfoAsync(nameof(SnapshotService), nameof(MakeTradingDataSnapshot),
+                if (status == SnapshotStatus.Draft)
+                {
+                    await _snapshotTrackerService.Set(false);
+                }
+
+                await _log.WriteInfoAsync(nameof(SnapshotBuilder), nameof(MakeTradingDataSnapshot),
                     $"Trading data snapshot was written to the storage. {msg}");
                 return $"Trading data snapshot was written to the storage. {msg}";
             }
@@ -233,7 +244,7 @@ namespace MarginTrading.Backend.Services.Infrastructure
                 if (!validationResult.IsValid)
                 {
                     var errorMessage =
-                        "The trading data snapshot might be corrupted. The current state of orders and positions is incorrect. Check the dbo.BlobData table for more info: container {LykkeConstants.MtCoreSnapshotBlobContainer}, correlationId {correlationId}";
+                        $"The trading data snapshot might be corrupted. The current state of orders and positions is incorrect. Check the dbo.BlobData table for more info: container {LykkeConstants.MtCoreSnapshotBlobContainer}, correlationId {correlationId}";
                     var ex = new SnapshotValidationException(errorMessage,
                         SnapshotValidationError.InvalidOrderOrPositionState);
                     validationResult.Exception = ex;
@@ -241,7 +252,7 @@ namespace MarginTrading.Backend.Services.Infrastructure
                 }
                 else
                 {
-                    await _log.WriteInfoAsync(nameof(SnapshotService), nameof(MakeTradingDataSnapshot),
+                    await _log.WriteInfoAsync(nameof(SnapshotBuilder), nameof(MakeTradingDataSnapshot),
                         "The current state of orders and positions is correct.");
                 }
 

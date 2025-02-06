@@ -4,12 +4,13 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+
 using MarginTrading.Backend.Contracts.Prices;
 using MarginTrading.Backend.Core.Snapshots;
 
 namespace MarginTrading.Backend.Services
 {
-    public interface ISnapshotService
+    public interface ISnapshotBuilder
     {
         /// <summary>
         /// Make final trading snapshot from current system state
@@ -19,8 +20,8 @@ namespace MarginTrading.Backend.Services
         /// <param name="status"></param>
         /// <returns></returns>
         Task<string> MakeTradingDataSnapshot(
-            DateTime tradingDay, 
-            string correlationId, 
+            DateTime tradingDay,
+            string correlationId,
             SnapshotStatus status = SnapshotStatus.Final);
 
         /// <summary>
@@ -30,8 +31,8 @@ namespace MarginTrading.Backend.Services
         /// <param name="cfdQuotes"></param>
         /// <param name="fxRates"></param>
         /// <returns></returns>
-        Task MakeTradingDataSnapshotFromDraft( 
-            string correlationId, 
+        Task MakeTradingDataSnapshotFromDraft(
+            string correlationId,
             IEnumerable<ClosingAssetPrice> cfdQuotes,
             IEnumerable<ClosingFxRate> fxRates,
             IDraftSnapshotKeeper draftSnapshotKeeper = null);
