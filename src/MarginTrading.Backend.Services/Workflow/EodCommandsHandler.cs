@@ -33,7 +33,7 @@ namespace MarginTrading.Backend.Services.Workflow
         private readonly IDateService _dateService;
         private readonly IDraftSnapshotKeeperFactory _draftSnapshotKeeperFactory;
         private readonly IIdentityGenerator _identityGenerator;
-        private readonly ISnapshotRecreateFlagKeeper _snapshotTrackerService;
+        private readonly ISnapshotRecreateFlagKeeper _snapshotRecreateFlagKeeper;
         private readonly ILog _log;
 
         public EodCommandsHandler(
@@ -42,7 +42,7 @@ namespace MarginTrading.Backend.Services.Workflow
             IDateService dateService,
             IDraftSnapshotKeeperFactory draftSnapshotKeeperFactory,
             IIdentityGenerator identityGenerator,
-            ISnapshotRecreateFlagKeeper snapshotTrackerService,
+            ISnapshotRecreateFlagKeeper snapshotRecreateFlagKeeper,
             ILog log)
         {
             _quotesApi = quotesApi;
@@ -50,7 +50,7 @@ namespace MarginTrading.Backend.Services.Workflow
             _dateService = dateService;
             _draftSnapshotKeeperFactory = draftSnapshotKeeperFactory;
             _identityGenerator = identityGenerator;
-            _snapshotTrackerService = snapshotTrackerService;
+            _snapshotRecreateFlagKeeper = snapshotRecreateFlagKeeper;
             _log = log;
         }
 
@@ -67,7 +67,7 @@ namespace MarginTrading.Backend.Services.Workflow
                     throw new Exception($"Could not receive quotes from BookKeeper: {quotes.ErrorCode.ToString()}");
                 }
 
-                var shouldRecreateSnapshot = await _snapshotTrackerService.Get();
+                var shouldRecreateSnapshot = await _snapshotRecreateFlagKeeper.Get();
 
                 if (shouldRecreateSnapshot && !command.IsMissing)
                 {

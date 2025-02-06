@@ -43,7 +43,7 @@ namespace MarginTrading.Backend.Services.Infrastructure
         private readonly ILog _log;
         private readonly IFinalSnapshotCalculator _finalSnapshotCalculator;
         private readonly IDraftSnapshotWorkflowTracker _draftSnapshotWorkflowTracker;
-        private readonly ISnapshotRecreateFlagKeeper _snapshotTrackerService;
+        private readonly ISnapshotRecreateFlagKeeper _snapshotRecreateFlagKeeper;
         private readonly MarginTradingSettings _settings;
         private readonly AsyncRetryPolicy<SnapshotValidationResult> _policy;
 
@@ -64,7 +64,7 @@ namespace MarginTrading.Backend.Services.Infrastructure
             ILog log,
             IFinalSnapshotCalculator finalSnapshotCalculator,
             IDraftSnapshotWorkflowTracker draftSnapshotWorkflowTracker,
-            ISnapshotRecreateFlagKeeper snapshotTrackerService,
+            ISnapshotRecreateFlagKeeper snapshotRecreateFlagKeeper,
             MarginTradingSettings settings)
         {
             _scheduleSettingsCacheService = scheduleSettingsCacheService;
@@ -79,7 +79,7 @@ namespace MarginTrading.Backend.Services.Infrastructure
             _log = log;
             _finalSnapshotCalculator = finalSnapshotCalculator;
             _draftSnapshotWorkflowTracker = draftSnapshotWorkflowTracker;
-            _snapshotTrackerService = snapshotTrackerService;
+            _snapshotRecreateFlagKeeper = snapshotRecreateFlagKeeper;
             _settings = settings;
 
             _policy = SnapshotStateValidationPolicy.BuildPolicy(log);
@@ -221,7 +221,7 @@ namespace MarginTrading.Backend.Services.Infrastructure
 
                 if (status == SnapshotStatus.Draft)
                 {
-                    await _snapshotTrackerService.Set(false);
+                    await _snapshotRecreateFlagKeeper.Set(false);
                 }
 
                 await _log.WriteInfoAsync(nameof(SnapshotBuilder), nameof(MakeTradingDataSnapshot),

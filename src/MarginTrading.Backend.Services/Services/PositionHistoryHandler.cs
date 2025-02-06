@@ -24,21 +24,21 @@ namespace MarginTrading.Backend.Services.Services
         private readonly IRabbitMqNotifyService _rabbitMqNotifyService;
         private readonly IDateService _dateService;
         private readonly IAccountsCacheService _accountsCacheService;
-        private readonly ISnapshotRecreateFlagKeeper _snapshotTrackerService;
+        private readonly ISnapshotRecreateFlagKeeper _snapshotRecreateFlagKeeper;
 
         public PositionHistoryHandler(ICqrsSender cqrsSender,
             IConvertService convertService,
             IRabbitMqNotifyService rabbitMqNotifyService,
             IDateService dateService,
             IAccountsCacheService accountsCacheService,
-            ISnapshotRecreateFlagKeeper snapshotTrackerService)
+            ISnapshotRecreateFlagKeeper snapshotRecreateFlagKeeper)
         {
             _cqrsSender = cqrsSender;
             _convertService = convertService;
             _rabbitMqNotifyService = rabbitMqNotifyService;
             _dateService = dateService;
             _accountsCacheService = accountsCacheService;
-            _snapshotTrackerService = snapshotTrackerService;
+            _snapshotRecreateFlagKeeper = snapshotRecreateFlagKeeper;
         }
 
         public Task HandleOpenPosition(Position position, string additionalInfo, PositionOpenMetadata metadata)
@@ -61,7 +61,7 @@ namespace MarginTrading.Backend.Services.Services
                 deal,
                 additionalInfo);
             await _rabbitMqNotifyService.PositionHistory(historyEvent);
-            await _snapshotTrackerService.Set(true);
+            await _snapshotRecreateFlagKeeper.Set(true);
         }
 
         public async Task HandlePartialClosePosition(Position position, DealContract deal, string additionalInfo)
@@ -74,7 +74,7 @@ namespace MarginTrading.Backend.Services.Services
                 deal,
                 additionalInfo);
             await _rabbitMqNotifyService.PositionHistory(historyEvent);
-            await _snapshotTrackerService.Set(true);
+            await _snapshotRecreateFlagKeeper.Set(true);
         }
 
         private PositionHistoryEvent CreatePositionHistoryEvent(Position position,
