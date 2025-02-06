@@ -50,7 +50,6 @@ namespace MarginTrading.Backend.Services.Infrastructure
         private static readonly SemaphoreSlim Lock = new SemaphoreSlim(1, 1);
         public static bool IsMakingSnapshotInProgress => Lock.CurrentCount == 0;
 
-
         public SnapshotBuilder(
             IScheduleSettingsCacheService scheduleSettingsCacheService,
             IAccountsCacheService accountsCacheService,
