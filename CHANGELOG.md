@@ -1,3 +1,11 @@
+## 2.38.0 - Nova 2. Delivery 49 (February 07, 2025)
+### What's changed
+* LT-6021: Add a new report accountliquidations.
+* LT-6011: Update rabbitmqbroker in trading core.
+* LT-5955: "Collection was modified" error.
+* LT-5953: Loop on tradingsnapshot in database follow-up.
+
+
 ## 2.36.1 - Nova 2. Delivery 47. Hotfix 2 (January 16, 2025)
 ### What's changed
 * LT-5991: Bump LykkeBiz.RabbitMqBroker to 8.11.1
