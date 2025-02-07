@@ -22,7 +22,7 @@ namespace MarginTrading.SqlRepositories.Repositories
          SELECT *,
                 ROW_NUMBER() OVER (PARTITION BY Id ORDER BY HistoryTimestamp DESC) AS rn
          FROM [{0}] ph
-         WHERE ph.HistoryTimestamp > @From and ((@To is NULL) OR (ph.HistoryTimestamp <= @To))
+         WHERE ph.HistoryTimestamp > @Timestamp
        )
 SELECT *
 FROM cte
@@ -35,14 +35,14 @@ WHERE rn = 1";
             _select = string.Format(_select, tableName);
         }
 
-        public async Task<IReadOnlyList<IPositionHistory>> GetLastSnapshot(DateTime from, DateTime? to = null)
+        public async Task<IReadOnlyList<IPositionHistory>> GetLastSnapshot(DateTime @from)
         {
-            await using var conn = new SqlConnection(_connectionString);
-            var data = await conn.QueryAsync<PositionHistoryEntity>(_select, 
-                new { From = from, To = to },
-                commandTimeout: _getLastSnapshotTimeoutS);
+            using (var conn = new SqlConnection(_connectionString))
+            {
+                var data = await conn.QueryAsync<PositionHistoryEntity>(_select, new { Timestamp = @from }, commandTimeout: _getLastSnapshotTimeoutS);
 
-            return data.Cast<IPositionHistory>().ToList();
+                return data.Cast<IPositionHistory>().ToList();
+            }
         }
     }
 }
