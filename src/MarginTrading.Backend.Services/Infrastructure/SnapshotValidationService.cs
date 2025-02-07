@@ -52,15 +52,8 @@ namespace MarginTrading.Backend.Services.Infrastructure
         {
             await _log.WriteInfoAsync(nameof(SnapshotValidationService), nameof(ValidateCurrentStateAsync),
                 $"Snapshot validation started: {DateTime.UtcNow}");
-            var currentOrdersJson = _orderCache.GetAllOrders().ToJson();
-            var ordersTimestamp = DateTime.UtcNow;
-            var currentPositionsJson = _orderCache.GetPositions().ToJson();
-            var positionsTimestamp = DateTime.UtcNow;
-
-            // json is deserialized to create a deep copy
-            // Order and Position objects are already complex, no sense in adding a specialized deep copy / clone method
-            var currentOrders = currentOrdersJson.DeserializeJson<ImmutableArray<Order>>();
-            var currentPositions = currentPositionsJson.DeserializeJson<ImmutableArray<Position>>();
+            var currentOrders = _orderCache.GetAllOrders();
+            var currentPositions = _orderCache.GetPositions();
 
             var tradingEngineSnapshot = await _tradingEngineSnapshotsRepository.GetLastAsync();
             await _log.WriteInfoAsync(nameof(SnapshotValidationService), nameof(ValidateCurrentStateAsync),
@@ -69,8 +62,8 @@ namespace MarginTrading.Backend.Services.Infrastructure
             var lastOrders = GetOrders(tradingEngineSnapshot);
             var lastPositions = GetPositions(tradingEngineSnapshot);
 
-            var ordersHistory = await _ordersHistoryRepository.GetLastSnapshot(tradingEngineSnapshot.Timestamp, ordersTimestamp);
-            var positionsHistory = await _positionsHistoryRepository.GetLastSnapshot(tradingEngineSnapshot.Timestamp, positionsTimestamp);
+            var ordersHistory = await _ordersHistoryRepository.GetLastSnapshot(tradingEngineSnapshot.Timestamp);
+            var positionsHistory = await _positionsHistoryRepository.GetLastSnapshot(tradingEngineSnapshot.Timestamp);
 
             var restoredOrders = RestoreOrdersCurrentStateFromHistory(lastOrders, ordersHistory);
             var restoredPositions = RestorePositionsCurrentStateFromHistory(lastPositions, positionsHistory);
@@ -104,8 +97,7 @@ namespace MarginTrading.Backend.Services.Infrastructure
             {
                 Orders = ordersValidationResult,
                 Positions = positionsValidationResult,
-                PreviousSnapshotCorrelationId = tradingEngineSnapshot.CorrelationId,
-                Cache = new InMemorySnapshot(currentOrders, currentPositions),
+                PreviousSnapshotCorrelationId = tradingEngineSnapshot.CorrelationId
             };
         }
 
@@ -201,7 +193,7 @@ namespace MarginTrading.Backend.Services.Infrastructure
             {
                 Extra = extraOrders.ToList(),
                 Missed = missedOrders.ToList(),
-                Inconsistent = inconsistentOrders.ToList(),
+                Inconsistent = inconsistentOrders.ToList()
             };
         }
 
@@ -233,7 +225,7 @@ namespace MarginTrading.Backend.Services.Infrastructure
             {
                 Extra = extraPositions.ToList(),
                 Missed = missedPositions.ToList(),
-                Inconsistent = inconsistentPositions.ToList(),
+                Inconsistent = inconsistentPositions.ToList()
             };
         }
 

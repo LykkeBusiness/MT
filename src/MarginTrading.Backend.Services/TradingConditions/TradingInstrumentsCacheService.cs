@@ -10,7 +10,6 @@ using Common.Log;
 using MarginTrading.Backend.Contracts.Events;
 using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Messages;
-using MarginTrading.Backend.Core.Orders;
 using MarginTrading.Backend.Core.Repositories;
 using MarginTrading.Backend.Core.Settings;
 using MarginTrading.Backend.Core.TradingConditions;

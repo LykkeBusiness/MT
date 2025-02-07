@@ -34,7 +34,7 @@ namespace MarginTrading.SqlRepositories.Repositories
                    ELSE 99
                END as StatusOrder
         FROM [{0}] oh (NOLOCK)
-        WHERE oh.ModifiedTimestamp > @From and ((@To is NULL) OR (oh.ModifiedTimestamp <= @To))
+        WHERE oh.ModifiedTimestamp > @Timestamp
     ),
     filteredOrderHistWithRowNumber AS (
         SELECT *, ROW_NUMBER() OVER (PARTITION BY Id ORDER BY
@@ -54,14 +54,14 @@ WHERE RowNumber = 1";
             _getLastSnapshotTimeoutS = getLastSnapshotTimeoutS;
         }
 
-        public async Task<IReadOnlyList<IOrderHistory>> GetLastSnapshot(DateTime from, DateTime? to = null)
+        public async Task<IReadOnlyList<IOrderHistory>> GetLastSnapshot(DateTime @from)
         {
-            await using var conn = new SqlConnection(_connectionString);
-            var data = await conn.QueryAsync<OrderHistoryEntity>(_select,
-                new { From = from, To = to },
-                commandTimeout: _getLastSnapshotTimeoutS);
+            using (var conn = new SqlConnection(_connectionString))
+            {
+                var data = await conn.QueryAsync<OrderHistoryEntity>(_select, new { Timestamp = @from }, commandTimeout: _getLastSnapshotTimeoutS);
 
-            return data.Cast<IOrderHistory>().ToList();
+                return data.Cast<IOrderHistory>().ToList();
+            }
         }
     }
 }
