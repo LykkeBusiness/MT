@@ -28,14 +28,14 @@ namespace MarginTrading.Backend.Controllers
     {
         private readonly IOvernightMarginParameterContainer _overnightMarginParameterContainer;
         private readonly IIdentityGenerator _identityGenerator;
-        private readonly ISnapshotBuilder _snapshotService;
+        private readonly ISnapshotBuilderService _snapshotService;
         private readonly IAccountUpdateService _accountUpdateService;
         private readonly IAccountsProvider _accountsProvider;
 
         public ServiceController(
             IOvernightMarginParameterContainer overnightMarginParameterContainer,
             IIdentityGenerator identityGenerator,
-            ISnapshotBuilder snapshotService,
+            ISnapshotBuilderService snapshotService,
             IAccountUpdateService accountUpdateService,
             IAccountsProvider accountsProvider)
         {

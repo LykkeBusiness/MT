@@ -38,14 +38,14 @@ namespace MarginTrading.Backend.Controllers
     {
         private readonly IQuoteCacheService _quoteCacheService;
         private readonly IFxRateCacheService _fxRateCacheService;
-        private readonly ISnapshotBuilder _snapshotService;
+        private readonly ISnapshotBuilderService _snapshotService;
         private readonly IDraftSnapshotKeeper _draftSnapshotKeeper;
         private readonly ILog _log;
 
         public PricesController(
             IQuoteCacheService quoteCacheService,
             IFxRateCacheService fxRateCacheService,
-            ISnapshotBuilder snapshotService,
+            ISnapshotBuilderService snapshotService,
             ILog log,
             IDraftSnapshotKeeper draftSnapshotKeeper)
         {

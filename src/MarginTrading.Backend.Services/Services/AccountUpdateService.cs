@@ -239,7 +239,7 @@ namespace MarginTrading.Backend.Services.Services
         {
             var positions = _positionsProvider.GetPositionsByAccountIds(accountId);
 
-            if (_marginTradingSettings.LogBlockedMarginCalculation && SnapshotBuilder.IsMakingSnapshotInProgress)
+            if (_marginTradingSettings.LogBlockedMarginCalculation && SnapshotBuilderService.IsMakingSnapshotInProgress)
             {
                 _log.WriteInfo(nameof(AccountUpdateService), positions?.Select(p => new { p.Id, p.AssetPairId, p.ClosePrice, p.CloseFxPrice }).ToJson(),
                     $"Account {accountId} - Position array from position provider");

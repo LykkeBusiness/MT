@@ -29,7 +29,7 @@ namespace MarginTrading.Backend.Services.Workflow
     public class EodCommandsHandler
     {
         private readonly IQuotesApi _quotesApi;
-        private readonly ISnapshotBuilder _snapshotService;
+        private readonly ISnapshotBuilderService _snapshotService;
         private readonly IDateService _dateService;
         private readonly IDraftSnapshotKeeperFactory _draftSnapshotKeeperFactory;
         private readonly IIdentityGenerator _identityGenerator;
@@ -38,7 +38,7 @@ namespace MarginTrading.Backend.Services.Workflow
 
         public EodCommandsHandler(
             IQuotesApi quotesApi,
-            ISnapshotBuilder snapshotService,
+            ISnapshotBuilderService snapshotService,
             IDateService dateService,
             IDraftSnapshotKeeperFactory draftSnapshotKeeperFactory,
             IIdentityGenerator identityGenerator,

@@ -20,12 +20,12 @@ namespace MarginTrading.Backend.Services.Workflow
 {
     public class PlatformClosureProjection
     {
-        private readonly ISnapshotBuilder _snapshotService;
+        private readonly ISnapshotBuilderService _snapshotService;
         private readonly IIdentityGenerator _identityGenerator;
         private readonly ILog _log;
         private readonly IDateService _dateService;
 
-        public PlatformClosureProjection(ISnapshotBuilder snapshotService,
+        public PlatformClosureProjection(ISnapshotBuilderService snapshotService,
             ILog log,
             IIdentityGenerator identityGenerator,
             IDateService dateService)

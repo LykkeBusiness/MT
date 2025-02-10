@@ -57,12 +57,16 @@ namespace MarginTrading.Backend.Services.Modules
             builder.RegisterDecorator<AccountUpdatingTradingEngineSnapshotBuilder, ITradingEngineSnapshotBuilder>();
             builder.RegisterDecorator<TradingEngineSnapshotLoggingBuilder, ITradingEngineSnapshotBuilder>();
 
-            builder.RegisterType<SnapshotBuilder>()
-                .As<ISnapshotBuilder>()
+            builder.RegisterType<SnapshotBuilderService>()
+                .As<ISnapshotBuilderService>()
                 .InstancePerLifetimeScope();
 
             builder.RegisterType<SnapshotValidationService>()
                 .As<ISnapshotValidationService>()
+                .SingleInstance();
+
+            builder.RegisterType<SnapshotValidator>()
+                .As<ISnapshotValidator>()
                 .SingleInstance();
 
             builder.RegisterType<DraftSnapshotWorkflowTracker>()
