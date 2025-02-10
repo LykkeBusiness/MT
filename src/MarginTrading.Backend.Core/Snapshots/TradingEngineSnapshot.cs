@@ -5,6 +5,7 @@ using System;
 
 namespace MarginTrading.Backend.Core.Snapshots
 {
+
     public class TradingEngineSnapshot
     {
         public DateTime TradingDay { get; }

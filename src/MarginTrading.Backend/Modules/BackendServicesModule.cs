@@ -7,13 +7,9 @@ using System.IO;
 using Autofac;
 using Common.Log;
 using Lykke.Common.Chaos;
-using Lykke.RabbitMqBroker;
 using Lykke.RabbitMqBroker.Publisher;
-using Lykke.RabbitMqBroker.Publisher.Strategies;
-using Lykke.Snow.Common.Correlation.RabbitMq;
 using MarginTrading.Backend.Email;
 using MarginTrading.Backend.Middleware.Validator;
-using MarginTrading.Common.RabbitMq;
 using Microsoft.AspNetCore.Hosting;
 using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Services;
@@ -28,7 +24,6 @@ using MarginTrading.Backend.Services.RabbitMq;
 using MarginTrading.Backend.Services.Services;
 using MarginTrading.Backend.Services.Settings;
 using MarginTrading.Common.Services;
-using Microsoft.Extensions.Logging;
 
 namespace MarginTrading.Backend.Modules
 {
@@ -146,6 +141,11 @@ namespace MarginTrading.Backend.Modules
             builder.RegisterType<ValidationExceptionHandler>()
                 .AsSelf()
                 .SingleInstance();
+
+            builder.RegisterType<TradingEngineRawSnapshotsAdapter>()
+                .As<ITradingEngineRawSnapshotsAdapter>()
+                .SingleInstance();
+            builder.RegisterDecorator<TradingEngineRawSnapshotsLoggingAdapter, ITradingEngineRawSnapshotsAdapter>();
         }
     }
 }

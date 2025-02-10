@@ -13,7 +13,8 @@ namespace MarginTrading.Backend.Services
     public interface ISnapshotBuilder
     {
         /// <summary>
-        /// Make final trading snapshot from current system state
+        /// Make final trading snapshot from current system state.
+        /// Might be long running operation.
         /// </summary>
         /// <param name="tradingDay"></param>
         /// <param name="correlationId"></param>
@@ -25,13 +26,15 @@ namespace MarginTrading.Backend.Services
             SnapshotStatus status = SnapshotStatus.Final);
 
         /// <summary>
-        /// Make final trading snapshot from draft
+        /// Make final trading snapshot by converting draft snapshot
         /// </summary>
         /// <param name="correlationId"></param>
         /// <param name="cfdQuotes"></param>
         /// <param name="fxRates"></param>
         /// <returns></returns>
-        Task MakeTradingDataSnapshotFromDraft(
+        // TODO: probably we better make this feature a concern of another service
+        // so far the only reason features are combined under the same service is that they are sharing lock
+        Task Convert(
             string correlationId,
             IEnumerable<ClosingAssetPrice> cfdQuotes,
             IEnumerable<ClosingFxRate> fxRates,

@@ -78,7 +78,7 @@ namespace MarginTrading.Backend.Services.Workflow
 
                 var draftSnapshotKeeper = _draftSnapshotKeeperFactory.Create(command.TradingDay);
 
-                await _snapshotService.MakeTradingDataSnapshotFromDraft(command.OperationId,
+                await _snapshotService.Convert(command.OperationId,
                     MapQuotes(quotes.EodMarketData.Underlyings),
                     MapFxRates(quotes.EodMarketData.Forex),
                     draftSnapshotKeeper);
