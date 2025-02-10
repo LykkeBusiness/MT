@@ -23,7 +23,7 @@ namespace MarginTrading.Backend.Services
     public class DraftSnapshotMonitor : BackgroundService
     {
         private readonly IDraftSnapshotWorkflowTracker _draftSnapshotWorkflowTracker;
-        private readonly ISnapshotBuilder _snapshotService;
+        private readonly ISnapshotBuilderService _snapshotService;
         private readonly IIdentityGenerator _identityGenerator;
         private readonly SnapshotMonitorSettings _settings;
         private readonly IDateService _dateService;
@@ -31,7 +31,7 @@ namespace MarginTrading.Backend.Services
 
         public DraftSnapshotMonitor(
             IDraftSnapshotWorkflowTracker draftSnapshotWorkflowTracker,
-            ISnapshotBuilder snapshotService,
+            ISnapshotBuilderService snapshotService,
             IIdentityGenerator identityGenerator,
             SnapshotMonitorSettings settings,
             ILogger<DraftSnapshotMonitor> logger,

@@ -11,7 +11,6 @@ using Common;
 using Common.Log;
 
 using MarginTrading.Backend.Core;
-using MarginTrading.Backend.Core.Exceptions;
 using MarginTrading.Backend.Core.Repositories;
 using MarginTrading.Backend.Core.Services;
 using MarginTrading.Backend.Core.Snapshots;
@@ -24,7 +23,7 @@ using Polly.Retry;
 
 namespace MarginTrading.Backend.Services.Infrastructure;
 
-public partial class SnapshotBuilder : ISnapshotBuilder
+public partial class SnapshotBuilderService : ISnapshotBuilderService
 {
     private readonly IScheduleSettingsCacheService _scheduleSettingsCacheService;
     private readonly IAccountsCacheService _accountsCacheService;
@@ -33,9 +32,7 @@ public partial class SnapshotBuilder : ISnapshotBuilder
     private readonly IDateService _dateService;
 
     private readonly ITradingEngineRawSnapshotsAdapter _snapshotsRepositoryAdapter;
-    private readonly ISnapshotValidationService _snapshotValidationService;
     private readonly IQueueValidationService _queueValidationService;
-    private readonly IMarginTradingBlobRepository _blobRepository;
     private readonly ILog _log;
     private readonly IFinalSnapshotCalculator _finalSnapshotCalculator;
     private readonly ISnapshotRecreateFlagKeeper _snapshotRecreateFlagKeeper;
@@ -44,22 +41,22 @@ public partial class SnapshotBuilder : ISnapshotBuilder
     private readonly ITradingEngineSnapshotsRepository _repository;
     private static readonly SemaphoreSlim Lock = new(1, 1);
     public static bool IsMakingSnapshotInProgress => Lock.CurrentCount == 0;
+    private readonly ISnapshotValidator _snapshotValidator;
 
-    public SnapshotBuilder(
+    public SnapshotBuilderService(
         IScheduleSettingsCacheService scheduleSettingsCacheService,
         IAccountsCacheService accountsCacheService,
         IQuoteCacheService quoteCacheService,
         IFxRateCacheService fxRateCacheService,
         IDateService dateService,
         ITradingEngineRawSnapshotsAdapter snashotsRepositoryAdapter,
-        ISnapshotValidationService snapshotValidationService,
         IQueueValidationService queueValidationService,
-        IMarginTradingBlobRepository blobRepository,
         ILog log,
         IFinalSnapshotCalculator finalSnapshotCalculator,
         ISnapshotRecreateFlagKeeper snapshotRecreateFlagKeeper,
         ITradingEngineSnapshotBuilder snapshotBuilder,
-        ITradingEngineSnapshotsRepository repository)
+        ITradingEngineSnapshotsRepository repository,
+        ISnapshotValidator snapshotValidator)
     {
         _scheduleSettingsCacheService = scheduleSettingsCacheService;
         _accountsCacheService = accountsCacheService;
@@ -67,9 +64,7 @@ public partial class SnapshotBuilder : ISnapshotBuilder
         _fxRateCacheService = fxRateCacheService;
         _dateService = dateService;
         _snapshotsRepositoryAdapter = snashotsRepositoryAdapter;
-        _snapshotValidationService = snapshotValidationService;
         _queueValidationService = queueValidationService;
-        _blobRepository = blobRepository;
         _log = log;
         _finalSnapshotCalculator = finalSnapshotCalculator;
         _snapshotRecreateFlagKeeper = snapshotRecreateFlagKeeper;
@@ -77,6 +72,7 @@ public partial class SnapshotBuilder : ISnapshotBuilder
         _policy = SnapshotStateValidationPolicy.BuildPolicy(log);
         _snapshotBuilder = snapshotBuilder;
         _repository = repository;
+        _snapshotValidator = snapshotValidator;
     }
 
     /// <inheritdoc />
@@ -112,10 +108,10 @@ public partial class SnapshotBuilder : ISnapshotBuilder
 
         try
         {
-            var validationResult = await _policy.ExecuteAsync(() => Validate(correlationId));
+            var validationResult = await _policy.ExecuteAsync(() => _snapshotValidator.Validate(correlationId));
             if (!validationResult.IsValid)
             {
-                await _log.WriteFatalErrorAsync(nameof(SnapshotBuilder),
+                await _log.WriteFatalErrorAsync(nameof(SnapshotBuilderService),
                     nameof(MakeTradingDataSnapshot),
                     validationResult.ToJson(),
                     validationResult.Exception);
@@ -150,42 +146,6 @@ public partial class SnapshotBuilder : ISnapshotBuilder
         finally
         {
             Lock.Release();
-        }
-    }
-
-    private async Task<SnapshotValidationResult> Validate(string correlationId)
-    {
-        try
-        {
-            // Before starting snapshot creation the current state should be validated.
-            var validationResult = await _snapshotValidationService.ValidateCurrentStateAsync();
-
-            if (!validationResult.IsValid)
-            {
-                var errorMessage =
-                    $"The trading data snapshot might be corrupted. The current state of orders and positions is incorrect. Check the dbo.BlobData table for more info: container {LykkeConstants.MtCoreSnapshotBlobContainer}, correlationId {correlationId}";
-                var ex = new SnapshotValidationException(errorMessage,
-                    SnapshotValidationError.InvalidOrderOrPositionState);
-                validationResult.Exception = ex;
-                await _blobRepository.WriteAsync(LykkeConstants.MtCoreSnapshotBlobContainer, correlationId, validationResult);
-            }
-            else
-            {
-                await _log.WriteInfoAsync(nameof(SnapshotBuilder), nameof(MakeTradingDataSnapshot),
-                    "The current state of orders and positions is correct.");
-            }
-
-            return validationResult;
-        }
-        catch (Exception e)
-        {
-            // in case validation fails for some reason (not related to orders / positions inconsistency, e.g. a network error during validation)
-            var result = new SnapshotValidationResult
-            {
-                Exception = new SnapshotValidationException("Snapshot validation failed", SnapshotValidationError.Unknown, e),
-            };
-
-            return result;
         }
     }
 }

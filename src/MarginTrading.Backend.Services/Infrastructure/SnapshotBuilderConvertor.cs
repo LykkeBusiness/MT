@@ -6,7 +6,7 @@ using MarginTrading.Backend.Contracts.Prices;
 
 namespace MarginTrading.Backend.Services.Infrastructure;
 
-public partial class SnapshotBuilder : ISnapshotBuilder
+public partial class SnapshotBuilderService : ISnapshotBuilderService
 {
     /// <inheritdoc />
     public async Task Convert(

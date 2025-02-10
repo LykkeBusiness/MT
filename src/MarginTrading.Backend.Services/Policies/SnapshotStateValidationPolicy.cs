@@ -23,8 +23,8 @@ namespace MarginTrading.Backend.Services.Policies
                 .WaitAndRetryAsync(3,
                     x => TimeSpan.FromSeconds(x * 5),
                     (result, span) => logger?.WriteWarningAsync(
-                                          nameof(SnapshotBuilder),
-                                          nameof(SnapshotBuilder.MakeTradingDataSnapshot),
+                                          nameof(SnapshotBuilderService),
+                                          nameof(SnapshotBuilderService.MakeTradingDataSnapshot),
                                           $"Exception: {result?.Result?.Exception}",
                                           result?.Result?.Exception)
                                       // in case logger is not provided
