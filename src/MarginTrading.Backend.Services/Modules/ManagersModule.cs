@@ -51,6 +51,12 @@ namespace MarginTrading.Backend.Services.Modules
                 .As<IStartable>()
                 .SingleInstance();
 
+            builder.RegisterType<TradingEngineSnapshotBuilder>()
+                .As<ITradingEngineSnapshotBuilder>()
+                .SingleInstance();
+            builder.RegisterDecorator<AccountUpdatingTradingEngineSnapshotBuilder, ITradingEngineSnapshotBuilder>();
+            builder.RegisterDecorator<TradingEngineSnapshotLoggingBuilder, ITradingEngineSnapshotBuilder>();
+
             builder.RegisterType<SnapshotBuilder>()
                 .As<ISnapshotBuilder>()
                 .InstancePerLifetimeScope();

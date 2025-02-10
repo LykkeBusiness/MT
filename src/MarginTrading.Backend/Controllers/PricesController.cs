@@ -122,7 +122,7 @@ namespace MarginTrading.Backend.Controllers
 
             try
             {
-                await _snapshotService.MakeTradingDataSnapshotFromDraft(
+                await _snapshotService.Convert(
                     request.CorrelationId,
                     request.Cfd,
                     request.Forex);

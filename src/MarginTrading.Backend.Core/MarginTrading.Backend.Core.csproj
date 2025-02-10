@@ -22,4 +22,7 @@
   <ItemGroup>
     <ProjectReference Include="..\MarginTrading.Common\MarginTrading.Common.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="MarginTrading.Backend.Services" />
+  </ItemGroup>
 </Project>

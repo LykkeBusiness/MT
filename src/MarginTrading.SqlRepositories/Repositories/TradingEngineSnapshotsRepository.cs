@@ -97,7 +97,7 @@ VALUES (@TradingDay,@CorrelationId,@Timestamp,@Orders,@Positions,@AccountStats,@
 
             await using var conn = new SqlConnection(_connectionString);
 
-            var result = await conn.QueryFirstOrDefaultAsync<TradingEngineSnapshot>(sql, new {id = correlationId});
+            var result = await conn.QueryFirstOrDefaultAsync<TradingEngineSnapshot>(sql, new { id = correlationId });
             return result;
         }
 
@@ -107,7 +107,7 @@ VALUES (@TradingDay,@CorrelationId,@Timestamp,@Orders,@Positions,@AccountStats,@
 
             await using var conn = new SqlConnection(_connectionString);
 
-            await conn.ExecuteAsync(sql, new {id = correlationId});
+            await conn.ExecuteAsync(sql, new { id = correlationId });
         }
 
         public async Task<bool> DraftExistsAsync(DateTime tradingDay)
@@ -118,11 +118,11 @@ VALUES (@TradingDay,@CorrelationId,@Timestamp,@Orders,@Positions,@AccountStats,@
                     $"SELECT TOP 1 OID FROM {TableName} WHERE [TradingDay] = '{tradingDay}' AND [Status] = '{nameof(SnapshotStatus.Draft)}'";
 
                 await _log.WriteInfoAsync(
-                    nameof(TradingEngineSnapshotsRepository), 
-                    nameof(DraftExistsAsync), 
+                    nameof(TradingEngineSnapshotsRepository),
+                    nameof(DraftExistsAsync),
                     sql,
                     "Checking if trading snapshot draft exists ...");
-                
+
                 var o = await connection.QuerySingleOrDefaultAsync(sql);
 
                 return o != null;
