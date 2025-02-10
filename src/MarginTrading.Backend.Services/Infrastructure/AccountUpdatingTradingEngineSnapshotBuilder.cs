@@ -21,6 +21,9 @@ class AccountUpdatingTradingEngineSnapshotBuilder(ITradingEngineSnapshotBuilder 
 
     public Task<TradingEngineSnapshotRaw> Build() => _decoratee.Build();
 
+    public ITradingEngineSnapshotBuilder CollectDataFrom(IOrderReaderBase orderReader) =>
+        _decoratee.CollectDataFrom(orderReader);
+
     public ITradingEngineSnapshotBuilder WithAccounts(
         ImmutableArray<MarginTradingAccount> accounts,
         ImmutableArray<MarginTradingAccount> accountsInLiquidation)
