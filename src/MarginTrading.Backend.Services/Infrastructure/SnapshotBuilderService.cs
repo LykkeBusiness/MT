@@ -2,20 +2,16 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Immutable;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 using Common;
 using Common.Log;
 
-using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Repositories;
 using MarginTrading.Backend.Core.Services;
 using MarginTrading.Backend.Core.Snapshots;
 using MarginTrading.Backend.Services.AssetPairs;
-using MarginTrading.Backend.Services.Caches;
 using MarginTrading.Backend.Services.Policies;
 using MarginTrading.Common.Services;
 
@@ -26,9 +22,6 @@ namespace MarginTrading.Backend.Services.Infrastructure;
 public partial class SnapshotBuilderService : ISnapshotBuilderService
 {
     private readonly IScheduleSettingsCacheService _scheduleSettingsCacheService;
-    private readonly IAccountsCacheService _accountsCacheService;
-    private readonly IQuoteCacheService _quoteCacheService;
-    private readonly IFxRateCacheService _fxRateCacheService;
     private readonly IDateService _dateService;
 
     private readonly ITradingEngineRawSnapshotsAdapter _snapshotsRepositoryAdapter;
@@ -45,30 +38,23 @@ public partial class SnapshotBuilderService : ISnapshotBuilderService
 
     public SnapshotBuilderService(
         IScheduleSettingsCacheService scheduleSettingsCacheService,
-        IAccountsCacheService accountsCacheService,
-        IQuoteCacheService quoteCacheService,
-        IFxRateCacheService fxRateCacheService,
+        IQueueValidationService queueValidationService,
         IDateService dateService,
         ITradingEngineRawSnapshotsAdapter snashotsRepositoryAdapter,
-        IQueueValidationService queueValidationService,
-        ILog log,
         IFinalSnapshotCalculator finalSnapshotCalculator,
         ISnapshotRecreateFlagKeeper snapshotRecreateFlagKeeper,
         ITradingEngineSnapshotBuilder snapshotBuilder,
         ITradingEngineSnapshotsRepository repository,
-        ISnapshotValidator snapshotValidator)
+        ISnapshotValidator snapshotValidator,
+        ILog log)
     {
         _scheduleSettingsCacheService = scheduleSettingsCacheService;
-        _accountsCacheService = accountsCacheService;
-        _quoteCacheService = quoteCacheService;
-        _fxRateCacheService = fxRateCacheService;
         _dateService = dateService;
         _snapshotsRepositoryAdapter = snashotsRepositoryAdapter;
         _queueValidationService = queueValidationService;
         _log = log;
         _finalSnapshotCalculator = finalSnapshotCalculator;
         _snapshotRecreateFlagKeeper = snapshotRecreateFlagKeeper;
-
         _policy = SnapshotStateValidationPolicy.BuildPolicy(log);
         _snapshotBuilder = snapshotBuilder;
         _repository = repository;
@@ -118,22 +104,12 @@ public partial class SnapshotBuilderService : ISnapshotBuilderService
                 throw validationResult.Exception;
             }
 
-            var orders = validationResult.Cache.GetAllOrders();
-            var positions = validationResult.Cache.GetPositions();
-            var accounts = _accountsCacheService.GetAll();
-            var accountsInLiquidation = await _accountsCacheService.GetAllWhereLiquidationIsRunning().ToListAsync();
-            var bestFxPrices = _fxRateCacheService.GetAllQuotes();
-            var bestPrices = _quoteCacheService.GetAllQuotes();
-
-            var snapshot = await _snapshotBuilder.WithTradingDay(tradingDay)
+            var snapshot = await _snapshotBuilder
+                .CollectDataFrom(validationResult.Cache)
+                .WithTradingDay(tradingDay)
                 .WithCorrelationId(correlationId)
                 .WithStatus(status)
                 .WithTimestamp(_dateService.Now())
-                .WithOrders(orders, validationResult.Cache.GetRelatedOrders(orders))
-                .WithPositions(positions, validationResult.Cache.GetRelatedOrders(positions))
-                .WithAccounts(accounts.ToImmutableArray(), accountsInLiquidation.ToImmutableArray())
-                .WithFxQuotes(bestFxPrices.ToImmutableDictionary())
-                .WithQuotes(bestPrices.ToImmutableDictionary())
                 .Build();
 
             await _snapshotsRepositoryAdapter.AddAsync(snapshot);

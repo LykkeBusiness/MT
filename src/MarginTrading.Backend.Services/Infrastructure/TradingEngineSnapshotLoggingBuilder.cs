@@ -26,6 +26,10 @@ class TradingEngineSnapshotLoggingBuilder(
         logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly bool _logBlockedMarginCalculation = logBlockedMarginCalculation;
 
+    public ITradingEngineSnapshotBuilder CollectDataFrom(IOrderReaderBase orderReader) =>
+        _decoratee.CollectDataFrom(orderReader);
+
+
     public ITradingEngineSnapshotBuilder WithAccounts(
         ImmutableArray<MarginTradingAccount> accounts,
         ImmutableArray<MarginTradingAccount> accountsInLiquidation)

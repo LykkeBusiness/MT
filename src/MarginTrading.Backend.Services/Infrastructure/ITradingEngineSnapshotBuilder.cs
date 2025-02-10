@@ -17,6 +17,7 @@ namespace MarginTrading.Backend.Services.Infrastructure;
 /// </summary>
 public interface ITradingEngineSnapshotBuilder
 {
+    ITradingEngineSnapshotBuilder CollectDataFrom(IOrderReaderBase orderReader);
     ITradingEngineSnapshotBuilder WithOrders(
         ImmutableArray<Order> orders,
         ImmutableDictionary<string, ImmutableArray<Order>> relatedOrders);

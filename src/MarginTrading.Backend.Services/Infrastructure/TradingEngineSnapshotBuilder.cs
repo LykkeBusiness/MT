@@ -3,21 +3,46 @@
 
 using System;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Threading.Tasks;
 
 using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Orders;
+using MarginTrading.Backend.Core.Services;
 using MarginTrading.Backend.Core.Snapshots;
 using MarginTrading.Backend.Core.Trading;
+using MarginTrading.Backend.Services.Caches;
 
 namespace MarginTrading.Backend.Services.Infrastructure;
 
 /// <summary>
 /// Implementation of a trading engine snapshot builder.
 /// </summary>
-class TradingEngineSnapshotBuilder : ITradingEngineSnapshotBuilder
+class TradingEngineSnapshotBuilder(
+    IAccountsCacheService accountsCacheService,
+    IFxRateCacheService fxRateCacheService,
+    IQuoteCacheService quoteCacheService) : ITradingEngineSnapshotBuilder
 {
+    private readonly IAccountsCacheService _accountsCacheService = accountsCacheService;
+    private readonly IFxRateCacheService _fxRateCacheService = fxRateCacheService;
+    private readonly IQuoteCacheService _quoteCacheService = quoteCacheService;
+
     private TradingEngineSnapshotRaw _snapshotRaw = TradingEngineSnapshotRaw.Empty;
+
+    public ITradingEngineSnapshotBuilder CollectDataFrom(IOrderReaderBase orderReader)
+    {
+        var orders = orderReader.GetAllOrders();
+        var positions = orderReader.GetPositions();
+
+        return this
+            .WithOrders(orders, orderReader.GetRelatedOrders(orders))
+            .WithPositions(positions, orderReader.GetRelatedOrders(positions))
+            .WithAccounts(
+                [.. _accountsCacheService.GetAll()],
+                [.. _accountsCacheService.GetAllWhereLiquidationIsRunning().ToListAsync().GetAwaiter().GetResult()])
+            .WithFxQuotes(_fxRateCacheService.GetAllQuotes().ToImmutableDictionary())
+            .WithQuotes(_quoteCacheService.GetAllQuotes().ToImmutableDictionary());
+    }
 
     public ITradingEngineSnapshotBuilder WithTradingDay(DateTime tradingDay)
     {
