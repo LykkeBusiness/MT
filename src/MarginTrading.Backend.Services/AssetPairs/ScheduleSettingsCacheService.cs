@@ -201,6 +201,8 @@ namespace MarginTrading.Backend.Services.AssetPairs
 
                 if (ev.IsPlatformClosureEvent())
                 {
+                    // TODO: needs checking, we already create snapshot upon this event in PlatformClosureProjection
+                    // so it is possible snapshots are duplicated
                     bool sucessfullyRequested = _draftSnapshotWorkflowTracker.TryRequest(now, now.Date);
                     if (!sucessfullyRequested)
                     {
