@@ -9,13 +9,12 @@ using MarginTrading.Backend.Core.Repositories;
 using MarginTrading.Backend.Core.Services;
 using MarginTrading.Backend.Core.Settings;
 using MarginTrading.Backend.Core.Snapshots;
-using MarginTrading.Backend.Services.Infrastructure;
 using MarginTrading.Common.Services;
 
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace MarginTrading.Backend.Services
+namespace MarginTrading.Backend.Services.Snapshot
 {
     /// <summary>
     /// Attempts to build a draft snapshot when the platform is degraded (specifically, when there's an issue with rabbitmq)

@@ -15,6 +15,7 @@ using MarginTrading.Backend.Contracts.Snow.Prices;
 using MarginTrading.Backend.Core.Repositories;
 using MarginTrading.Backend.Core.Snapshots;
 using MarginTrading.Backend.Services.Extensions;
+using MarginTrading.Backend.Services.Snapshot;
 using MarginTrading.Common.Services;
 
 namespace MarginTrading.Backend.Services.Infrastructure

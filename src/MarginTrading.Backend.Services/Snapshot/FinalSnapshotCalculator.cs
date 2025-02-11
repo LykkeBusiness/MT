@@ -5,8 +5,10 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Common;
 using Common.Log;
+
 using MarginTrading.Backend.Contracts.Prices;
 using MarginTrading.Backend.Contracts.Snow.Prices;
 using MarginTrading.Backend.Core;
@@ -17,7 +19,7 @@ using MarginTrading.Backend.Core.Trading;
 using MarginTrading.Backend.Services.Mappers;
 using MarginTrading.Common.Services;
 
-namespace MarginTrading.Backend.Services.Services
+namespace MarginTrading.Backend.Services.Snapshot
 {
     /// <inheritdoc />
     public class FinalSnapshotCalculator : IFinalSnapshotCalculator

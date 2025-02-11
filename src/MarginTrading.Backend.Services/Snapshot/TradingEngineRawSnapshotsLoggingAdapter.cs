@@ -8,7 +8,7 @@ using MarginTrading.Backend.Core.Snapshots;
 
 using Microsoft.Extensions.Logging;
 
-namespace MarginTrading.Backend.Services;
+namespace MarginTrading.Backend.Services.Snapshot;
 
 public class TradingEngineRawSnapshotsLoggingAdapter(
     ITradingEngineRawSnapshotsAdapter decoratee,

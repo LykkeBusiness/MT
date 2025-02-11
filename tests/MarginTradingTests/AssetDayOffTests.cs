@@ -15,6 +15,8 @@ using MarginTrading.Backend.Services.Infrastructure;
 using MarginTrading.Common.Services;
 using MarginTrading.AssetService.Contracts;
 using MarginTrading.AssetService.Contracts.Scheduling;
+using MarginTrading.Backend.Services.Snapshot;
+
 using Microsoft.FeatureManagement;
 using Moq;
 using NUnit.Framework;

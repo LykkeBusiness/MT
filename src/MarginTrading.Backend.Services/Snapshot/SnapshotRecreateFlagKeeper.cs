@@ -13,7 +13,7 @@ using Polly.Retry;
 
 using StackExchange.Redis;
 
-namespace MarginTrading.Backend.Services.Services
+namespace MarginTrading.Backend.Services.Snapshot
 {
     public class SnapshotRecreateFlagKeeper : ISnapshotRecreateFlagKeeper
     {

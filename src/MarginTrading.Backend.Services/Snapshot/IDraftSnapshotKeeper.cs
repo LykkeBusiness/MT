@@ -5,12 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading.Tasks;
+
 using MarginTrading.Backend.Contracts.Snow.Prices;
 using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Orders;
 using MarginTrading.Backend.Core.Trading;
 
-namespace MarginTrading.Backend.Services
+namespace MarginTrading.Backend.Services.Snapshot
 {
     
     /// <summary>

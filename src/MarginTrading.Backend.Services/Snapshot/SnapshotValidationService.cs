@@ -6,8 +6,10 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Common;
 using Common.Log;
+
 using MarginTrading.Backend.Contracts.Orders;
 using MarginTrading.Backend.Contracts.Positions;
 using MarginTrading.Backend.Core.Orders;
@@ -17,7 +19,7 @@ using MarginTrading.Backend.Core.Snapshots;
 using MarginTrading.Backend.Core.Trading;
 using MarginTrading.Common.Extensions;
 
-namespace MarginTrading.Backend.Services.Infrastructure
+namespace MarginTrading.Backend.Services.Snapshot
 {
     /// <inheritdoc/> 
     public class SnapshotValidationService : ISnapshotValidationService
@@ -48,7 +50,7 @@ namespace MarginTrading.Backend.Services.Infrastructure
         }
 
         /// <inheritdoc/> 
-        public async Task<SnapshotValidationResult> ValidateCurrentStateAsync()
+        public async Task<EnvironmentValidationResult> ValidateCurrentStateAsync()
         {
             await _log.WriteInfoAsync(nameof(SnapshotValidationService), nameof(ValidateCurrentStateAsync),
                 $"Snapshot validation started: {DateTime.UtcNow}");
@@ -65,7 +67,7 @@ namespace MarginTrading.Backend.Services.Infrastructure
             var tradingEngineSnapshot = await _tradingEngineSnapshotsRepository.GetLastAsync();
             await _log.WriteInfoAsync(nameof(SnapshotValidationService), nameof(ValidateCurrentStateAsync),
                 $"Last snapshot correlationId {tradingEngineSnapshot.CorrelationId}, tradingDay {tradingEngineSnapshot.TradingDay}, timestamp {tradingEngineSnapshot.Timestamp}");
-            
+
             var lastOrders = GetOrders(tradingEngineSnapshot);
             var lastPositions = GetPositions(tradingEngineSnapshot);
 
@@ -100,7 +102,7 @@ namespace MarginTrading.Backend.Services.Infrastructure
                     $"Positions validation result is NOT valid. Extra: {positionsValidationResult.Extra.Count}, missed: {positionsValidationResult.Missed.Count}, inconsistent: {positionsValidationResult.Inconsistent.Count}");
             }
 
-            return new SnapshotValidationResult
+            return new EnvironmentValidationResult
             {
                 Orders = ordersValidationResult,
                 Positions = positionsValidationResult,
@@ -190,10 +192,10 @@ namespace MarginTrading.Backend.Services.Infrastructure
                     Restored = restoredOrdersMap[orderId],
                     Current = Map(currentOrdersMap[orderId])
                 })
-                .Where(pair => pair.Restored.Volume != pair.Current.Volume 
+                .Where(pair => pair.Restored.Volume != pair.Current.Volume
                                ||
-                               (pair.Restored.ExpectedOpenPrice != pair.Current.ExpectedOpenPrice 
-                                && pair.Current.Type != OrderType.TrailingStop) 
+                               (pair.Restored.ExpectedOpenPrice != pair.Current.ExpectedOpenPrice
+                                && pair.Current.Type != OrderType.TrailingStop)
                                ||
                                (pair.Restored.Status != pair.Current.Status));
 
@@ -251,7 +253,7 @@ namespace MarginTrading.Backend.Services.Infrastructure
         {
             return new OrderInfo(order.Id, order.Volume, order.Price, order.Status, order.OrderType);
         }
-        
+
         private static OrderInfo Map(IOrderHistory order)
         {
             var status = order.Status == OrderStatus.Placed ? OrderStatus.Inactive : order.Status;

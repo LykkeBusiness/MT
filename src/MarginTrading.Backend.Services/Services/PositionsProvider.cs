@@ -9,6 +9,7 @@ using Common.Log;
 using MarginTrading.Backend.Core.Orders;
 using MarginTrading.Backend.Core.Services;
 using MarginTrading.Backend.Services.Extensions;
+using MarginTrading.Backend.Services.Snapshot;
 
 namespace MarginTrading.Backend.Services.Services
 {

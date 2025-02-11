@@ -6,8 +6,11 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Common;
+
 using JetBrains.Annotations;
+
 using MarginTrading.Backend.Contracts.Snow.Prices;
 using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Exceptions;
@@ -18,7 +21,7 @@ using MarginTrading.Backend.Core.Snapshots;
 using MarginTrading.Backend.Core.Trading;
 using MarginTrading.Backend.Services.Extensions;
 
-namespace MarginTrading.Backend.Services
+namespace MarginTrading.Backend.Services.Snapshot
 {
     /// <inheritdoc />
     /// Current implementation is not thread safe

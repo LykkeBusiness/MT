@@ -21,6 +21,7 @@ using MarginTrading.Backend.Contracts.Prices;
 using MarginTrading.Backend.Core.Repositories;
 using MarginTrading.Backend.Core.Services;
 using MarginTrading.Backend.Core.Snapshots;
+using MarginTrading.Backend.Services.Snapshot;
 using MarginTrading.Common.Services;
 
 namespace MarginTrading.Backend.Services.Workflow

@@ -2,9 +2,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+
 using MarginTrading.Backend.Core.Repositories;
 
-namespace MarginTrading.Backend.Services
+namespace MarginTrading.Backend.Services.Snapshot
 {
     public class DraftSnapshotKeeperFactory : IDraftSnapshotKeeperFactory
     {

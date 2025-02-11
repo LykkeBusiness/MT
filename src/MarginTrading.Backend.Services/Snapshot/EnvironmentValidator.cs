@@ -8,15 +8,15 @@ using MarginTrading.Backend.Core.Exceptions;
 using MarginTrading.Backend.Core.Services;
 using MarginTrading.Backend.Core.Snapshots;
 
-namespace MarginTrading.Backend.Services;
+namespace MarginTrading.Backend.Services.Snapshot;
 
-public class SnapshotValidator : ISnapshotValidator
+public class EnvironmentValidator : IEnvironmentValidator
 {
     private readonly ISnapshotValidationService _snapshotValidationService;
     private readonly IMarginTradingBlobRepository _blobRepository;
     private readonly ILog _log;
 
-    public SnapshotValidator(
+    public EnvironmentValidator(
         ISnapshotValidationService snapshotValidationService,
         IMarginTradingBlobRepository blobRepository,
         ILog log)
@@ -26,7 +26,7 @@ public class SnapshotValidator : ISnapshotValidator
         _log = log;
     }
 
-    public async Task<SnapshotValidationResult> Validate(string correlationId)
+    public async Task<EnvironmentValidationResult> Validate(string correlationId)
     {
         try
         {
@@ -43,7 +43,7 @@ public class SnapshotValidator : ISnapshotValidator
             }
             else
             {
-                await _log.WriteInfoAsync(nameof(SnapshotValidator), nameof(Validate),
+                await _log.WriteInfoAsync(nameof(EnvironmentValidator), nameof(Validate),
                     "The current state of orders and positions is correct.");
             }
 
@@ -51,7 +51,7 @@ public class SnapshotValidator : ISnapshotValidator
         }
         catch (Exception e)
         {
-            var result = new SnapshotValidationResult
+            var result = new EnvironmentValidationResult
             {
                 Exception = new SnapshotValidationException("Snapshot validation failed", SnapshotValidationError.Unknown, e),
             };
