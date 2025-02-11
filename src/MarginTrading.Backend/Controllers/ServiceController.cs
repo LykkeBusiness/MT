@@ -12,6 +12,7 @@ using MarginTrading.Backend.Core.Repositories;
 using MarginTrading.Backend.Core.Services;
 using MarginTrading.Backend.Extensions;
 using MarginTrading.Backend.Services;
+using MarginTrading.Backend.Services.Snapshot;
 using MarginTrading.Backend.Services.TradingConditions;
 using MarginTrading.Common.Middleware;
 

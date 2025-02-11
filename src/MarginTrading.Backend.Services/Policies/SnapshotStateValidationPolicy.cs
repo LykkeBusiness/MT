@@ -8,6 +8,7 @@ using Common.Log;
 
 using MarginTrading.Backend.Core.Snapshots;
 using MarginTrading.Backend.Services.Infrastructure;
+using MarginTrading.Backend.Services.Snapshot;
 
 using Polly;
 using Polly.Retry;
@@ -16,10 +17,10 @@ namespace MarginTrading.Backend.Services.Policies
 {
     public static class SnapshotStateValidationPolicy
     {
-        public static AsyncRetryPolicy<SnapshotValidationResult> BuildPolicy(ILog logger)
+        public static AsyncRetryPolicy<EnvironmentValidationResult> BuildPolicy(ILog logger)
         {
             return Policy
-                .HandleResult<SnapshotValidationResult>(x => !x.IsValid)
+                .HandleResult<EnvironmentValidationResult>(x => !x.IsValid)
                 .WaitAndRetryAsync(3,
                     x => TimeSpan.FromSeconds(x * 5),
                     (result, span) => logger?.WriteWarningAsync(

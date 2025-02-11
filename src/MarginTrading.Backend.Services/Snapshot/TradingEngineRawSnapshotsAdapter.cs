@@ -8,7 +8,7 @@ using MarginTrading.Backend.Core.Services;
 using MarginTrading.Backend.Core.Snapshots;
 using MarginTrading.Backend.Services.Mappers;
 
-namespace MarginTrading.Backend.Services;
+namespace MarginTrading.Backend.Services.Snapshot;
 
 public class TradingEngineRawSnapshotsAdapter(
     ITradingEngineSnapshotsRepository tradingEngineSnapshotsRepository) : ITradingEngineRawSnapshotsAdapter

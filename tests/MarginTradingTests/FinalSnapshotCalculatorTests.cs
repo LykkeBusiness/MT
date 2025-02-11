@@ -12,6 +12,7 @@ using MarginTrading.Backend.Contracts.Snow.Prices;
 using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Services;
 using MarginTrading.Backend.Services.Services;
+using MarginTrading.Backend.Services.Snapshot;
 using MarginTrading.Common.Services;
 using MarginTradingTests.Helpers;
 using Moq;

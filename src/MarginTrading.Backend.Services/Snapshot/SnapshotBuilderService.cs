@@ -12,29 +12,29 @@ using MarginTrading.Backend.Core.Repositories;
 using MarginTrading.Backend.Core.Services;
 using MarginTrading.Backend.Core.Snapshots;
 using MarginTrading.Backend.Services.AssetPairs;
+using MarginTrading.Backend.Services.Infrastructure;
 using MarginTrading.Backend.Services.Policies;
 using MarginTrading.Common.Services;
 
 using Polly.Retry;
 
-namespace MarginTrading.Backend.Services.Infrastructure;
+namespace MarginTrading.Backend.Services.Snapshot;
 
 public partial class SnapshotBuilderService : ISnapshotBuilderService
 {
     private readonly IScheduleSettingsCacheService _scheduleSettingsCacheService;
     private readonly IDateService _dateService;
-
     private readonly ITradingEngineRawSnapshotsAdapter _snapshotsRepositoryAdapter;
     private readonly IQueueValidationService _queueValidationService;
     private readonly ILog _log;
     private readonly IFinalSnapshotCalculator _finalSnapshotCalculator;
     private readonly ISnapshotRecreateFlagKeeper _snapshotRecreateFlagKeeper;
-    private readonly AsyncRetryPolicy<SnapshotValidationResult> _policy;
+    private readonly AsyncRetryPolicy<EnvironmentValidationResult> _policy;
     private readonly ITradingEngineSnapshotBuilder _snapshotBuilder;
     private readonly ITradingEngineSnapshotsRepository _repository;
     private static readonly SemaphoreSlim Lock = new(1, 1);
     public static bool IsMakingSnapshotInProgress => Lock.CurrentCount == 0;
-    private readonly ISnapshotValidator _snapshotValidator;
+    private readonly IEnvironmentValidator _snapshotValidator;
 
     public SnapshotBuilderService(
         IScheduleSettingsCacheService scheduleSettingsCacheService,
@@ -45,7 +45,7 @@ public partial class SnapshotBuilderService : ISnapshotBuilderService
         ISnapshotRecreateFlagKeeper snapshotRecreateFlagKeeper,
         ITradingEngineSnapshotBuilder snapshotBuilder,
         ITradingEngineSnapshotsRepository repository,
-        ISnapshotValidator snapshotValidator,
+        IEnvironmentValidator snapshotValidator,
         ILog log)
     {
         _scheduleSettingsCacheService = scheduleSettingsCacheService;
@@ -61,8 +61,7 @@ public partial class SnapshotBuilderService : ISnapshotBuilderService
         _snapshotValidator = snapshotValidator;
     }
 
-    /// <inheritdoc />
-    public async Task<string> MakeTradingDataSnapshot(DateTime tradingDay, string correlationId, SnapshotStatus status = SnapshotStatus.Final)
+    private void CheckPreconditionsOrThrow(DateTime tradingDay)
     {
         if (!_scheduleSettingsCacheService.TryGetPlatformCurrentDisabledInterval(out var disabledInterval))
         {
@@ -89,9 +88,14 @@ public partial class SnapshotBuilderService : ISnapshotBuilderService
         // We must be sure all messages have been processed by history brokers before starting current state validation.
         // If one or more queues contain not delivered messages the snapshot can not be created.
         _queueValidationService.ThrowExceptionIfQueuesNotEmpty(true);
+    }
+
+    /// <inheritdoc />
+    public async Task<string> MakeTradingDataSnapshot(DateTime tradingDay, string correlationId, SnapshotStatus status = SnapshotStatus.Final)
+    {
+        CheckPreconditionsOrThrow(tradingDay);
 
         await Lock.WaitAsync();
-
         try
         {
             var validationResult = await _policy.ExecuteAsync(() => _snapshotValidator.Validate(correlationId));

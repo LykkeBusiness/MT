@@ -21,6 +21,7 @@ using MarginTrading.Backend.Core.Services;
 using MarginTrading.Backend.Filters;
 using MarginTrading.Backend.Services;
 using MarginTrading.Backend.Services.Mappers;
+using MarginTrading.Backend.Services.Snapshot;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

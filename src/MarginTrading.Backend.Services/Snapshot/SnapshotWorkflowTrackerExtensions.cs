@@ -5,7 +5,7 @@ using System;
 
 using MarginTrading.Backend.Core.Services;
 
-namespace MarginTrading.Backend.Services.Infrastructure;
+namespace MarginTrading.Backend.Services.Snapshot;
 
 internal static class SnapshotWorkflowExtensions
 {

@@ -6,7 +6,7 @@ using System;
 using MarginTrading.Backend.Core.Services;
 using MarginTrading.Backend.Core.Snapshots;
 
-namespace MarginTrading.Backend.Services.Infrastructure;
+namespace MarginTrading.Backend.Services.Snapshot;
 
 /// <summary>
 /// Synchronized draft snapshot workflow tracker, thread-safe.
