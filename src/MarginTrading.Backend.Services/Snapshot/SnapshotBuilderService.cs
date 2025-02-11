@@ -34,7 +34,7 @@ public partial class SnapshotBuilderService : ISnapshotBuilderService
     private readonly ITradingEngineSnapshotsRepository _repository;
     private static readonly SemaphoreSlim Lock = new(1, 1);
     public static bool IsMakingSnapshotInProgress => Lock.CurrentCount == 0;
-    private readonly IEnvironmentValidator _snapshotValidator;
+    private readonly IEnvironmentValidator _environmentValidator;
 
     public SnapshotBuilderService(
         IScheduleSettingsCacheService scheduleSettingsCacheService,
@@ -45,7 +45,7 @@ public partial class SnapshotBuilderService : ISnapshotBuilderService
         ISnapshotRecreateFlagKeeper snapshotRecreateFlagKeeper,
         ITradingEngineSnapshotBuilder snapshotBuilder,
         ITradingEngineSnapshotsRepository repository,
-        IEnvironmentValidator snapshotValidator,
+        IEnvironmentValidator environmentValidator,
         ILog log)
     {
         _scheduleSettingsCacheService = scheduleSettingsCacheService;
@@ -58,7 +58,7 @@ public partial class SnapshotBuilderService : ISnapshotBuilderService
         _policy = SnapshotStateValidationPolicy.BuildPolicy(log);
         _snapshotBuilder = snapshotBuilder;
         _repository = repository;
-        _snapshotValidator = snapshotValidator;
+        _environmentValidator = environmentValidator;
     }
 
     private void CheckPreconditionsOrThrow(DateTime tradingDay)
@@ -98,7 +98,7 @@ public partial class SnapshotBuilderService : ISnapshotBuilderService
         await Lock.WaitAsync();
         try
         {
-            var validationResult = await _policy.ExecuteAsync(() => _snapshotValidator.Validate(correlationId));
+            var validationResult = await _policy.ExecuteAsync(() => _environmentValidator.Validate(correlationId));
             if (!validationResult.IsValid)
             {
                 await _log.WriteFatalErrorAsync(nameof(SnapshotBuilderService),
