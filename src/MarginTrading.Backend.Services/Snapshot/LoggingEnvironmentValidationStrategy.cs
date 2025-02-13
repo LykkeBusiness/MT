@@ -13,15 +13,12 @@ public class LoggingEnvironmentValidationStrategy(
     IEnvironmentValidationStrategy decoratee)
     : IEnvironmentValidationStrategy
 {
-    private readonly IEnvironmentValidationStrategy _decoratee = decoratee;
-    private readonly ILogger<LoggingEnvironmentValidationStrategy> _logger = logger;
-
     public async Task<EnvironmentValidationResult> Validate(string correlationId)
     {
-        var result = await _decoratee.Validate(correlationId);
+        var result = await decoratee.Validate(correlationId);
         if (!result.IsValid)
         {
-            _logger.LogWarning(result.Exception, result.ToJson());
+            logger.LogWarning(result.Exception, result.ToJson());
         }
 
         return result;

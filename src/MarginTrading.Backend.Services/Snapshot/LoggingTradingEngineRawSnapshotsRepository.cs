@@ -14,17 +14,14 @@ public class LoggingTradingEngineRawSnapshotsRepository(
     ITradingEngineRawSnapshotsRepository decoratee,
     ILogger<LoggingTradingEngineRawSnapshotsRepository> logger) : ITradingEngineRawSnapshotsRepository
 {
-    private readonly ITradingEngineRawSnapshotsRepository _decoratee = decoratee;
-    private readonly ILogger<LoggingTradingEngineRawSnapshotsRepository> _logger = logger;
-
     public async Task AddAsync(TradingEngineSnapshotRaw tradingEngineRawSnapshot)
     {
         var summary = tradingEngineRawSnapshot.Summary;
 
-        _logger.LogInformation("Starting to write trading data snapshot. {Summary}", summary);
+        logger.LogInformation("Starting to write trading data snapshot. {Summary}", summary);
 
-        await _decoratee.AddAsync(tradingEngineRawSnapshot);
+        await decoratee.AddAsync(tradingEngineRawSnapshot);
 
-        _logger.LogInformation("Trading data snapshot was written to the storage. {Summary}", summary);
+        logger.LogInformation("Trading data snapshot was written to the storage. {Summary}", summary);
     }
 }
