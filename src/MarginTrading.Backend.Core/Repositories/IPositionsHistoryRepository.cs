@@ -10,6 +10,6 @@ namespace MarginTrading.Backend.Core.Repositories
 {
     public interface IPositionsHistoryRepository
     {
-        Task<IReadOnlyList<IPositionHistory>> GetLastSnapshot(DateTime @from);
+        Task<IReadOnlyList<IPositionHistory>> GetLastSnapshot(DateTime from, DateTime? to = null);
     }
 }
