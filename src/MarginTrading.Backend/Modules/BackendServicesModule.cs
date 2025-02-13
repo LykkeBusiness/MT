@@ -23,7 +23,6 @@ using MarginTrading.Backend.Services.Quotes;
 using MarginTrading.Backend.Services.RabbitMq;
 using MarginTrading.Backend.Services.Services;
 using MarginTrading.Backend.Services.Settings;
-using MarginTrading.Backend.Services.Snapshot;
 using MarginTrading.Common.Services;
 
 namespace MarginTrading.Backend.Modules
@@ -131,10 +130,6 @@ namespace MarginTrading.Backend.Modules
                 .As<IPublishingQueueRepository>()
                 .SingleInstance();
 
-            builder.RegisterType<FakeSnapshotService>()
-                .As<IFakeSnapshotService>()
-                .SingleInstance();
-
             builder.RegisterType<RfqPauseService>()
                 .As<IRfqPauseService>()
                 .SingleInstance();
@@ -142,11 +137,6 @@ namespace MarginTrading.Backend.Modules
             builder.RegisterType<ValidationExceptionHandler>()
                 .AsSelf()
                 .SingleInstance();
-
-            builder.RegisterType<TradingEngineRawSnapshotsRepository>()
-                .As<ITradingEngineRawSnapshotsRepository>()
-                .SingleInstance();
-            builder.RegisterDecorator<LoggingTradingEngineRawSnapshotsRepository, ITradingEngineRawSnapshotsRepository>();
         }
     }
 }

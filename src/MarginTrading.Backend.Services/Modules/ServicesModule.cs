@@ -12,6 +12,7 @@ using MarginTrading.Backend.Core.MatchingEngines;
 using MarginTrading.Backend.Core.Orderbooks;
 using MarginTrading.Backend.Core.Services;
 using MarginTrading.Backend.Core.Settings;
+using MarginTrading.Backend.Core.Snapshots;
 using MarginTrading.Backend.Services.AssetPairs;
 using MarginTrading.Backend.Services.Events;
 using MarginTrading.Backend.Services.EventsConsumers;
@@ -226,7 +227,15 @@ namespace MarginTrading.Backend.Services.Modules
 				.As<IDraftSnapshotKeeperFactory>()
 				.SingleInstance();
 
+			builder.RegisterType<FakeSnapshotService>()
+				.As<IFakeSnapshotService>()
+				.SingleInstance();
+
 			builder.RegisterType<SystemClock>().As<ISystemClock>().SingleInstance();
+
+			builder.RegisterType<InMemorySnapshotRequestQueue>()
+				.As<ISnapshotRequestQueue>()
+				.SingleInstance();
 
 			builder.RegisterType<PositionHistoryHandler>()
 				.SingleInstance();
@@ -237,6 +246,38 @@ namespace MarginTrading.Backend.Services.Modules
 						ctx.Resolve<ILogger<SnapshotBuilderPositionHistoryAgent>>()))
 				.AsImplementedInterfaces()
 				.SingleInstance();
+
+			builder.RegisterType<TradingEngineSnapshotBuilder>()
+				.As<ITradingEngineSnapshotBuilder>()
+				.SingleInstance();
+			builder.RegisterDecorator<AccountUpdatingTradingEngineSnapshotBuilder, ITradingEngineSnapshotBuilder>();
+			builder.RegisterDecorator<TradingEngineSnapshotLoggingBuilder, ITradingEngineSnapshotBuilder>();
+
+			builder.RegisterType<SnapshotBuilderService>()
+				.As<ISnapshotBuilderService>()
+				.InstancePerLifetimeScope();
+
+			builder.RegisterType<SnapshotValidationService>()
+				.As<ISnapshotValidationService>()
+				.SingleInstance();
+
+			builder.RegisterType<EnvironmentValidator>()
+				.As<IEnvironmentValidator>()
+				.SingleInstance();
+
+			// register decorated AsSoonAsPossibleStrategy 
+			builder.RegisterType<AsSoonAsPossibleStrategy>();
+			builder.Register(ctx => new LoggingEnvironmentValidationStrategy(
+					ctx.Resolve<ILogger<LoggingEnvironmentValidationStrategy>>(),
+					ctx.Resolve<AsSoonAsPossibleStrategy>()))
+				.Keyed<IEnvironmentValidationStrategy>(EnvironmentValidationStrategyType.AsSoonAsPossible);
+
+			// register decorated PreferConsistencyStrategy
+			builder.RegisterType<PreferConsistencyStrategy>();
+			builder.Register(ctx => new LoggingEnvironmentValidationStrategy(
+					ctx.Resolve<ILogger<LoggingEnvironmentValidationStrategy>>(),
+					ctx.Resolve<PreferConsistencyStrategy>()))
+				.Keyed<IEnvironmentValidationStrategy>(EnvironmentValidationStrategyType.WaitPlatformConsistency);
 
 			builder.RegisterType<ConfigurationValidator>()
 				.As<IConfigurationValidator>()
