@@ -19,10 +19,10 @@ using MarginTrading.Common.Extensions;
 using MarginTrading.Common.Services;
 using MarginTrading.AssetService.Contracts;
 using MarginTrading.AssetService.Contracts.Scheduling;
-using MarginTrading.Backend.Core.Services;
 using MarginTrading.Backend.Services.Extensions;
 using Microsoft.FeatureManagement;
 using MoreLinq;
+using MarginTrading.Backend.Core.Snapshots;
 
 namespace MarginTrading.Backend.Services.AssetPairs
 {
@@ -51,7 +51,7 @@ namespace MarginTrading.Backend.Services.AssetPairs
 
         private readonly ReaderWriterLockSlim _readerWriterLockSlim = new ReaderWriterLockSlim();
         private readonly IFeatureManager _featureManager;
-        private readonly IDraftSnapshotWorkflowTracker _draftSnapshotWorkflowTracker;
+        private readonly ISnapshotRequestQueue _snapshotRequestQueue;
 
         public ScheduleSettingsCacheService(
             ICqrsSender cqrsSender,
@@ -61,7 +61,7 @@ namespace MarginTrading.Backend.Services.AssetPairs
             ILog log,
             OvernightMarginSettings overnightMarginSettings,
             IFeatureManager featureManager,
-            IDraftSnapshotWorkflowTracker draftSnapshotWorkflowTracker)
+            ISnapshotRequestQueue snapshotRequestQueue)
         {
             _cqrsSender = cqrsSender;
             _scheduleSettingsApi = scheduleSettingsApi;
@@ -70,7 +70,7 @@ namespace MarginTrading.Backend.Services.AssetPairs
             _log = log;
             _overnightMarginSettings = overnightMarginSettings;
             _featureManager = featureManager;
-            _draftSnapshotWorkflowTracker = draftSnapshotWorkflowTracker;
+            _snapshotRequestQueue = snapshotRequestQueue;
         }
 
         public async Task UpdateAllSettingsAsync()
@@ -201,16 +201,12 @@ namespace MarginTrading.Backend.Services.AssetPairs
 
                 if (ev.IsPlatformClosureEvent())
                 {
-                    // TODO: needs checking, we already create snapshot upon this event in PlatformClosureProjection
-                    // so it is possible snapshots are duplicated
-                    bool sucessfullyRequested = _draftSnapshotWorkflowTracker.TryRequest(now, now.Date);
-                    if (!sucessfullyRequested)
-                    {
-                        _log.WriteWarning(
-                            nameof(ScheduleSettingsCacheService),
-                            nameof(HandleMarketStateChangesUnsafe),
-                            $"Failed to request snapshot creation for trading day {now.Date}");
-                    }
+                    _snapshotRequestQueue.Enqueue(new SnapshotCreationRequest(
+                        Guid.NewGuid(),
+                        EnvironmentValidationStrategyType.WaitPlatformConsistency,
+                        SnapshotStatus.Draft,
+                        now,
+                        now.Date));
                 }
                 _cqrsSender.PublishEvent(ev);
 

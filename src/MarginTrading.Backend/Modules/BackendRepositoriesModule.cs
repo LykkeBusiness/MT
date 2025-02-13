@@ -21,6 +21,8 @@ using MarginTrading.SqlRepositories.Repositories;
 using MarginTrading.SqlRepositories;
 using IdentityEntity = MarginTrading.AzureRepositories.Entities.IdentityEntity;
 using OperationLogEntity = MarginTrading.AzureRepositories.OperationLogEntity;
+using MarginTrading.Backend.Services.Snapshot;
+using MarginTrading.Backend.Core.Services;
 
 namespace MarginTrading.Backend.Modules
 {
@@ -165,6 +167,11 @@ namespace MarginTrading.Backend.Modules
 
                 builder.RegisterDecorator<RfqExecutionPauseRepositoryDecorator, IOperationExecutionPauseRepository>();
             }
+
+            builder.RegisterType<TradingEngineRawSnapshotsRepository>()
+                .As<ITradingEngineRawSnapshotsRepository>()
+                .SingleInstance();
+            builder.RegisterDecorator<LoggingTradingEngineRawSnapshotsRepository, ITradingEngineRawSnapshotsRepository>();
 
             builder.RegisterType<MatchingEngineInMemoryRepository>().As<IMatchingEngineRepository>().SingleInstance();
 
