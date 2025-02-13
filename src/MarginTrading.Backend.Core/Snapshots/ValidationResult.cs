@@ -9,7 +9,7 @@ namespace MarginTrading.Backend.Core.Snapshots
     /// <summary>
     /// Represent result of trading state validation for <see cref="T"/> entity. 
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">Short representation of entity</typeparam>
     public class ValidationResult<T>
     {
         /// <summary>
