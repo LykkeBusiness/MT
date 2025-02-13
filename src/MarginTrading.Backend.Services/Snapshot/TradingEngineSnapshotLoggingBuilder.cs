@@ -17,11 +17,11 @@ using Microsoft.Extensions.Logging;
 namespace MarginTrading.Backend.Services.Snapshot;
 
 class TradingEngineSnapshotLoggingBuilder(
-    TradingEngineSnapshotBuilder decoratee,
+    ITradingEngineSnapshotBuilder decoratee,
     bool logBlockedMarginCalculation,
     ILogger<TradingEngineSnapshotLoggingBuilder> logger) : ITradingEngineSnapshotBuilder
 {
-    private readonly TradingEngineSnapshotBuilder _decoratee =
+    private readonly ITradingEngineSnapshotBuilder _decoratee =
         decoratee ?? throw new ArgumentNullException(nameof(decoratee));
     private readonly ILogger<TradingEngineSnapshotLoggingBuilder> _logger =
         logger ?? throw new ArgumentNullException(nameof(logger));
