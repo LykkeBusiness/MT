@@ -237,6 +237,7 @@ namespace MarginTrading.Backend.Services.Modules
 
 			builder.RegisterType<PositionHistoryHandler>()
 				.As<IPositionHistoryHandler>()
+				.AsSelf() // this registration is required to decorate it in another module
 				.SingleInstance();
 
 			// register TradingEngineSnapshotBuilder decorators
