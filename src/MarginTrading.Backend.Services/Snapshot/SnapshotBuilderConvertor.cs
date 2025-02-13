@@ -24,7 +24,7 @@ public partial class SnapshotBuilderService : ISnapshotBuilderService
         try
         {
             var snapshot = await _finalSnapshotCalculator.RunAsync(fxRates, cfdQuotes, correlationId, draftSnapshotKeeper);
-            await _repository.AddAsync(snapshot);
+            await _snapshotsRepository.AddAsync(snapshot);
         }
         finally
         {

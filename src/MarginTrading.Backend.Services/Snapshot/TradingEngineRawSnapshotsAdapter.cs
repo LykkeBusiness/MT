@@ -10,11 +10,11 @@ using MarginTrading.Backend.Services.Mappers;
 
 namespace MarginTrading.Backend.Services.Snapshot;
 
-public class TradingEngineRawSnapshotsAdapter(
-    ITradingEngineSnapshotsRepository tradingEngineSnapshotsRepository) : ITradingEngineRawSnapshotsAdapter
+public class TradingEngineRawSnapshotsRepository(
+    ITradingEngineSnapshotsRepository tradingEngineSnapshotsRepository) : ITradingEngineRawSnapshotsRepository
 {
     private readonly ITradingEngineSnapshotsRepository _tradingEngineSnapshotsRepository = tradingEngineSnapshotsRepository;
 
-    public Task AddAsync(TradingEngineSnapshotRaw tradingEngineSnapshot) =>
-        _tradingEngineSnapshotsRepository.AddAsync(tradingEngineSnapshot.ToSnapshot());
+    public Task AddAsync(TradingEngineSnapshotRaw tradingEngineRawSnapshot) =>
+        _tradingEngineSnapshotsRepository.AddAsync(tradingEngineRawSnapshot.ToSnapshot());
 }

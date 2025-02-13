@@ -7,7 +7,7 @@ using MarginTrading.Backend.Core.Snapshots;
 
 namespace MarginTrading.Backend.Core.Services;
 
-public interface ITradingEngineRawSnapshotsAdapter
+public interface ITradingEngineRawSnapshotsRepository
 {
-    Task AddAsync(TradingEngineSnapshotRaw tradingEngineSnapshot);
+    Task AddAsync(TradingEngineSnapshotRaw tradingEngineRawSnapshot);
 }

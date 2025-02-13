@@ -5,7 +5,8 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Common;
+using Autofac;
+
 using Common.Log;
 
 using MarginTrading.Backend.Core.Repositories;
@@ -13,10 +14,7 @@ using MarginTrading.Backend.Core.Services;
 using MarginTrading.Backend.Core.Snapshots;
 using MarginTrading.Backend.Services.AssetPairs;
 using MarginTrading.Backend.Services.Infrastructure;
-using MarginTrading.Backend.Services.Policies;
 using MarginTrading.Common.Services;
-
-using Polly.Retry;
 
 namespace MarginTrading.Backend.Services.Snapshot;
 
@@ -24,41 +22,39 @@ public partial class SnapshotBuilderService : ISnapshotBuilderService
 {
     private readonly IScheduleSettingsCacheService _scheduleSettingsCacheService;
     private readonly IDateService _dateService;
-    private readonly ITradingEngineRawSnapshotsAdapter _snapshotsRepositoryAdapter;
+    private readonly ITradingEngineRawSnapshotsRepository _rawSnapshotsRepository;
+    private readonly ITradingEngineSnapshotsRepository _snapshotsRepository;
     private readonly IQueueValidationService _queueValidationService;
     private readonly ILog _log;
     private readonly IFinalSnapshotCalculator _finalSnapshotCalculator;
     private readonly ISnapshotRecreateFlagKeeper _snapshotRecreateFlagKeeper;
-    private readonly AsyncRetryPolicy<EnvironmentValidationResult> _policy;
     private readonly ITradingEngineSnapshotBuilder _snapshotBuilder;
-    private readonly ITradingEngineSnapshotsRepository _repository;
+    private readonly IComponentContext _context;
     private static readonly SemaphoreSlim Lock = new(1, 1);
     public static bool IsMakingSnapshotInProgress => Lock.CurrentCount == 0;
-    private readonly IEnvironmentValidator _environmentValidator;
 
     public SnapshotBuilderService(
         IScheduleSettingsCacheService scheduleSettingsCacheService,
         IQueueValidationService queueValidationService,
         IDateService dateService,
-        ITradingEngineRawSnapshotsAdapter snashotsRepositoryAdapter,
+        ITradingEngineRawSnapshotsRepository snashotsRepository,
         IFinalSnapshotCalculator finalSnapshotCalculator,
         ISnapshotRecreateFlagKeeper snapshotRecreateFlagKeeper,
         ITradingEngineSnapshotBuilder snapshotBuilder,
         ITradingEngineSnapshotsRepository repository,
-        IEnvironmentValidator environmentValidator,
+        IComponentContext context,
         ILog log)
     {
         _scheduleSettingsCacheService = scheduleSettingsCacheService;
         _dateService = dateService;
-        _snapshotsRepositoryAdapter = snashotsRepositoryAdapter;
+        _rawSnapshotsRepository = snashotsRepository;
         _queueValidationService = queueValidationService;
-        _log = log;
         _finalSnapshotCalculator = finalSnapshotCalculator;
         _snapshotRecreateFlagKeeper = snapshotRecreateFlagKeeper;
-        _policy = SnapshotStateValidationPolicy.BuildPolicy(log);
         _snapshotBuilder = snapshotBuilder;
-        _repository = repository;
-        _environmentValidator = environmentValidator;
+        _snapshotsRepository = repository;
+        _context = context;
+        _log = log;
     }
 
     private void CheckPreconditionsOrThrow(DateTime tradingDay)
@@ -91,41 +87,42 @@ public partial class SnapshotBuilderService : ISnapshotBuilderService
     }
 
     /// <inheritdoc />
-    public async Task<string> MakeTradingDataSnapshot(DateTime tradingDay, string correlationId, SnapshotStatus status = SnapshotStatus.Final)
+    public async Task<TradingEngineSnapshotSummary> MakeTradingDataSnapshot(
+        DateTime tradingDay,
+        string correlationId,
+        EnvironmentValidationStrategyType strategyType,
+        SnapshotStatus status = SnapshotStatus.Final)
     {
         CheckPreconditionsOrThrow(tradingDay);
 
         await Lock.WaitAsync();
         try
         {
-            var validationResult = await _policy.ExecuteAsync(() => _environmentValidator.Validate(correlationId));
-            if (!validationResult.IsValid)
-            {
-                await _log.WriteFatalErrorAsync(nameof(SnapshotBuilderService),
-                    nameof(MakeTradingDataSnapshot),
-                    validationResult.ToJson(),
-                    validationResult.Exception);
-                throw validationResult.Exception;
-            }
+            var envValidationResult = await ValidateEnvironment(strategyType, correlationId);
 
             var snapshot = await _snapshotBuilder
-                .CollectDataFrom(validationResult.Cache)
+                .CollectDataFrom(envValidationResult.Cache)
                 .WithTradingDay(tradingDay)
                 .WithCorrelationId(correlationId)
                 .WithStatus(status)
                 .WithTimestamp(_dateService.Now())
                 .Build();
 
-            await _snapshotsRepositoryAdapter.AddAsync(snapshot);
+            await _rawSnapshotsRepository.AddAsync(snapshot);
 
             if (status == SnapshotStatus.Draft)
                 await _snapshotRecreateFlagKeeper.Set(false);
 
-            return $"Trading data snapshot was written to the storage. {snapshot.GetStatistics()}";
+            return snapshot.Summary;
         }
         finally
         {
             Lock.Release();
         }
     }
+
+    private Task<EnvironmentValidationResult> ValidateEnvironment(
+        EnvironmentValidationStrategyType strategyType,
+        string correlationId) =>
+        _context.ResolveKeyed<IEnvironmentValidationStrategy>(strategyType).Validate(correlationId);
 }

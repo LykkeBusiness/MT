@@ -74,6 +74,7 @@ namespace MarginTrading.Backend.Services.Workflow
                 {
                     await _snapshotService.MakeTradingDataSnapshot(command.TradingDay,
                         _identityGenerator.GenerateGuid(),
+                        EnvironmentValidationStrategyType.WaitPlatformConsistency,
                         SnapshotStatus.Draft);
                 }
 

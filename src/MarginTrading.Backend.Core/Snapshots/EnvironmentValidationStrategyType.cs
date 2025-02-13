@@ -1,6 +1,6 @@
 namespace MarginTrading.Backend.Core.Snapshots;
 
-public enum SnapshotStrategy
+public enum EnvironmentValidationStrategyType
 {
     AsSoonAsPossible,
     WaitPlatformConsistency

@@ -68,9 +68,9 @@ namespace MarginTrading.Backend.Services.Snapshot
 
                 try
                 {
-                    await _snapshotService.MakeTradingDataSnapshot(_draftSnapshotWorkflowTracker.TradingDay,
-                        _identityGenerator.GenerateGuid(),
-                        SnapshotStatus.Draft);
+                    // await _snapshotService.MakeTradingDataSnapshot(_draftSnapshotWorkflowTracker.TradingDay,
+                    //     _identityGenerator.GenerateGuid(),
+                    //     SnapshotStatus.Draft);
 
                     _logger.LogInformation("{ServiceName}: Trading Snapshot Draft was created",
                         nameof(DraftSnapshotMonitor));

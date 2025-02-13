@@ -4,6 +4,7 @@
 using Autofac;
 
 using MarginTrading.Backend.Core.Services;
+using MarginTrading.Backend.Core.Snapshots;
 using MarginTrading.Backend.Services.AssetPairs;
 using MarginTrading.Backend.Services.Caches;
 using MarginTrading.Backend.Services.Infrastructure;
@@ -11,6 +12,8 @@ using MarginTrading.Backend.Services.MatchingEngines;
 using MarginTrading.Backend.Services.Quotes;
 using MarginTrading.Backend.Services.Snapshot;
 using MarginTrading.Backend.Services.TradingConditions;
+
+using Microsoft.Extensions.Logging;
 
 namespace MarginTrading.Backend.Services.Modules
 {
@@ -74,6 +77,20 @@ namespace MarginTrading.Backend.Services.Modules
                 .As<IDraftSnapshotWorkflowTracker>()
                 .SingleInstance();
             builder.RegisterDecorator<SynchronizedSnapshotWorkflowTracker, IDraftSnapshotWorkflowTracker>();
+
+            // register decorated AsSoonAsPossibleStrategy 
+            builder.RegisterType<AsSoonAsPossibleStrategy>();
+            builder.Register(ctx => new LoggingEnvironmentValidationStrategy(
+                    ctx.Resolve<ILogger<LoggingEnvironmentValidationStrategy>>(),
+                    ctx.Resolve<AsSoonAsPossibleStrategy>()))
+                .Keyed<IEnvironmentValidationStrategy>(EnvironmentValidationStrategyType.AsSoonAsPossible);
+
+            // register decorated PreferConsistencyStrategy
+            builder.RegisterType<PreferConsistencyStrategy>();
+            builder.Register(ctx => new LoggingEnvironmentValidationStrategy(
+                    ctx.Resolve<ILogger<LoggingEnvironmentValidationStrategy>>(),
+                    ctx.Resolve<PreferConsistencyStrategy>()))
+                .Keyed<IEnvironmentValidationStrategy>(EnvironmentValidationStrategyType.WaitPlatformConsistency);
         }
     }
 }
