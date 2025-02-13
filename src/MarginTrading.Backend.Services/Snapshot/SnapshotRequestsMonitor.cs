@@ -31,7 +31,7 @@ public sealed class SnapshotRequestsMonitor(
                 continue;
             }
 
-            await _snapshotService.MakeTradingDataSnapshot(
+            await _snapshotService.MakeSnapshot(
                 request.TradingDay,
                 request.CorrelationId,
                 request.ValidationStrategyType,

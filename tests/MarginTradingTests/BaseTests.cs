@@ -193,8 +193,8 @@ namespace MarginTradingTests
             builder.RegisterInstance(Mock.Of<IRabbitMqService>()).As<IRabbitMqService>();
             builder.RegisterInstance(Mock.Of<IRfqService>()).As<IRfqService>();
 
-            builder.RegisterInstance(Mock.Of<ISnapshotRecreateFlagKeeper>())
-                .As<ISnapshotRecreateFlagKeeper>()
+            builder.RegisterInstance(Mock.Of<ISnapshotBuilderDraftRebuildAgent>())
+                .As<ISnapshotBuilderDraftRebuildAgent>()
                 .SingleInstance();
 
             builder.RegisterBuildCallback(c =>
