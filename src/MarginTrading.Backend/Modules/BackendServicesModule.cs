@@ -24,6 +24,8 @@ using MarginTrading.Backend.Services.RabbitMq;
 using MarginTrading.Backend.Services.Services;
 using MarginTrading.Backend.Services.Settings;
 using MarginTrading.Common.Services;
+using StackExchange.Redis;
+using Microsoft.Extensions.Logging;
 
 namespace MarginTrading.Backend.Modules
 {
@@ -136,6 +138,16 @@ namespace MarginTrading.Backend.Modules
 
             builder.RegisterType<ValidationExceptionHandler>()
                 .AsSelf()
+                .SingleInstance();
+
+            // decorate PositionHistoryHandler with SnapshotBuilderPositionHistoryAgent
+            // decoration only makes sense in real environment, so it is not used in tests
+            // (module BackendServicesModule is not used in tests)
+            builder.Register(ctx => new SnapshotBuilderPositionHistoryAgent(
+                    ctx.Resolve<IPositionHistoryHandler>(),
+                    ctx.Resolve<IConnectionMultiplexer>(),
+                    ctx.Resolve<ILogger<SnapshotBuilderPositionHistoryAgent>>()))
+                .AsImplementedInterfaces()
                 .SingleInstance();
         }
     }
