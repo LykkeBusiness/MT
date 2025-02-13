@@ -5,14 +5,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using MarginTrading.Backend.Contracts;
 using MarginTrading.Backend.Contracts.Snapshots;
 using MarginTrading.Backend.Core.Repositories;
 using MarginTrading.Backend.Core.Services;
 using MarginTrading.Backend.Extensions;
 using MarginTrading.Backend.Services;
+using MarginTrading.Backend.Services.Snapshot;
 using MarginTrading.Backend.Services.TradingConditions;
 using MarginTrading.Common.Middleware;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -26,14 +29,14 @@ namespace MarginTrading.Backend.Controllers
     {
         private readonly IOvernightMarginParameterContainer _overnightMarginParameterContainer;
         private readonly IIdentityGenerator _identityGenerator;
-        private readonly ISnapshotService _snapshotService;
+        private readonly ISnapshotBuilderService _snapshotService;
         private readonly IAccountUpdateService _accountUpdateService;
         private readonly IAccountsProvider _accountsProvider;
 
         public ServiceController(
             IOvernightMarginParameterContainer overnightMarginParameterContainer,
             IIdentityGenerator identityGenerator,
-            ISnapshotService snapshotService,
+            ISnapshotBuilderService snapshotService,
             IAccountUpdateService accountUpdateService,
             IAccountsProvider accountsProvider)
         {
@@ -53,7 +56,7 @@ namespace MarginTrading.Backend.Controllers
         /// <param name="status">Snapshot target status.</param>
         /// <returns>Snapshot statistics.</returns>
         [HttpPost("make-trading-data-snapshot")]
-        public Task<string> MakeTradingDataSnapshot([FromQuery] DateTime tradingDay,
+        public async Task<string> MakeTradingDataSnapshot([FromQuery] DateTime tradingDay,
             [FromQuery] string correlationId = null,
             [FromQuery] SnapshotStatusContract status = SnapshotStatusContract.Final)
         {
@@ -68,9 +71,15 @@ namespace MarginTrading.Backend.Controllers
             }
 
             var domainStatus = status.ToDomain();
-            if (domainStatus == null)
-                throw new ArgumentOutOfRangeException(nameof(status), status, "Invalid status value");
-            return _snapshotService.MakeTradingDataSnapshot(tradingDay, correlationId, domainStatus.Value);
+            return domainStatus switch
+            {
+                null => throw new ArgumentOutOfRangeException(nameof(status), status, "Invalid status value"),
+                _ => await _snapshotService.MakeSnapshot(
+                    tradingDay,
+                    correlationId,
+                    Core.Snapshots.EnvironmentValidationStrategyType.AsSoonAsPossible,
+                    domainStatus.Value)
+            };
         }
 
         /// <summary>

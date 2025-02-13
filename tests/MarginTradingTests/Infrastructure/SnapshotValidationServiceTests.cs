@@ -15,6 +15,8 @@ using MarginTrading.Backend.Core.Snapshots;
 using MarginTrading.Backend.Core.Trading;
 using MarginTrading.Backend.Services;
 using MarginTrading.Backend.Services.Infrastructure;
+using MarginTrading.Backend.Services.Snapshot;
+
 using Moq;
 using NUnit.Framework;
 

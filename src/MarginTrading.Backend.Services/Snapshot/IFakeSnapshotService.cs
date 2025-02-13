@@ -4,12 +4,13 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+
 using MarginTrading.Backend.Contracts.Account;
 using MarginTrading.Backend.Contracts.Orders;
 using MarginTrading.Backend.Contracts.Positions;
 using MarginTrading.Backend.Contracts.Snow.Prices;
 
-namespace MarginTrading.Backend.Services.Infrastructure
+namespace MarginTrading.Backend.Services.Snapshot
 {
     public interface IFakeSnapshotService
     {

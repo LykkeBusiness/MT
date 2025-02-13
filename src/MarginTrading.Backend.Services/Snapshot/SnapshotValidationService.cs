@@ -6,8 +6,10 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Common;
 using Common.Log;
+
 using MarginTrading.Backend.Contracts.Orders;
 using MarginTrading.Backend.Contracts.Positions;
 using MarginTrading.Backend.Core.Orders;
@@ -17,7 +19,7 @@ using MarginTrading.Backend.Core.Snapshots;
 using MarginTrading.Backend.Core.Trading;
 using MarginTrading.Common.Extensions;
 
-namespace MarginTrading.Backend.Services.Infrastructure
+namespace MarginTrading.Backend.Services.Snapshot
 {
     /// <inheritdoc/>
     public class SnapshotValidationService : ISnapshotValidationService
@@ -47,8 +49,8 @@ namespace MarginTrading.Backend.Services.Infrastructure
             _log = log;
         }
 
-        /// <inheritdoc/>
-        public async Task<SnapshotValidationResult> ValidateCurrentStateAsync()
+        /// <inheritdoc/> 
+        public async Task<EnvironmentValidationResult> ValidateCurrentStateAsync()
         {
             await _log.WriteInfoAsync(nameof(SnapshotValidationService), nameof(ValidateCurrentStateAsync),
                 $"Snapshot validation started: {DateTime.UtcNow}");
@@ -105,7 +107,7 @@ namespace MarginTrading.Backend.Services.Infrastructure
                     $"Positions validation result is NOT valid. Extra: {positionsValidationResult.Extra.Count}, missed: {positionsValidationResult.Missed.Count}, inconsistent: {positionsValidationResult.Inconsistent.Count}");
             }
 
-            return new SnapshotValidationResult
+            return new EnvironmentValidationResult
             {
                 Orders = ordersValidationResult,
                 Positions = positionsValidationResult,

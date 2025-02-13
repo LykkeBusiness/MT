@@ -3,6 +3,7 @@
 
 using Autofac;
 using Autofac.Features.Variance;
+
 using Lykke.RabbitMqBroker.Publisher;
 using Lykke.Snow.Common.Correlation.RabbitMq;
 
@@ -11,6 +12,7 @@ using MarginTrading.Backend.Core.MatchingEngines;
 using MarginTrading.Backend.Core.Orderbooks;
 using MarginTrading.Backend.Core.Services;
 using MarginTrading.Backend.Core.Settings;
+using MarginTrading.Backend.Core.Snapshots;
 using MarginTrading.Backend.Services.AssetPairs;
 using MarginTrading.Backend.Services.Events;
 using MarginTrading.Backend.Services.EventsConsumers;
@@ -20,11 +22,13 @@ using MarginTrading.Backend.Services.MatchingEngines;
 using MarginTrading.Backend.Services.Quotes;
 using MarginTrading.Backend.Services.Scheduling;
 using MarginTrading.Backend.Services.Services;
+using MarginTrading.Backend.Services.Snapshot;
 using MarginTrading.Backend.Services.Stp;
 using MarginTrading.Backend.Services.TradingConditions;
 using MarginTrading.Backend.Services.Workflow.Liquidation;
 using MarginTrading.Common.RabbitMq;
 using MarginTrading.Common.Services.Telemetry;
+
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
@@ -46,17 +50,17 @@ namespace MarginTrading.Backend.Services.Modules
 				.As<IQuoteCacheService>()
 				.As<IEventConsumer<BestPriceChangeEventArgs>>()
 				.SingleInstance();
- 
-			builder.RegisterType<FxRateCacheService>() 
+
+			builder.RegisterType<FxRateCacheService>()
 				.AsSelf()
 				.As<IFxRateCacheService>()
-				.SingleInstance(); 
+				.SingleInstance();
 
 			builder.RegisterType<FplService>()
 				.As<IFplService>()
 				.InstancePerLifetimeScope();
 
-            builder.RegisterType<TradingInstrumentsCacheService>()
+			builder.RegisterType<TradingInstrumentsCacheService>()
 				.AsSelf()
 				.As<ITradingInstrumentsCacheService>()
 				.As<IOvernightMarginParameterContainer>()
@@ -114,7 +118,7 @@ namespace MarginTrading.Backend.Services.Modules
 			builder.RegisterType<TradesConsumer>()
 				.As<IEventConsumer<OrderExecutedEventArgs>>()
 				.SingleInstance();
-			
+
 			builder.RegisterType<PositionsConsumer>()
 				.As<IEventConsumer<OrderExecutedEventArgs>>()
 				.SingleInstance();
@@ -193,47 +197,83 @@ namespace MarginTrading.Backend.Services.Modules
 				.As<ILiquidationFailureExecutor>()
 				.SingleInstance();
 
-            builder.RegisterType<PositionsProvider>()
-	            .As<IPositionsProvider>()
-	            .InstancePerLifetimeScope();
+			builder.RegisterType<PositionsProvider>()
+				.As<IPositionsProvider>()
+				.InstancePerLifetimeScope();
 
-            builder.RegisterType<OrdersProvider>()
-	            .As<IOrdersProvider>()
-	            .InstancePerLifetimeScope();
+			builder.RegisterType<OrdersProvider>()
+				.As<IOrdersProvider>()
+				.InstancePerLifetimeScope();
 
-            builder.RegisterType<AccountsProvider>()
-	            .As<IAccountsProvider>()
-	            .InstancePerLifetimeScope();
+			builder.RegisterType<AccountsProvider>()
+				.As<IAccountsProvider>()
+				.InstancePerLifetimeScope();
 
-            builder.RegisterDecorator<AccountsProviderLoggingDecorator, IAccountsProvider>();
+			builder.RegisterDecorator<AccountsProviderLoggingDecorator, IAccountsProvider>();
 
-            builder.RegisterType<FinalSnapshotCalculator>()
-	            .As<IFinalSnapshotCalculator>()
-	            .InstancePerLifetimeScope();
-            
-            // @atarutin: DraftSnapshotKeeper implements IOrderReader interface for convenient access to positions
-            // and orders but it is not required to be used for registration in DI container
-            builder.RegisterType<DraftSnapshotKeeper>()
-	            .As<IDraftSnapshotKeeper>()
-	            .InstancePerLifetimeScope();
+			builder.RegisterType<FinalSnapshotCalculator>()
+				.As<IFinalSnapshotCalculator>()
+				.InstancePerLifetimeScope();
 
-            builder.RegisterType<DraftSnapshotKeeperFactory>()
-	            .As<IDraftSnapshotKeeperFactory>()
-	            .SingleInstance();
-            
-            builder.RegisterType<SystemClock>().As<ISystemClock>().SingleInstance();
+			// @atarutin: DraftSnapshotKeeper implements IOrderReader interface for convenient access to positions
+			// and orders but it is not required to be used for registration in DI container
+			builder.RegisterType<DraftSnapshotKeeper>()
+				.As<IDraftSnapshotKeeper>()
+				.InstancePerLifetimeScope();
 
-            builder.RegisterType<PositionHistoryHandler>()
-	            .As<IPositionHistoryHandler>()
-	            .SingleInstance();
+			builder.RegisterType<DraftSnapshotKeeperFactory>()
+				.As<IDraftSnapshotKeeperFactory>()
+				.SingleInstance();
 
-            builder.RegisterType<ConfigurationValidator>()
-	            .As<IConfigurationValidator>()
-	            .SingleInstance();
+			builder.RegisterType<FakeSnapshotService>()
+				.As<IFakeSnapshotService>()
+				.SingleInstance();
 
-            builder.RegisterType<SnapshotTrackerService>()
-	            .As<ISnapshotTrackerService>()
-	            .SingleInstance();
+			builder.RegisterType<SystemClock>().As<ISystemClock>().SingleInstance();
+
+			builder.RegisterType<InMemorySnapshotRequestQueue>()
+				.As<ISnapshotRequestQueue>()
+				.SingleInstance();
+
+			builder.RegisterType<PositionHistoryHandler>()
+				.As<IPositionHistoryHandler>()
+				.SingleInstance();
+
+			builder.RegisterType<TradingEngineSnapshotBuilder>()
+				.As<ITradingEngineSnapshotBuilder>()
+				.SingleInstance();
+			builder.RegisterDecorator<AccountUpdatingTradingEngineSnapshotBuilder, ITradingEngineSnapshotBuilder>();
+			builder.RegisterDecorator<TradingEngineSnapshotLoggingBuilder, ITradingEngineSnapshotBuilder>();
+
+			builder.RegisterType<SnapshotBuilderService>()
+				.As<ISnapshotBuilderService>()
+				.InstancePerLifetimeScope();
+
+			builder.RegisterType<SnapshotValidationService>()
+				.As<ISnapshotValidationService>()
+				.SingleInstance();
+
+			builder.RegisterType<EnvironmentValidator>()
+				.As<IEnvironmentValidator>()
+				.SingleInstance();
+
+			// register decorated AsSoonAsPossibleStrategy 
+			builder.RegisterType<AsSoonAsPossibleStrategy>();
+			builder.Register(ctx => new LoggingEnvironmentValidationStrategy(
+					ctx.Resolve<ILogger<LoggingEnvironmentValidationStrategy>>(),
+					ctx.Resolve<AsSoonAsPossibleStrategy>()))
+				.Keyed<IEnvironmentValidationStrategy>(EnvironmentValidationStrategyType.AsSoonAsPossible);
+
+			// register decorated PreferConsistencyStrategy
+			builder.RegisterType<PreferConsistencyStrategy>();
+			builder.Register(ctx => new LoggingEnvironmentValidationStrategy(
+					ctx.Resolve<ILogger<LoggingEnvironmentValidationStrategy>>(),
+					ctx.Resolve<PreferConsistencyStrategy>()))
+				.Keyed<IEnvironmentValidationStrategy>(EnvironmentValidationStrategyType.WaitPlatformConsistency);
+
+			builder.RegisterType<ConfigurationValidator>()
+				.As<IConfigurationValidator>()
+				.SingleInstance();
 		}
 	}
 }

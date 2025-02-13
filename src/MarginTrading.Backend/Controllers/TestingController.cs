@@ -11,6 +11,7 @@ using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Settings;
 using MarginTrading.Backend.Services.Infrastructure;
 using MarginTrading.Backend.Services.Services;
+using MarginTrading.Backend.Services.Snapshot;
 using MarginTrading.Common.Middleware;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
