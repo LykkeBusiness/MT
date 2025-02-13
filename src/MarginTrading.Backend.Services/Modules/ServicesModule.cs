@@ -32,8 +32,6 @@ using MarginTrading.Common.Services.Telemetry;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
-using StackExchange.Redis;
-
 namespace MarginTrading.Backend.Services.Modules
 {
 	public class ServicesModule : Module
@@ -238,13 +236,7 @@ namespace MarginTrading.Backend.Services.Modules
 				.SingleInstance();
 
 			builder.RegisterType<PositionHistoryHandler>()
-				.SingleInstance();
-			// decorate PositionHistoryHandler with SnapshotBuilderPositionHistoryAgent
-			builder.Register(ctx => new SnapshotBuilderPositionHistoryAgent(
-					ctx.Resolve<PositionHistoryHandler>(),
-						ctx.Resolve<IConnectionMultiplexer>(),
-						ctx.Resolve<ILogger<SnapshotBuilderPositionHistoryAgent>>()))
-				.AsImplementedInterfaces()
+				.As<IPositionHistoryHandler>()
 				.SingleInstance();
 
 			builder.RegisterType<TradingEngineSnapshotBuilder>()
