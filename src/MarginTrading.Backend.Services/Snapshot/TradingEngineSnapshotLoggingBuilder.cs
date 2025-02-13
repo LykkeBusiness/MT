@@ -25,7 +25,6 @@ class TradingEngineSnapshotLoggingBuilder(
         decoratee ?? throw new ArgumentNullException(nameof(decoratee));
     private readonly ILogger<TradingEngineSnapshotLoggingBuilder> _logger =
         logger ?? throw new ArgumentNullException(nameof(logger));
-    private readonly bool _logBlockedMarginCalculation = logBlockedMarginCalculation;
 
     public ITradingEngineSnapshotBuilder CollectDataFrom(IOrderReaderBase orderReader) =>
         _decoratee.CollectDataFrom(orderReader);
@@ -100,7 +99,7 @@ class TradingEngineSnapshotLoggingBuilder(
     {
         var snapshot = await _decoratee.Build();
 
-        if (_logBlockedMarginCalculation)
+        if (logBlockedMarginCalculation)
             LogBlockedMargin(snapshot);
 
         return snapshot;

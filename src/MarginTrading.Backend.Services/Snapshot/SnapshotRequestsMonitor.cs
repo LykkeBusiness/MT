@@ -16,28 +16,24 @@ public sealed class SnapshotRequestsMonitor(
     SnapshotMonitorSettings settings,
     ISnapshotRequestQueue queue) : BackgroundService
 {
-    private readonly ISnapshotBuilderService _snapshotService = snapshotService;
-    private readonly ISnapshotRequestQueue _queue = queue;
-    private readonly SnapshotMonitorSettings _settings = settings;
-
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            var request = _queue.Dequeue();
+            var request = queue.Dequeue();
             if (request is null)
             {
-                await Task.Delay(_settings.MonitoringDelay, stoppingToken);
+                await Task.Delay(settings.MonitoringDelay, stoppingToken);
                 continue;
             }
 
-            await _snapshotService.MakeSnapshot(
+            await snapshotService.MakeSnapshot(
                 request.TradingDay,
                 request.CorrelationId,
                 request.ValidationStrategyType,
                 request.Status);
 
-            _queue.Acknowledge(request.Id);
+            queue.Acknowledge(request.Id);
         }
     }
 }
