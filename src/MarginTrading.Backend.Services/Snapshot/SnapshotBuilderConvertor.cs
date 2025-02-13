@@ -9,7 +9,7 @@ namespace MarginTrading.Backend.Services.Snapshot;
 public partial class SnapshotBuilderService : ISnapshotBuilderService
 {
     /// <inheritdoc />
-    public async Task Convert(
+    public async Task ConvertToFinal(
         string correlationId,
         IEnumerable<ClosingAssetPrice> cfdQuotes,
         IEnumerable<ClosingFxRate> fxRates,

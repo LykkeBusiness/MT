@@ -74,7 +74,7 @@ namespace MarginTrading.Backend.Controllers
             return domainStatus switch
             {
                 null => throw new ArgumentOutOfRangeException(nameof(status), status, "Invalid status value"),
-                _ => await _snapshotService.MakeTradingDataSnapshot(
+                _ => await _snapshotService.MakeSnapshot(
                     tradingDay,
                     correlationId,
                     Core.Snapshots.EnvironmentValidationStrategyType.AsSoonAsPossible,

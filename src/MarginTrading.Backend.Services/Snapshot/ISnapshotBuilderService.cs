@@ -20,7 +20,7 @@ public interface ISnapshotBuilderService
     /// <param name="correlationId"></param>
     /// <param name="status"></param>
     /// <returns>Summary of the snapshot</returns>
-    Task<TradingEngineSnapshotSummary> MakeTradingDataSnapshot(
+    Task<TradingEngineSnapshotSummary> MakeSnapshot(
         DateTime tradingDay,
         string correlationId, // remove from the API, it is cross cutting concern
         EnvironmentValidationStrategyType strategyType,
@@ -35,7 +35,7 @@ public interface ISnapshotBuilderService
     /// <returns></returns>
     // TODO: probably we better make this feature a concern of another service
     // so far the only reason features are combined under the same service is that they are sharing lock
-    Task Convert(
+    Task ConvertToFinal(
         string correlationId,
         IEnumerable<ClosingAssetPrice> cfdQuotes,
         IEnumerable<ClosingFxRate> fxRates,

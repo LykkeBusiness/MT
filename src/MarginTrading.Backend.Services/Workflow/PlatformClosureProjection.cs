@@ -71,7 +71,7 @@ namespace MarginTrading.Backend.Services.Workflow
 
         private async Task<string> CreateDraftSnapshot(DateTime tradingDay)
         {
-            var result = await _snapshotService.MakeTradingDataSnapshot(tradingDay,
+            var result = await _snapshotService.MakeSnapshot(tradingDay,
                 _identityGenerator.GenerateGuid(),
                 EnvironmentValidationStrategyType.WaitPlatformConsistency,
                 SnapshotStatus.Draft);
