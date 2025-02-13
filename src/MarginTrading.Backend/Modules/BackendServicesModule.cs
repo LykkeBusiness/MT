@@ -143,10 +143,10 @@ namespace MarginTrading.Backend.Modules
                 .AsSelf()
                 .SingleInstance();
 
-            builder.RegisterType<TradingEngineRawSnapshotsAdapter>()
-                .As<ITradingEngineRawSnapshotsAdapter>()
+            builder.RegisterType<TradingEngineRawSnapshotsRepository>()
+                .As<ITradingEngineRawSnapshotsRepository>()
                 .SingleInstance();
-            builder.RegisterDecorator<TradingEngineRawSnapshotsLoggingAdapter, ITradingEngineRawSnapshotsAdapter>();
+            builder.RegisterDecorator<LoggingTradingEngineRawSnapshotsRepository, ITradingEngineRawSnapshotsRepository>();
         }
     }
 }

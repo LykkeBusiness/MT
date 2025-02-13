@@ -19,10 +19,11 @@ public interface ISnapshotBuilderService
     /// <param name="tradingDay"></param>
     /// <param name="correlationId"></param>
     /// <param name="status"></param>
-    /// <returns></returns>
-    Task<string> MakeTradingDataSnapshot(
+    /// <returns>Summary of the snapshot</returns>
+    Task<TradingEngineSnapshotSummary> MakeTradingDataSnapshot(
         DateTime tradingDay,
-        string correlationId,
+        string correlationId, // remove from the API, it is cross cutting concern
+        EnvironmentValidationStrategyType strategyType,
         SnapshotStatus status = SnapshotStatus.Final);
 
     /// <summary>

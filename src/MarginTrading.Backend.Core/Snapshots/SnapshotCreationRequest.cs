@@ -4,8 +4,8 @@ namespace MarginTrading.Backend.Core.Snapshots;
 
 public sealed record SnapshotCreationRequest(
     Guid Id,
-    SnapshotStrategy
-    Strategy,
+    EnvironmentValidationStrategyType ValidationStrategyType,
     SnapshotStatus Status,
     DateTimeOffset Timestamp,
-    Guid? CorrelationId = null);
+    DateTime TradingDay,
+    string CorrelationId = null);

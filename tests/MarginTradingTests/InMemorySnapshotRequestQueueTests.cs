@@ -18,9 +18,10 @@ public class InMemorySnapshotRequestQueueTests
         var queue = new InMemorySnapshotRequestQueue();
         var request = new SnapshotCreationRequest(
              Guid.NewGuid(),
-            SnapshotStrategy.AsSoonAsPossible,
+            EnvironmentValidationStrategyType.AsSoonAsPossible,
             SnapshotStatus.Draft,
-            DateTimeOffset.UtcNow
+            DateTimeOffset.UtcNow,
+            DateTime.UtcNow.Date
         );
 
         queue.Enqueue(request);
@@ -51,9 +52,10 @@ public class InMemorySnapshotRequestQueueTests
                 {
                     var request = new SnapshotCreationRequest(
                         Guid.NewGuid(),
-                        SnapshotStrategy.WaitPlatformConsistency,
+                        EnvironmentValidationStrategyType.WaitPlatformConsistency,
                         SnapshotStatus.Final,
-                        DateTimeOffset.UtcNow
+                        DateTimeOffset.UtcNow,
+                        DateTime.UtcNow.Date
                     );
                     queue.Enqueue(request);
                 }
@@ -81,15 +83,17 @@ public class InMemorySnapshotRequestQueueTests
         var queue = new InMemorySnapshotRequestQueue();
         var request1 = new SnapshotCreationRequest(
             Guid.NewGuid(),
-            SnapshotStrategy.AsSoonAsPossible,
+            EnvironmentValidationStrategyType.AsSoonAsPossible,
             SnapshotStatus.Draft,
-            DateTimeOffset.UtcNow
+            DateTimeOffset.UtcNow,
+            DateTime.UtcNow.Date
         );
         var request2 = new SnapshotCreationRequest(
             Guid.NewGuid(),
-            SnapshotStrategy.WaitPlatformConsistency,
+            EnvironmentValidationStrategyType.WaitPlatformConsistency,
             SnapshotStatus.Final,
-            DateTimeOffset.UtcNow.AddSeconds(1)
+            DateTimeOffset.UtcNow.AddSeconds(1),
+            DateTime.UtcNow.Date
         );
         queue.Enqueue(request1);
         queue.Enqueue(request2);
@@ -114,9 +118,10 @@ public class InMemorySnapshotRequestQueueTests
         var queue = new InMemorySnapshotRequestQueue();
         var request = new SnapshotCreationRequest(
             Guid.NewGuid(),
-            SnapshotStrategy.AsSoonAsPossible,
+            EnvironmentValidationStrategyType.AsSoonAsPossible,
             SnapshotStatus.Draft,
-            DateTimeOffset.UtcNow
+            DateTimeOffset.UtcNow,
+            DateTime.UtcNow.Date
         );
         queue.Enqueue(request);
         var dequeued = queue.Dequeue();
@@ -136,15 +141,17 @@ public class InMemorySnapshotRequestQueueTests
         var queue = new InMemorySnapshotRequestQueue();
         var request1 = new SnapshotCreationRequest(
             Guid.NewGuid(),
-            SnapshotStrategy.AsSoonAsPossible,
+            EnvironmentValidationStrategyType.AsSoonAsPossible,
             SnapshotStatus.Draft,
-            DateTimeOffset.UtcNow
+            DateTimeOffset.UtcNow,
+            DateTime.UtcNow.Date
         );
         var request2 = new SnapshotCreationRequest(
             Guid.NewGuid(),
-            SnapshotStrategy.WaitPlatformConsistency,
+            EnvironmentValidationStrategyType.WaitPlatformConsistency,
             SnapshotStatus.Final,
-            DateTimeOffset.UtcNow.AddSeconds(1)
+            DateTimeOffset.UtcNow.AddSeconds(1),
+            DateTime.UtcNow.Date
         );
 
         queue.Enqueue(request1);
@@ -180,9 +187,10 @@ public class InMemorySnapshotRequestQueueTests
         var queue = new InMemorySnapshotRequestQueue();
         var request = new SnapshotCreationRequest(
             Guid.NewGuid(),
-            SnapshotStrategy.AsSoonAsPossible,
+            EnvironmentValidationStrategyType.AsSoonAsPossible,
             SnapshotStatus.Draft,
-            DateTimeOffset.UtcNow
+            DateTimeOffset.UtcNow,
+            DateTime.UtcNow.Date
         );
         queue.Enqueue(request);
 
@@ -203,9 +211,10 @@ public class InMemorySnapshotRequestQueueTests
         {
             var request = new SnapshotCreationRequest(
                 Guid.NewGuid(),
-                SnapshotStrategy.AsSoonAsPossible,
+                EnvironmentValidationStrategyType.AsSoonAsPossible,
                 SnapshotStatus.Draft,
-                DateTimeOffset.UtcNow.AddSeconds(i)
+                DateTimeOffset.UtcNow.AddSeconds(i),
+                DateTime.UtcNow.Date
             );
             requests.Add(request);
             queue.Enqueue(request);

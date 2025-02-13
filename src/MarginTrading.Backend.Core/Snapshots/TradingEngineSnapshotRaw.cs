@@ -36,9 +36,17 @@ public record TradingEngineSnapshotRaw(
         [],
         ImmutableDictionary<string, InstrumentBidAskPair>.Empty,
         ImmutableDictionary<string, InstrumentBidAskPair>.Empty);
+
+    public TradingEngineSnapshotSummary Summary => new(
+        TradingDay,
+        Orders.Length,
+        Positions.Length,
+        Accounts.Length,
+        BestFxPrices.Count,
+        BestTradingPrices.Count);
 }
 
-public record TradingEngineSnapshotStatistics(
+public record TradingEngineSnapshotSummary(
     DateTime TradingDay,
     int OrdersCount,
     int PositionsCount,
@@ -46,7 +54,7 @@ public record TradingEngineSnapshotStatistics(
     int BestFxPricesCount,
     int BestTradingPricesCount)
 {
-    public static TradingEngineSnapshotStatistics Empty => new(
+    public static TradingEngineSnapshotSummary Empty => new(
         default,
         default,
         default,
@@ -57,17 +65,5 @@ public record TradingEngineSnapshotStatistics(
     public override string ToString() =>
         $"TradingDay: {TradingDay:yyyy-MM-dd}, Orders: {OrdersCount}, positions: {PositionsCount}, accounts: {AccountsCount}, best FX prices: {BestFxPricesCount}, best trading prices: {BestTradingPricesCount}.";
 
-    public static implicit operator string(TradingEngineSnapshotStatistics statistics) => statistics.ToString();
-}
-
-public static class TradingEngineSnapshotRawExtensions
-{
-    public static TradingEngineSnapshotStatistics GetStatistics(this TradingEngineSnapshotRaw snapshot) =>
-        new(
-            snapshot.TradingDay,
-            snapshot.Orders.Length,
-            snapshot.Positions.Length,
-            snapshot.Accounts.Length,
-            snapshot.BestFxPrices.Count,
-            snapshot.BestTradingPrices.Count);
+    public static implicit operator string(TradingEngineSnapshotSummary summary) => summary.ToString();
 }
