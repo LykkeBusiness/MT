@@ -239,11 +239,18 @@ namespace MarginTrading.Backend.Services.Modules
 				.As<IPositionHistoryHandler>()
 				.SingleInstance();
 
+			// register TradingEngineSnapshotBuilder decorators
 			builder.RegisterType<TradingEngineSnapshotBuilder>()
+				.SingleInstance();
+			builder.Register(ctx => new AccountUpdatingTradingEngineSnapshotBuilder(
+				ctx.Resolve<TradingEngineSnapshotBuilder>()))
+				.SingleInstance();
+			builder.Register(ctx => new TradingEngineSnapshotLoggingBuilder(
+					ctx.Resolve<AccountUpdatingTradingEngineSnapshotBuilder>(),
+					_settings.LogBlockedMarginCalculation,
+					ctx.Resolve<ILogger<TradingEngineSnapshotLoggingBuilder>>()))
 				.As<ITradingEngineSnapshotBuilder>()
 				.SingleInstance();
-			builder.RegisterDecorator<AccountUpdatingTradingEngineSnapshotBuilder, ITradingEngineSnapshotBuilder>();
-			builder.RegisterDecorator<TradingEngineSnapshotLoggingBuilder, ITradingEngineSnapshotBuilder>();
 
 			builder.RegisterType<SnapshotBuilderService>()
 				.As<ISnapshotBuilderService>()
