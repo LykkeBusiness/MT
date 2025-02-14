@@ -256,6 +256,7 @@ namespace MarginTrading.Backend.Services.Modules
 			builder.RegisterType<SnapshotBuilderService>()
 				.As<ISnapshotBuilderService>()
 				.InstancePerLifetimeScope();
+			builder.RegisterDecorator<SnapshotBuilderServiceDecorator, ISnapshotBuilderService>();
 
 			builder.RegisterType<SnapshotValidationService>()
 				.As<ISnapshotValidationService>()
