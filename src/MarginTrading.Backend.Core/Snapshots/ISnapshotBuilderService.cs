@@ -6,9 +6,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using MarginTrading.Backend.Contracts.Prices;
-using MarginTrading.Backend.Core.Snapshots;
 
-namespace MarginTrading.Backend.Services.Snapshots;
+namespace MarginTrading.Backend.Core.Snapshots;
 
 public interface ISnapshotBuilderService
 {
@@ -32,6 +31,7 @@ public interface ISnapshotBuilderService
     /// <param name="correlationId"></param>
     /// <param name="cfdQuotes"></param>
     /// <param name="fxRates"></param>
+    /// <param name="draftSnapshotKeeper"></param>
     /// <returns></returns>
     // TODO: probably we better make this feature a concern of another service
     // so far the only reason features are combined under the same service is that they are sharing lock

@@ -1,8 +1,6 @@
 using System.Threading.Tasks;
 
-using MarginTrading.Backend.Core.Snapshots;
-
-namespace MarginTrading.Backend.Services.Snapshots;
+namespace MarginTrading.Backend.Core.Snapshots;
 
 public class AsSoonAsPossibleStrategy(IEnvironmentValidator environmentValidator) : IEnvironmentValidationStrategy
 {

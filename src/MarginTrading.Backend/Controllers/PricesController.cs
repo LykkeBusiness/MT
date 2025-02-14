@@ -18,6 +18,7 @@ using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Exceptions;
 using MarginTrading.Backend.Core.Quotes;
 using MarginTrading.Backend.Core.Services;
+using MarginTrading.Backend.Core.Snapshots;
 using MarginTrading.Backend.Filters;
 using MarginTrading.Backend.Services;
 using MarginTrading.Backend.Services.Mappers;

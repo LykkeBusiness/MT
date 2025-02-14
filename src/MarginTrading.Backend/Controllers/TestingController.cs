@@ -9,6 +9,7 @@ using MarginTrading.Backend.Contracts.Testing;
 using MarginTrading.Backend.Contracts.Workflow.SpecialLiquidation.Commands;
 using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Settings;
+using MarginTrading.Backend.Core.Snapshots;
 using MarginTrading.Backend.Services.Infrastructure;
 using MarginTrading.Backend.Services.Services;
 using MarginTrading.Backend.Services.Snapshots;

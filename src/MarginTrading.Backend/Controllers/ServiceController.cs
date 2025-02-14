@@ -10,6 +10,7 @@ using MarginTrading.Backend.Contracts;
 using MarginTrading.Backend.Contracts.Snapshots;
 using MarginTrading.Backend.Core.Repositories;
 using MarginTrading.Backend.Core.Services;
+using MarginTrading.Backend.Core.Snapshots;
 using MarginTrading.Backend.Extensions;
 using MarginTrading.Backend.Services;
 using MarginTrading.Backend.Services.Snapshots;

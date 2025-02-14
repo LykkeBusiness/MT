@@ -18,6 +18,7 @@ using JetBrains.Annotations;
 using Lykke.Cqrs;
 
 using MarginTrading.Backend.Contracts.Prices;
+using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Repositories;
 using MarginTrading.Backend.Core.Snapshots;
 using MarginTrading.Backend.Services.Services;
