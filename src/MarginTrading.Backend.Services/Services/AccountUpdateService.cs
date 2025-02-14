@@ -25,7 +25,7 @@ using MarginTrading.Backend.Core.Services;
 using MarginTrading.Backend.Core.Settings;
 using MarginTrading.Backend.Core.Trading;
 using MarginTrading.Backend.Services.Infrastructure;
-using MarginTrading.Backend.Services.Snapshot;
+using MarginTrading.Backend.Services.Snapshots;
 
 #pragma warning disable 1998
 

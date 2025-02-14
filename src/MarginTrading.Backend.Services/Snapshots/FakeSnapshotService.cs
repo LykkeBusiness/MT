@@ -6,8 +6,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Common;
 using Common.Log;
+
 using MarginTrading.Backend.Contracts.Account;
 using MarginTrading.Backend.Contracts.Orders;
 using MarginTrading.Backend.Contracts.Positions;
@@ -15,10 +17,9 @@ using MarginTrading.Backend.Contracts.Snow.Prices;
 using MarginTrading.Backend.Core.Repositories;
 using MarginTrading.Backend.Core.Snapshots;
 using MarginTrading.Backend.Services.Extensions;
-using MarginTrading.Backend.Services.Snapshot;
 using MarginTrading.Common.Services;
 
-namespace MarginTrading.Backend.Services.Infrastructure
+namespace MarginTrading.Backend.Services.Snapshots
 {
     public class FakeSnapshotService : IFakeSnapshotService
     {
@@ -121,7 +122,7 @@ namespace MarginTrading.Backend.Services.Infrastructure
             {
                 if (oldValues.ContainsKey(kvp.Key))
                 {
-                    oldValues[kvp.Key] = kvp.Value;    
+                    oldValues[kvp.Key] = kvp.Value;
                 }
                 else
                 {

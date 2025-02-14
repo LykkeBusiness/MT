@@ -19,7 +19,7 @@ using MarginTrading.Backend.Core.Trading;
 using MarginTrading.Backend.Services.Mappers;
 using MarginTrading.Common.Services;
 
-namespace MarginTrading.Backend.Services.Snapshot
+namespace MarginTrading.Backend.Services.Snapshots
 {
     /// <inheritdoc />
     public class FinalSnapshotCalculator : IFinalSnapshotCalculator

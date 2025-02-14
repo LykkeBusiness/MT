@@ -6,7 +6,7 @@ using MarginTrading.Backend.Core.Snapshots;
 
 using Microsoft.Extensions.Logging;
 
-namespace MarginTrading.Backend.Services.Snapshot;
+namespace MarginTrading.Backend.Services.Snapshots;
 
 public class LoggingEnvironmentValidationStrategy(
     ILogger<LoggingEnvironmentValidationStrategy> logger,

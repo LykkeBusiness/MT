@@ -1,3 +1,5 @@
+using MarginTrading.Backend.Services.Snapshots;
+
 namespace MarginTradingTests;
 
 using System;
@@ -5,7 +7,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using MarginTrading.Backend.Core.Snapshots;
-using MarginTrading.Backend.Services.Snapshot;
 
 using NUnit.Framework;
 

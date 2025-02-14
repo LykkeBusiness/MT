@@ -22,7 +22,7 @@ using MarginTrading.Backend.Services.MatchingEngines;
 using MarginTrading.Backend.Services.Quotes;
 using MarginTrading.Backend.Services.Scheduling;
 using MarginTrading.Backend.Services.Services;
-using MarginTrading.Backend.Services.Snapshot;
+using MarginTrading.Backend.Services.Snapshots;
 using MarginTrading.Backend.Services.Stp;
 using MarginTrading.Backend.Services.TradingConditions;
 using MarginTrading.Backend.Services.Workflow.Liquidation;

@@ -21,7 +21,7 @@ using MarginTrading.Backend.Core.Snapshots;
 using MarginTrading.Backend.Core.Trading;
 using MarginTrading.Backend.Services.Extensions;
 
-namespace MarginTrading.Backend.Services.Snapshot
+namespace MarginTrading.Backend.Services.Snapshots
 {
     /// <inheritdoc />
     /// Current implementation is not thread safe

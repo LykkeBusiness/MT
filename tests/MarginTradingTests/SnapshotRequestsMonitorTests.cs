@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 using MarginTrading.Backend.Core.Settings;
 using MarginTrading.Backend.Core.Snapshots;
-using MarginTrading.Backend.Services.Snapshot;
+using MarginTrading.Backend.Services.Snapshots;
 
 using Moq;
 

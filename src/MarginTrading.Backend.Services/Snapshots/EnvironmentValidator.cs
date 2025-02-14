@@ -8,7 +8,7 @@ using MarginTrading.Backend.Core.Exceptions;
 using MarginTrading.Backend.Core.Services;
 using MarginTrading.Backend.Core.Snapshots;
 
-namespace MarginTrading.Backend.Services.Snapshot;
+namespace MarginTrading.Backend.Services.Snapshots;
 
 public class EnvironmentValidator : IEnvironmentValidator
 {

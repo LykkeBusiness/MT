@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 using MarginTrading.Backend.Contracts.Prices;
 
-namespace MarginTrading.Backend.Services.Snapshot;
+namespace MarginTrading.Backend.Services.Snapshots;
 
 public partial class SnapshotBuilderService
 {

@@ -14,7 +14,7 @@ using MarginTrading.Backend.Services.Infrastructure;
 
 using Microsoft.Extensions.Logging;
 
-namespace MarginTrading.Backend.Services.Snapshot;
+namespace MarginTrading.Backend.Services.Snapshots;
 
 class TradingEngineSnapshotLoggingBuilder(
     ITradingEngineSnapshotBuilder decoratee,

@@ -11,7 +11,7 @@ using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Orders;
 using MarginTrading.Backend.Core.Trading;
 
-namespace MarginTrading.Backend.Services.Snapshot
+namespace MarginTrading.Backend.Services.Snapshots
 {
     
     /// <summary>

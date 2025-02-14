@@ -14,7 +14,7 @@ using MarginTrading.Backend.Core.Trading;
 using MarginTrading.Backend.Services.Caches;
 using MarginTrading.Backend.Services.Infrastructure;
 
-namespace MarginTrading.Backend.Services.Snapshot;
+namespace MarginTrading.Backend.Services.Snapshots;
 
 /// <summary>
 /// Implementation of a trading engine snapshot builder.

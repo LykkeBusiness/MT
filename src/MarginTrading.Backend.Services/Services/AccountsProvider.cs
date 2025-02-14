@@ -13,7 +13,7 @@ using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Services;
 using MarginTrading.Backend.Services.Extensions;
 using MarginTrading.Backend.Services.Mappers;
-using MarginTrading.Backend.Services.Snapshot;
+using MarginTrading.Backend.Services.Snapshots;
 using MarginTrading.Common.Services;
 
 namespace MarginTrading.Backend.Services.Services

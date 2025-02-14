@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using MarginTrading.Backend.Contracts.Prices;
 using MarginTrading.Backend.Core.Snapshots;
 
-namespace MarginTrading.Backend.Services.Snapshot
+namespace MarginTrading.Backend.Services.Snapshots
 {
     /// <summary>
     /// Trading snapshot recalculation from draft to final using closure prices

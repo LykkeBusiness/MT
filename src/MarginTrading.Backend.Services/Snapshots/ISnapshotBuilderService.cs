@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using MarginTrading.Backend.Contracts.Prices;
 using MarginTrading.Backend.Core.Snapshots;
 
-namespace MarginTrading.Backend.Services.Snapshot;
+namespace MarginTrading.Backend.Services.Snapshots;
 
 public interface ISnapshotBuilderService
 {
