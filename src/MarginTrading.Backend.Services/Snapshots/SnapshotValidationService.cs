@@ -19,7 +19,7 @@ using MarginTrading.Backend.Core.Snapshots;
 using MarginTrading.Backend.Core.Trading;
 using MarginTrading.Common.Extensions;
 
-namespace MarginTrading.Backend.Services.Snapshot
+namespace MarginTrading.Backend.Services.Snapshots
 {
     /// <inheritdoc/> 
     public class SnapshotValidationService : ISnapshotValidationService

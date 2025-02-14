@@ -9,7 +9,7 @@ using MarginTrading.Backend.Core.Snapshots;
 
 using Microsoft.Extensions.Hosting;
 
-namespace MarginTrading.Backend.Services.Snapshot;
+namespace MarginTrading.Backend.Services.Snapshots;
 
 public sealed class SnapshotRequestsMonitor(
     ISnapshotBuilderService snapshotService,
