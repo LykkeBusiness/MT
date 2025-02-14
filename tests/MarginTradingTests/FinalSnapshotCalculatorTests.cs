@@ -10,6 +10,7 @@ using Common.Log;
 using MarginTrading.Backend.Contracts.Prices;
 using MarginTrading.Backend.Contracts.Snow.Prices;
 using MarginTrading.Backend.Core;
+using MarginTrading.Backend.Core.Snapshots;
 using MarginTrading.Backend.Services;
 using MarginTrading.Backend.Services.Services;
 using MarginTrading.Backend.Services.Snapshots;

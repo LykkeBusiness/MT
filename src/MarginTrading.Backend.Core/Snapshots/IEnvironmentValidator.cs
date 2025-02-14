@@ -1,11 +1,7 @@
 using System.Threading.Tasks;
 
-using MarginTrading.Backend.Core.Snapshots;
+namespace MarginTrading.Backend.Core.Snapshots;
 
-namespace MarginTrading.Backend.Services.Snapshots;
-
-
-// todo: remove or unit with strategy interface?
 public interface IEnvironmentValidator
 {
     /// <summary>

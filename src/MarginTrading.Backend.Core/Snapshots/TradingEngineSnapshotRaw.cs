@@ -55,12 +55,7 @@ public record TradingEngineSnapshotSummary(
     int BestTradingPricesCount)
 {
     public static TradingEngineSnapshotSummary Empty => new(
-        default,
-        default,
-        default,
-        default,
-        default,
-        default);
+        default, 0, 0, 0, 0, 0);
 
     public override string ToString() =>
         $"TradingDay: {TradingDay:yyyy-MM-dd}, Orders: {OrdersCount}, positions: {PositionsCount}, accounts: {AccountsCount}, best FX prices: {BestFxPricesCount}, best trading prices: {BestTradingPricesCount}.";

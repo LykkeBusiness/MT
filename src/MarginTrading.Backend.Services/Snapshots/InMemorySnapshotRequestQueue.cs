@@ -25,11 +25,11 @@ public sealed class InMemorySnapshotRequestQueue : ISnapshotRequestQueue
         }
     }
 
-    public QueueState CaptureState()
+    public SnapshotQueueState CaptureState()
     {
         lock (_lock)
         {
-            return new QueueState(
+            return new SnapshotQueueState(
                 [.. _queue],
                 _inFlight
             );
@@ -63,7 +63,7 @@ public sealed class InMemorySnapshotRequestQueue : ISnapshotRequestQueue
         }
     }
 
-    public void RestoreState(QueueState state)
+    public void RestoreState(SnapshotQueueState state)
     {
         lock (_lock)
         {

@@ -16,14 +16,14 @@ using Microsoft.Extensions.Logging;
 
 namespace MarginTrading.Backend.Services.Snapshots;
 
-class TradingEngineSnapshotLoggingBuilder(
+class LoggingTradingEngineSnapshotBuilder(
     ITradingEngineSnapshotBuilder decoratee,
     bool logBlockedMarginCalculation,
-    ILogger<TradingEngineSnapshotLoggingBuilder> logger) : ITradingEngineSnapshotBuilder
+    ILogger<LoggingTradingEngineSnapshotBuilder> logger) : ITradingEngineSnapshotBuilder
 {
     private readonly ITradingEngineSnapshotBuilder _decoratee =
         decoratee ?? throw new ArgumentNullException(nameof(decoratee));
-    private readonly ILogger<TradingEngineSnapshotLoggingBuilder> _logger =
+    private readonly ILogger<LoggingTradingEngineSnapshotBuilder> _logger =
         logger ?? throw new ArgumentNullException(nameof(logger));
 
     public ITradingEngineSnapshotBuilder CollectDataFrom(IOrderReaderBase orderReader) =>

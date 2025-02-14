@@ -7,6 +7,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using Autofac;
 
+using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Services.Snapshots;
 using MarginTrading.Common.Extensions;
 

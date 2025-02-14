@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using MarginTrading.Backend.Contracts.Prices;
+using MarginTrading.Backend.Core;
 
 namespace MarginTrading.Backend.Services.Snapshots;
 
