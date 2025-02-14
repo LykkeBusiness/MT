@@ -10,7 +10,7 @@ using MarginTrading.Backend.Contracts.Orders;
 using MarginTrading.Backend.Contracts.Positions;
 using MarginTrading.Backend.Contracts.Snow.Prices;
 
-namespace MarginTrading.Backend.Services.Snapshots
+namespace MarginTrading.Backend.Core.Snapshots
 {
     public interface IFakeSnapshotService
     {

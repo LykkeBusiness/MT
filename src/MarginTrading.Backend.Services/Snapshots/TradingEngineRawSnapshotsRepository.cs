@@ -13,8 +13,6 @@ namespace MarginTrading.Backend.Services.Snapshots;
 public class TradingEngineRawSnapshotsRepository(
     ITradingEngineSnapshotsRepository tradingEngineSnapshotsRepository) : ITradingEngineRawSnapshotsRepository
 {
-    private readonly ITradingEngineSnapshotsRepository _tradingEngineSnapshotsRepository = tradingEngineSnapshotsRepository;
-
     public Task AddAsync(TradingEngineSnapshotRaw tradingEngineRawSnapshot) =>
-        _tradingEngineSnapshotsRepository.AddAsync(tradingEngineRawSnapshot.ToSnapshot());
+        tradingEngineSnapshotsRepository.AddAsync(tradingEngineRawSnapshot.Convert());
 }

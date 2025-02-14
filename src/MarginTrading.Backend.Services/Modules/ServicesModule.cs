@@ -246,10 +246,10 @@ namespace MarginTrading.Backend.Services.Modules
 			builder.Register(ctx => new AccountUpdatingTradingEngineSnapshotBuilder(
 				ctx.Resolve<TradingEngineSnapshotBuilder>()))
 				.SingleInstance();
-			builder.Register(ctx => new TradingEngineSnapshotLoggingBuilder(
+			builder.Register(ctx => new LoggingTradingEngineSnapshotBuilder(
 					ctx.Resolve<AccountUpdatingTradingEngineSnapshotBuilder>(),
 					_settings.LogBlockedMarginCalculation,
-					ctx.Resolve<ILogger<TradingEngineSnapshotLoggingBuilder>>()))
+					ctx.Resolve<ILogger<LoggingTradingEngineSnapshotBuilder>>()))
 				.As<ITradingEngineSnapshotBuilder>()
 				.SingleInstance();
 

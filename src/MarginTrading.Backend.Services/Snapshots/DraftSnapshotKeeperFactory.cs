@@ -3,6 +3,7 @@
 
 using System;
 
+using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Repositories;
 
 namespace MarginTrading.Backend.Services.Snapshots
