@@ -11,7 +11,7 @@ namespace MarginTrading.AccountMarginEventsBroker
     {
         public static void Main(string[] args)
         {
-            RunOnPort(5015, true);
+            RunOnPort(5015);
         }
     }
 }
