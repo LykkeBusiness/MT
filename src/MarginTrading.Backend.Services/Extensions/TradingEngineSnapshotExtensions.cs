@@ -13,7 +13,7 @@ using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Orders;
 using MarginTrading.Backend.Core.Snapshots;
 using MarginTrading.Backend.Core.Trading;
-using MarginTrading.Backend.Services.Snapshot;
+using MarginTrading.Backend.Services.Snapshots;
 
 namespace MarginTrading.Backend.Services.Extensions
 {

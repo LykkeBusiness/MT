@@ -3,7 +3,7 @@
 
 using System;
 
-namespace MarginTrading.Backend.Services.Snapshot
+namespace MarginTrading.Backend.Services.Snapshots
 {
     public interface IDraftSnapshotKeeperFactory
     {

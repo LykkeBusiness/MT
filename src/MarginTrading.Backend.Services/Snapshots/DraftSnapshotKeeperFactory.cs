@@ -5,7 +5,7 @@ using System;
 
 using MarginTrading.Backend.Core.Repositories;
 
-namespace MarginTrading.Backend.Services.Snapshot
+namespace MarginTrading.Backend.Services.Snapshots
 {
     public class DraftSnapshotKeeperFactory : IDraftSnapshotKeeperFactory
     {

@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.Retry;
 
-namespace MarginTrading.Backend.Services.Snapshot;
+namespace MarginTrading.Backend.Services.Snapshots;
 
 public class PreferConsistencyStrategy(
     IEnvironmentValidator environmentValidator,

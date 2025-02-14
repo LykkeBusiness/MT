@@ -17,7 +17,7 @@ using MarginTrading.Backend.Services.Infrastructure;
 using MarginTrading.Backend.Services.Services;
 using MarginTrading.Common.Services;
 
-namespace MarginTrading.Backend.Services.Snapshot;
+namespace MarginTrading.Backend.Services.Snapshots;
 
 public partial class SnapshotBuilderService : ISnapshotBuilderService
 {

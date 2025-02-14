@@ -21,8 +21,9 @@ using MarginTrading.SqlRepositories.Repositories;
 using MarginTrading.SqlRepositories;
 using IdentityEntity = MarginTrading.AzureRepositories.Entities.IdentityEntity;
 using OperationLogEntity = MarginTrading.AzureRepositories.OperationLogEntity;
-using MarginTrading.Backend.Services.Snapshot;
+
 using MarginTrading.Backend.Core.Services;
+using MarginTrading.Backend.Services.Snapshots;
 
 namespace MarginTrading.Backend.Modules
 {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 using MarginTrading.Backend.Core.Snapshots;
 
-namespace MarginTrading.Backend.Services.Snapshot;
+namespace MarginTrading.Backend.Services.Snapshots;
 
 public sealed class InMemorySnapshotRequestQueue : ISnapshotRequestQueue
 {
