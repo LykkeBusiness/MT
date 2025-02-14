@@ -14,7 +14,6 @@ using MarginTrading.Backend.Core.Services;
 using MarginTrading.Backend.Core.Snapshots;
 using MarginTrading.Backend.Services.AssetPairs;
 using MarginTrading.Backend.Services.Infrastructure;
-using MarginTrading.Backend.Services.Services;
 using MarginTrading.Common.Services;
 
 namespace MarginTrading.Backend.Services.Snapshots;
@@ -30,7 +29,6 @@ public partial class SnapshotBuilderService : ISnapshotBuilderService
     private readonly IFinalSnapshotCalculator _finalSnapshotCalculator;
     private readonly ITradingEngineSnapshotBuilder _snapshotBuilder;
     private readonly IComponentContext _context;
-    private readonly ISnapshotBuilderDraftRebuildAgent _snapshotDraftRebuildAgent;
     private static readonly SemaphoreSlim Lock = new(1, 1);
     public static bool IsMakingSnapshotInProgress => Lock.CurrentCount == 0;
 
@@ -43,7 +41,6 @@ public partial class SnapshotBuilderService : ISnapshotBuilderService
         ITradingEngineSnapshotBuilder snapshotBuilder,
         ITradingEngineSnapshotsRepository repository,
         IComponentContext context,
-        ISnapshotBuilderDraftRebuildAgent snapshotDraftRebuildAgent,
         ILog log)
     {
         _scheduleSettingsCacheService = scheduleSettingsCacheService;
@@ -54,7 +51,6 @@ public partial class SnapshotBuilderService : ISnapshotBuilderService
         _snapshotBuilder = snapshotBuilder;
         _snapshotsRepository = repository;
         _context = context;
-        _snapshotDraftRebuildAgent = snapshotDraftRebuildAgent;
         _log = log;
     }
 
@@ -101,7 +97,7 @@ public partial class SnapshotBuilderService : ISnapshotBuilderService
         {
             var envValidationResult = await ValidateEnvironment(strategyType, correlationId);
 
-            var snapshot = await _snapshotBuilder
+            var rawSnapshot = await _snapshotBuilder
                 .CollectDataFrom(envValidationResult.Cache)
                 .WithTradingDay(tradingDay)
                 .WithCorrelationId(correlationId)
@@ -109,12 +105,9 @@ public partial class SnapshotBuilderService : ISnapshotBuilderService
                 .WithTimestamp(_dateService.Now())
                 .Build();
 
-            await _rawSnapshotsRepository.AddAsync(snapshot);
+            await _rawSnapshotsRepository.AddAsync(rawSnapshot);
 
-            if (status == SnapshotStatus.Draft)
-                await _snapshotDraftRebuildAgent.ResetDraftRebuildFlag();
-
-            return snapshot.Summary;
+            return rawSnapshot.Summary;
         }
         finally
         {
