@@ -8,6 +8,7 @@ using MarginTrading.Backend.Contracts.Activities;
 using MarginTrading.Backend.Contracts.Positions;
 using MarginTrading.Backend.Core.Orders;
 using MarginTrading.Backend.Core.Services;
+using MarginTrading.Backend.Services.Services;
 
 using Microsoft.Extensions.Logging;
 
@@ -16,10 +17,10 @@ using Polly.Retry;
 
 using StackExchange.Redis;
 
-namespace MarginTrading.Backend.Services.Services;
+namespace MarginTrading.Backend.Services.Snapshots;
 
 /// <summary>
-/// Snapshot builder agent to keep track of position history changes. 
+/// Snapshot builder agent to keep track of position history changes.
 /// It is important concern during EOD process.
 /// Also implements cross cutting concern of persisting snapshot rebuild flag to a Redis cache.
 /// Default value of snapshot rebuild flag is false.
@@ -37,9 +38,9 @@ public class SnapshotBuilderPositionHistoryAgent(
             .Handle<Exception>()
             .WaitAndRetryAsync(3,
                 x => TimeSpan.FromMilliseconds(x * 1000),
-                    (exception, span) => logger.LogWarning("Exception: {Message}", exception?.Message));
+                    (exception, _) => logger.LogWarning("Exception: {Message}", exception?.Message));
     private const string RedisKey = "core:snapshot:should-recreate";
-    private bool? _draftSnapshotRebuildRequired = null;
+    private bool? _draftSnapshotRebuildRequired;
     private const bool DefaultSnapshotRebuildRequired = false;
 
     public async Task HandleClosePosition(Position position, DealContract deal, string additionalInfo)
@@ -92,10 +93,10 @@ public class SnapshotBuilderPositionHistoryAgent(
 
         if (newValue)
         {
-            logger.LogError("Failed to update snapshot rebuild flag in Redis (new value: {Value}). Consider making trading snapshot draft manually after service restart.", newValue);
+            logger.LogError("Failed to update snapshot rebuild flag in Redis (new value: {Value}). Consider making trading snapshot draft manually after service restart.", true);
             return;
         }
 
-        logger.LogWarning("Failed to update snapshot rebuild flag in Redis (new value: {Value}).", newValue);
+        logger.LogWarning("Failed to update snapshot rebuild flag in Redis (new value: {Value}).", false);
     }
 }

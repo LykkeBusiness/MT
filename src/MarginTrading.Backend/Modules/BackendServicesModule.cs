@@ -23,6 +23,7 @@ using MarginTrading.Backend.Services.Quotes;
 using MarginTrading.Backend.Services.RabbitMq;
 using MarginTrading.Backend.Services.Services;
 using MarginTrading.Backend.Services.Settings;
+using MarginTrading.Backend.Services.Snapshots;
 using MarginTrading.Common.Services;
 using StackExchange.Redis;
 using Microsoft.Extensions.Logging;
