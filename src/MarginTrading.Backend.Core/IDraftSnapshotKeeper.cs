@@ -5,14 +5,14 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading.Tasks;
+
 using MarginTrading.Backend.Contracts.Snow.Prices;
-using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Orders;
 using MarginTrading.Backend.Core.Trading;
 
-namespace MarginTrading.Backend.Services
+namespace MarginTrading.Backend.Core
 {
-    
+
     /// <summary>
     /// Keeper of snapshot draft within the scope of current request
     /// </summary>
@@ -25,7 +25,7 @@ namespace MarginTrading.Backend.Services
         /// </exception>
         /// </summary>
         DateTime TradingDay { get; }
-        
+
         /// <summary>
         /// The timestamp of the snapshot (when it was created).
         /// The timestamp of the Final snapshot will have the timestamp of Draft
@@ -37,7 +37,7 @@ namespace MarginTrading.Backend.Services
         /// The list of fx prices
         /// </summary>
         List<BestPriceContract> FxPrices { get; }
-        
+
         /// <summary>
         /// The list of cfd quotes
         /// </summary>
@@ -48,7 +48,7 @@ namespace MarginTrading.Backend.Services
         /// </summary>
         /// <param name="tradingDay">The trading day draft snapshot to be kept for</param>
         IDraftSnapshotKeeper Init(DateTime tradingDay);
-        
+
         /// <summary>
         /// Checks if draft trading snapshot exists for the trading day
         /// </summary>

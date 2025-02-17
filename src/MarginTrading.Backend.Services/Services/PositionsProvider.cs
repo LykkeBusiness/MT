@@ -6,9 +6,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Common;
 using Common.Log;
+
+using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Orders;
 using MarginTrading.Backend.Core.Services;
 using MarginTrading.Backend.Services.Extensions;
+using MarginTrading.Backend.Services.Snapshots;
 
 namespace MarginTrading.Backend.Services.Services
 {

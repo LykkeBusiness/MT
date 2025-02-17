@@ -2,7 +2,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Autofac;
-using MarginTrading.Backend.Core.Services;
+
 using MarginTrading.Backend.Services.AssetPairs;
 using MarginTrading.Backend.Services.Caches;
 using MarginTrading.Backend.Services.Infrastructure;
@@ -44,22 +44,10 @@ namespace MarginTrading.Backend.Services.Modules
             builder.RegisterType<PendingOrdersCleaningService>()
                 .AsSelf()
                 .SingleInstance();
-            
+
             builder.RegisterType<QuotesMonitor>()
                 .AsSelf()
                 .As<IStartable>()
-                .SingleInstance();
-            
-            builder.RegisterType<SnapshotService>()
-                .As<ISnapshotService>()
-                .InstancePerLifetimeScope();
-
-            builder.RegisterType<SnapshotValidationService>()
-                .As<ISnapshotValidationService>()
-                .SingleInstance();
-            
-            builder.RegisterType<SnapshotStatusTracker>()
-                .As<ISnapshotStatusTracker>()
                 .SingleInstance();
         }
     }

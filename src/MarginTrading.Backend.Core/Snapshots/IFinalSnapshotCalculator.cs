@@ -3,10 +3,10 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using MarginTrading.Backend.Contracts.Prices;
-using MarginTrading.Backend.Core.Snapshots;
 
-namespace MarginTrading.Backend.Services
+using MarginTrading.Backend.Contracts.Prices;
+
+namespace MarginTrading.Backend.Core.Snapshots
 {
     /// <summary>
     /// Trading snapshot recalculation from draft to final using closure prices
