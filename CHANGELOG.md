@@ -1,3 +1,8 @@
+## 2.38.1 - Nova 2. Delivery 49. Hotfix 1 (February 17, 2025)
+### What's changed
+* LT-6052: Don't use settingsService explicitly in AccountMarginEventsBroker
+
+
 ## 2.38.0 - Nova 2. Delivery 49 (February 07, 2025)
 ### What's changed
 * LT-6021: Add a new report accountliquidations.
