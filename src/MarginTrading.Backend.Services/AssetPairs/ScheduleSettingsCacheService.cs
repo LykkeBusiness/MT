@@ -23,6 +23,7 @@ using MarginTrading.Backend.Services.Extensions;
 using Microsoft.FeatureManagement;
 using MoreLinq;
 using MarginTrading.Backend.Core.Snapshots;
+using MarginTrading.Backend.Core.Repositories;
 
 namespace MarginTrading.Backend.Services.AssetPairs
 {
@@ -32,6 +33,7 @@ namespace MarginTrading.Backend.Services.AssetPairs
         private readonly IScheduleSettingsApi _scheduleSettingsApi;
         private readonly IAssetPairsCache _assetPairsCache;
         private readonly IDateService _dateService;
+        private readonly IIdentityGenerator _identityGenerator;
         private readonly ILog _log;
         private readonly OvernightMarginSettings _overnightMarginSettings;
 
@@ -61,7 +63,8 @@ namespace MarginTrading.Backend.Services.AssetPairs
             ILog log,
             OvernightMarginSettings overnightMarginSettings,
             IFeatureManager featureManager,
-            ISnapshotRequestQueue snapshotRequestQueue)
+            ISnapshotRequestQueue snapshotRequestQueue,
+            IIdentityGenerator identityGenerator)
         {
             _cqrsSender = cqrsSender;
             _scheduleSettingsApi = scheduleSettingsApi;
@@ -71,6 +74,7 @@ namespace MarginTrading.Backend.Services.AssetPairs
             _overnightMarginSettings = overnightMarginSettings;
             _featureManager = featureManager;
             _snapshotRequestQueue = snapshotRequestQueue;
+            _identityGenerator = identityGenerator;
         }
 
         public async Task UpdateAllSettingsAsync()
@@ -206,7 +210,8 @@ namespace MarginTrading.Backend.Services.AssetPairs
                         EnvironmentValidationStrategyType.WaitPlatformConsistency,
                         SnapshotStatus.Draft,
                         now,
-                        now.Date));
+                        now.Date,
+                        _identityGenerator.GenerateGuid()));
                 }
                 _cqrsSender.PublishEvent(ev);
 
