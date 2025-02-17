@@ -20,6 +20,7 @@ using MarginTrading.Backend.Services.Snapshots;
 using Microsoft.FeatureManagement;
 using Moq;
 using NUnit.Framework;
+using MarginTrading.Backend.Core.Repositories;
 
 namespace MarginTradingTests
 {
@@ -331,7 +332,8 @@ namespace MarginTradingTests
                 new EmptyLog(),
                 new OvernightMarginSettings(),
                 Mock.Of<IFeatureManager>(),
-                new InMemorySnapshotRequestQueue());
+                new InMemorySnapshotRequestQueue(),
+                Mock.Of<IIdentityGenerator>());
 
             scheduleSettingsCacheService.UpdateAllSettingsAsync().GetAwaiter().GetResult();
             return new AssetPairDayOffService(scheduleSettingsCacheService);
