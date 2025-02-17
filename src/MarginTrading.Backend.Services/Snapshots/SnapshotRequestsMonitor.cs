@@ -18,14 +18,12 @@ public sealed class SnapshotRequestsMonitor(
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        while (!stoppingToken.IsCancellationRequested)
+        using var timer = new PeriodicTimer(settings.MonitoringDelay);
+        while (await timer.WaitForNextTickAsync(stoppingToken))
         {
             var request = queue.Dequeue();
             if (request is null)
-            {
-                await Task.Delay(settings.MonitoringDelay, stoppingToken);
                 continue;
-            }
 
             await snapshotService.MakeSnapshot(
                 request.TradingDay,
