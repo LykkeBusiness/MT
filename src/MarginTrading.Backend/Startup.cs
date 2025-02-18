@@ -105,7 +105,7 @@ namespace MarginTrading.Backend
             services.AddTransient<HttpCorrelationHandler>();
 
             services.AddAssemblyLogger();
-            services.AddApplicationInsightsTelemetry();
+            services.AddHttpContextAccessor();
 
             services.AddSingleton(Configuration);
             services
