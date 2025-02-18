@@ -18,7 +18,6 @@
     <PackageReference Include="LykkeBiz.RabbitMqBroker" />
     <PackageReference Include="Lykke.Service.ClientAccount.Client" />
     <PackageReference Include="LykkeBiz.SettingsReader" />
-    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" />
     <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
