@@ -4,10 +4,13 @@
 using System;
 using System.Collections.Immutable;
 using System.Linq;
+
 using Autofac;
+
 using MarginTrading.Backend.Core.Exceptions;
 using MarginTrading.Backend.Core.StateMachines;
 using MarginTrading.Backend.Core.Trading;
+
 using Newtonsoft.Json;
 
 namespace MarginTrading.Backend.Core.Orders
@@ -156,7 +159,7 @@ namespace MarginTrading.Backend.Core.Orders
         [JsonConstructor]
         public Position()
         {
-            FplData = new FplData {ActualHash = 1};
+            FplData = new FplData { ActualHash = 1 };
         }
 
         public Position(string id, long code, string assetPairId, decimal volume, string accountId,
@@ -197,7 +200,7 @@ namespace MarginTrading.Backend.Core.Orders
             FxToAssetPairDirection = fxToAssetPairDirection;
             AdditionalInfo = additionalInfo;
             // ReSharper restore VirtualMemberCallInConstructor
-            FplData = new FplData {ActualHash = 1};
+            FplData = new FplData { ActualHash = 1 };
             ForceOpen = forceOpen;
         }
 
@@ -248,7 +251,7 @@ namespace MarginTrading.Backend.Core.Orders
 
         public void AddRelatedOrder(Order order)
         {
-            var info = new RelatedOrderInfo {Type = order.OrderType, Id = order.Id};
+            var info = new RelatedOrderInfo { Type = order.OrderType, Id = order.Id };
 
             if (!RelatedOrders.Contains(info))
                 RelatedOrders = RelatedOrders.Add(info);
@@ -290,6 +293,7 @@ namespace MarginTrading.Backend.Core.Orders
             Volume = Volume > 0 ? Volume - closedVolume : Volume + closedVolume;
             CloseTrades = CloseTrades.Add(tradeId);
             ChargedPnL -= chargedPnl;
+            FplData.ActualHash++;
         }
 
         #endregion Actions
