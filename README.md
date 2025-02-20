@@ -322,23 +322,6 @@ AccountMarginEventsBroker settings schema is:
   "ASPNETCORE_ENVIRONMENT": "String",
   "ENVIRONMENT": "String",
   "IsLive": "Boolean",
-  "MtBrokerSettings": {
-    "Db": {
-      "ConnString": "String",
-      "StorageMode": "String"
-    },
-    "MtRabbitMqConnString": "String",
-    "RabbitMqQueues": {
-      "AccountMarginEvents": {
-        "ExchangeName": "String"
-      }
-    }
-  },
-  "MtBrokersLogs": {
-    "LogsConnString": "String",
-    "StorageMode": "String",
-    "UseSerilog": "Boolean"
-  },
   "serilog": {
     "Enrich": [
       "String"
