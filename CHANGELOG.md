@@ -1,3 +1,8 @@
+## 2.38.2 - Nova 2. Delivery 49. Hotfix 2 (February 19, 2025)
+### What's changed
+* LT-6057: Increment ActualHash in FplData when partially closing position
+
+
 ## 2.38.1 - Nova 2. Delivery 49. Hotfix 1 (February 17, 2025)
 ### What's changed
 * LT-6052: Don't use settingsService explicitly in AccountMarginEventsBroker

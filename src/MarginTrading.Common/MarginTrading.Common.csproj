@@ -6,7 +6,7 @@
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-    <Version>2.38.1</Version>
+    <Version>2.38.2</Version>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
   <PropertyGroup>
@@ -15,7 +15,7 @@
   <ItemGroup>
     <PackageReference Include="AutoMapper" />
     <PackageReference Include="Lykke.Snow.Common" />
-    <PackageReference Include="LykkeBiz.RabbitMqBroker" />
+    <PackageReference Include="LykkeBiz.MarginTrading.BrokerBase" />
     <PackageReference Include="Lykke.Service.ClientAccount.Client" />
     <PackageReference Include="LykkeBiz.SettingsReader" />
     <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
