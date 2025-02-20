@@ -15,7 +15,7 @@
   <ItemGroup>
     <PackageReference Include="AutoMapper" />
     <PackageReference Include="Lykke.Snow.Common" />
-    <PackageReference Include="LykkeBiz.RabbitMqBroker" />
+    <PackageReference Include="LykkeBiz.MarginTrading.BrokerBase" />
     <PackageReference Include="Lykke.Service.ClientAccount.Client" />
     <PackageReference Include="LykkeBiz.SettingsReader" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" />
