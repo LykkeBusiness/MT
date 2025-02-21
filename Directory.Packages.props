@@ -33,6 +33,7 @@
     <PackageVersion Include="LykkeBiz.Logs.MsSql" Version="4.0.0" />
     <PackageVersion Include="LykkeBiz.Logs.Serilog" Version="3.3.3" />
     <PackageVersion Include="LykkeBiz.MarginTrading.BrokerBase" Version="8.11.3" />
+    <PackageVersion Include="LykkeBiz.RabbitMqBroker" Version="16.3.0" />
     <PackageVersion Include="LykkeBiz.Messaging.RabbitMq" Version="10.0.1" />
     <PackageVersion Include="LykkeBiz.SettingsReader" Version="9.3.0" />
     <PackageVersion Include="LykkeBiz.Snow.Cqrs" Version="7.0.1" />
