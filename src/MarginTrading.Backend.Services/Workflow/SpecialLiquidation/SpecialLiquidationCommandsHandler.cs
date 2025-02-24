@@ -80,7 +80,7 @@ namespace MarginTrading.Backend.Services.Workflow.SpecialLiquidation
             _ordersCache = ordersCache;
             _rfqPauseService = rfqPauseService;
         }
-        
+
         [UsedImplicitly]
         private async Task Handle(StartSpecialLiquidationInternalCommand command, IEventPublisher publisher)
         {
@@ -92,10 +92,10 @@ namespace MarginTrading.Backend.Services.Workflow.SpecialLiquidation
                     CreationTime = _dateService.Now(),
                     Reason = "Special liquidation is disabled in settings",
                 });
-                
+
                 return;
             }
-            
+
             //validate the list of positions contain only the same instrument
             var positions = _ordersCache.GetPositions().Where(x => command.PositionIds.Contains(x.Id)).ToList();
 
@@ -114,7 +114,7 @@ namespace MarginTrading.Backend.Services.Workflow.SpecialLiquidation
 
                 positions = positions.Where(x => x.AccountId == command.AccountId).ToList();
             }
-            
+
             if (positions.Select(x => x.AssetPairId).Distinct().Count() > 1)
             {
                 publisher.PublishEvent(new SpecialLiquidationFailedEvent
@@ -123,10 +123,10 @@ namespace MarginTrading.Backend.Services.Workflow.SpecialLiquidation
                     CreationTime = _dateService.Now(),
                     Reason = "The list of positions is of different instruments",
                 });
-                
+
                 return;
             }
-            
+
             // excluding positions which have already been used for Special Liquidation
             var alreadyUsedPositionIds = (await _operationExecutionInfoRepository
                     .FilterPositionsInSpecialLiquidationAsync(positions.Select(p => p.Id))
@@ -150,7 +150,7 @@ namespace MarginTrading.Backend.Services.Workflow.SpecialLiquidation
                     CreationTime = _dateService.Now(),
                     Reason = "No positions to liquidate",
                 });
-                
+
                 return;
             }
 
@@ -174,7 +174,7 @@ namespace MarginTrading.Backend.Services.Workflow.SpecialLiquidation
                     CreationTime = _dateService.Now(),
                     Reason = $"Asset pair {assetPairId} is discontinued",
                 });
-                
+
                 return;
             }
 
@@ -206,16 +206,16 @@ namespace MarginTrading.Backend.Services.Workflow.SpecialLiquidation
                     CreationTime = _dateService.Now(),
                     Instrument = positions.FirstOrDefault()?.AssetPairId,
                 });
-                
+
                 _chaosKitty.Meow(command.OperationId);
 
                 await _operationExecutionInfoRepository.Save(executionInfo);
             }
         }
-        
+
         [UsedImplicitly]
         private async Task Handle(StartSpecialLiquidationCommand command, IEventPublisher publisher)
-        {   
+        {
             if (!_marginTradingSettings.SpecialLiquidation.Enabled)
             {
                 publisher.PublishEvent(new SpecialLiquidationFailedEvent
@@ -224,12 +224,12 @@ namespace MarginTrading.Backend.Services.Workflow.SpecialLiquidation
                     CreationTime = _dateService.Now(),
                     Reason = "Special liquidation is disabled in settings",
                 });
-                
+
                 return;
             }
-            
+
             //Validate that market is closed for instrument .. only in ExchangeConnector == Real mode
-            if (_marginTradingSettings.ExchangeConnector == ExchangeConnectorType.RealExchangeConnector 
+            if (_marginTradingSettings.ExchangeConnector == ExchangeConnectorType.RealExchangeConnector
                 && !_assetPairDayOffService.IsAssetTradingDisabled(command.Instrument))
             {
                 publisher.PublishEvent(new SpecialLiquidationFailedEvent
@@ -273,7 +273,7 @@ namespace MarginTrading.Backend.Services.Workflow.SpecialLiquidation
                 });
                 return;
             }
-            
+
             var (executionInfo, _) = await _operationExecutionInfoRepository.GetOrAddAsync(
                 operationName: SpecialLiquidationSaga.Name,
                 operationId: command.OperationId,
@@ -301,7 +301,7 @@ namespace MarginTrading.Backend.Services.Workflow.SpecialLiquidation
                     CreationTime = _dateService.Now(),
                     Instrument = command.Instrument,
                 });
-                
+
                 _chaosKitty.Meow(command.OperationId);
 
                 await _operationExecutionInfoRepository.Save(executionInfo);
@@ -324,7 +324,7 @@ namespace MarginTrading.Backend.Services.Workflow.SpecialLiquidation
                         $"Price for special liquidation {command.OperationId} has already been requested. State: {executionInfo.Data.State.ToString()}. Skipping timeout event.");
                     return CommandHandlingResult.Ok();
                 }
-                
+
                 if (executionInfo.Data.RequestNumber > command.RequestNumber)
                 {
                     await _log.WriteInfoAsync(nameof(SpecialLiquidationCommandsHandler), nameof(GetPriceForSpecialLiquidationTimeoutInternalCommand),
@@ -350,7 +350,7 @@ namespace MarginTrading.Backend.Services.Workflow.SpecialLiquidation
         }
 
         /// <summary>
-        /// Special handler sends API request to close positions 
+        /// Special handler sends API request to close positions
         /// </summary>
         [UsedImplicitly]
         private async Task Handle(ExecuteSpecialLiquidationOrderCommand command, IEventPublisher publisher)
@@ -365,16 +365,16 @@ namespace MarginTrading.Backend.Services.Workflow.SpecialLiquidation
             }
 
             await _log.WriteInfoAsync(nameof(SpecialLiquidationCommandsHandler),
-                nameof(ExecuteSpecialLiquidationOrderCommand), 
-                command.ToJson(), 
+                nameof(ExecuteSpecialLiquidationOrderCommand),
+                command.ToJson(),
                 "Checking if position special liquidation should be failed");
             if (!string.IsNullOrEmpty(executionInfo.Data.CausationOperationId))
             {
                 await _log.WriteInfoAsync(nameof(SpecialLiquidationCommandsHandler),
-                    nameof(ExecuteSpecialLiquidationOrderCommand), 
-                    command.ToJson(), 
+                    nameof(ExecuteSpecialLiquidationOrderCommand),
+                    command.ToJson(),
                     "Special liquidation is caused by regular liquidation, checking liquidation type.");
-                
+
                 var liquidationInfo = await _operationExecutionInfoRepository.GetAsync<LiquidationOperationData>(
                     operationName: LiquidationSaga.OperationName,
                     id: executionInfo.Data.CausationOperationId);
@@ -382,8 +382,8 @@ namespace MarginTrading.Backend.Services.Workflow.SpecialLiquidation
                 if (liquidationInfo == null)
                 {
                     await _log.WriteInfoAsync(nameof(SpecialLiquidationCommandsHandler),
-                        nameof(ExecuteSpecialLiquidationOrderCommand), 
-                        command.ToJson(), 
+                        nameof(ExecuteSpecialLiquidationOrderCommand),
+                        command.ToJson(),
                         "Regular liquidation does not exist, position close will not be failed.");
                 }
                 else
@@ -391,8 +391,8 @@ namespace MarginTrading.Backend.Services.Workflow.SpecialLiquidation
                     if (liquidationInfo.Data.LiquidationType == LiquidationType.Forced)
                     {
                         await _log.WriteInfoAsync(nameof(SpecialLiquidationCommandsHandler),
-                            nameof(ExecuteSpecialLiquidationOrderCommand), 
-                            command.ToJson(), 
+                            nameof(ExecuteSpecialLiquidationOrderCommand),
+                            command.ToJson(),
                             "Regular liquidation type is Forced (Close All), position close will not be failed.");
                     }
                     else
@@ -412,14 +412,14 @@ namespace MarginTrading.Backend.Services.Workflow.SpecialLiquidation
                                 nameof(ExecuteSpecialLiquidationOrderCommand),
                                 new {accountId = account.Id, accountLevel = level.ToString()}.ToJson(),
                                 $"Unable to execute special liquidation since account level is not {ValidAccountLevel.ToString()}.");
-                    
+
                             publisher.PublishEvent(new SpecialLiquidationCancelledEvent()
                             {
                                 OperationId = command.OperationId,
                                 CreationTime = _dateService.Now(),
                                 Reason = $"Account level is not {ValidAccountLevel.ToString()}.",
                             });
-                    
+
                             return;
                         }
                     }
@@ -445,7 +445,7 @@ namespace MarginTrading.Backend.Services.Workflow.SpecialLiquidation
                 {
                     var operationInfo = new TradeOperationInfo
                     {
-                        OperationId = executionInfo.Id, 
+                        OperationId = executionInfo.Id,
                         RequestNumber = executionInfo.Data.RequestNumber
                     };
 
@@ -459,7 +459,7 @@ namespace MarginTrading.Backend.Services.Workflow.SpecialLiquidation
                                                               // TODO: create a separate field and remove hack (?)
                         instrument: command.Instrument,
                         price: (double?)command.Price,
-                        orderId: AlphanumericIdentityGenerator.GenerateAlphanumericId(),
+                        orderId: AlphanumericIdentityGenerator.Generate(),
                         modality: executionInfo.Data.RequestedFromCorporateActions ? TradeRequestModality.Liquidation_CorporateAction : TradeRequestModality.Liquidation_MarginCall);
 
                     try
@@ -481,7 +481,7 @@ namespace MarginTrading.Backend.Services.Workflow.SpecialLiquidation
                         {
                             throw new Exception("Execution price is equal to 0.");
                         }
-                        
+
                         publisher.PublishEvent(new SpecialLiquidationOrderExecutedEvent
                         {
                             OperationId = command.OperationId,
@@ -506,7 +506,7 @@ namespace MarginTrading.Backend.Services.Workflow.SpecialLiquidation
                             exception);
                     }
                 }
-                
+
                 await _operationExecutionInfoRepository.Save(executionInfo);
             }
         }
@@ -531,18 +531,18 @@ namespace MarginTrading.Backend.Services.Workflow.SpecialLiquidation
                     var modality = executionInfo.Data.RequestedFromCorporateActions
                         ? OrderModality.Liquidation_CorporateAction
                         : OrderModality.Liquidation_MarginCall;
-                    
+
                     //close positions with the quotes from gavel
                     await _tradingEngine.LiquidatePositionsUsingSpecialWorkflowAsync(
                         me: new SpecialLiquidationMatchingEngine(command.Price, command.MarketMakerId,
-                            command.ExternalOrderId, command.ExternalExecutionTime), 
+                            command.ExternalOrderId, command.ExternalExecutionTime),
                         positionIds: executionInfo.Data.PositionIds.ToArray(),
                         executionInfo.Data.AdditionalInfo,
                         executionInfo.Data.OriginatorType,
                         modality);
-                
+
                     _chaosKitty.Meow(command.OperationId);
-                    
+
                     publisher.PublishEvent(new SpecialLiquidationFinishedEvent
                     {
                         OperationId = command.OperationId,
@@ -559,7 +559,7 @@ namespace MarginTrading.Backend.Services.Workflow.SpecialLiquidation
                         CanRetryPriceRequest = true
                     });
                 }
-                
+
                 _chaosKitty.Meow(command.OperationId);
 
                 await _operationExecutionInfoRepository.Save(executionInfo);
@@ -572,12 +572,12 @@ namespace MarginTrading.Backend.Services.Workflow.SpecialLiquidation
             var executionInfo = await _operationExecutionInfoRepository.GetAsync<SpecialLiquidationOperationData>(
                 operationName: SpecialLiquidationSaga.Name,
                 id: command.OperationId);
-            
+
             if (executionInfo?.Data == null)
             {
                 return;
             }
-            
+
             if (executionInfo.Data.SwitchState(executionInfo.Data.State,//from any state
                 SpecialLiquidationOperationState.OnTheWayToFail))
             {
@@ -588,7 +588,7 @@ namespace MarginTrading.Backend.Services.Workflow.SpecialLiquidation
                     Reason = command.Reason,
                     CanRetryPriceRequest = command.CanRetryPriceRequest ?? false
                 });
-                
+
                 _chaosKitty.Meow(command.OperationId);
 
                 await _operationExecutionInfoRepository.Save(executionInfo);
@@ -601,7 +601,7 @@ namespace MarginTrading.Backend.Services.Workflow.SpecialLiquidation
             var executionInfo = await _operationExecutionInfoRepository.GetAsync<SpecialLiquidationOperationData>(
                 operationName: SpecialLiquidationSaga.Name,
                 id: command.OperationId);
-            
+
             if (executionInfo?.Data == null)
             {
                 return;
@@ -613,9 +613,9 @@ namespace MarginTrading.Backend.Services.Workflow.SpecialLiquidation
                 .Where(p => executionInfo.Data.PositionIds.Contains(p.Id))
                 .Where(p => p.Status == PositionStatus.Closing)
                 .ForEach(p => p.CancelClosing(_dateService.Now()));
-            
+
             _chaosKitty.Meow(command.OperationId);
-            
+
             publisher.PublishEvent(new SpecialLiquidationCancelledEvent
             {
                 OperationId = command.OperationId,
@@ -631,7 +631,7 @@ namespace MarginTrading.Backend.Services.Workflow.SpecialLiquidation
             var executionInfo = await _operationExecutionInfoRepository.GetAsync<SpecialLiquidationOperationData>(
                 operationName: SpecialLiquidationSaga.Name,
                 id: command.OperationId);
-            
+
             if (executionInfo?.Data == null)
             {
                 return;
@@ -641,7 +641,7 @@ namespace MarginTrading.Backend.Services.Workflow.SpecialLiquidation
                 .GetPositionsByAccountIds(executionInfo.Data.AccountId)
                 .Where(p => executionInfo.Data.PositionIds.Contains(p.Id))
                 .ToList();
-            
+
             if (positions.Any())
                 await _tradingEngine.ClosePositionsGroupAsync(positions, command.OperationId, OriginatorType.System);
         }
@@ -658,14 +658,14 @@ namespace MarginTrading.Backend.Services.Workflow.SpecialLiquidation
             externalProviderId = externalProviderIds.Single();
             return true;
         }
-        
+
         [UsedImplicitly]
         private async Task Handle(ResumePausedSpecialLiquidationCommand command, IEventPublisher publisher)
         {
             var executionInfo = await _operationExecutionInfoRepository.GetAsync<SpecialLiquidationOperationData>(
                 operationName: SpecialLiquidationSaga.Name,
                 id: command.OperationId);
-            
+
             if (executionInfo?.Data == null)
             {
                 return;
