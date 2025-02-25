@@ -5,7 +5,6 @@ using Autofac;
 
 using MarginTrading.Backend.Services.AssetPairs;
 using MarginTrading.Backend.Services.Caches;
-using MarginTrading.Backend.Services.Infrastructure;
 using MarginTrading.Backend.Services.MatchingEngines;
 using MarginTrading.Backend.Services.Quotes;
 using MarginTrading.Backend.Services.TradingConditions;
@@ -39,10 +38,6 @@ namespace MarginTrading.Backend.Services.Modules
                 .AsSelf()
                 .As<IStartable>()
                 .As<IAssetPairsManager>()
-                .SingleInstance();
-
-            builder.RegisterType<PendingOrdersCleaningService>()
-                .AsSelf()
                 .SingleInstance();
 
             builder.RegisterType<QuotesMonitor>()

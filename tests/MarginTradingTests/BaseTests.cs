@@ -210,7 +210,6 @@ namespace MarginTradingTests
                 StartService<TradingInstrumentsManager>();
                 StartService<AccountManager>();
                 StartService<OrderCacheManager>();
-                StartService<PendingOrdersCleaningService>();
                 StartService<QuoteCacheService>();
                 StartService<FxRateCacheService>();
             });
