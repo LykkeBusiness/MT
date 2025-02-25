@@ -295,7 +295,6 @@ namespace MarginTrading.Backend
 
                 StartService<AccountManager>();
                 StartService<OrderCacheManager>();
-                StartService<PendingOrdersCleaningService>();
             });
         }
 
