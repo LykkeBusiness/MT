@@ -6,9 +6,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Common;
 using Common.Log;
+
 using JetBrains.Annotations;
+
 using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Exceptions;
 using MarginTrading.Backend.Core.Messages;
@@ -25,42 +28,44 @@ namespace MarginTrading.Backend.Services.Quotes
         private readonly IMarginTradingBlobRepository _blobRepository;
         private readonly IExternalOrderbookService _externalOrderbookService;
         private readonly OrdersCache _ordersCache;
-        
+
         private Dictionary<string, InstrumentBidAskPair> _cache = new Dictionary<string, InstrumentBidAskPair>();
-        
+
         private readonly ReaderWriterLockSlim _lockSlim = new ReaderWriterLockSlim();
 
         private const string BlobName = "Quotes";
 
-        public QuoteCacheService(ILog log, 
+        public QuoteCacheService(ILog log,
             IMarginTradingBlobRepository blobRepository,
             IExternalOrderbookService externalOrderbookService,
             MarginTradingSettings marginTradingSettings,
-            OrdersCache ordersCache) 
-            : base(nameof(QuoteCacheService), 
-                marginTradingSettings.BlobPersistence.QuotesDumpPeriodMilliseconds, 
+            OrdersCache ordersCache)
+            : base(nameof(QuoteCacheService),
+                marginTradingSettings.BlobPersistence.QuotesDumpPeriodMilliseconds,
                 log)
         {
             _log = log;
             _blobRepository = blobRepository;
             _externalOrderbookService = externalOrderbookService;
             _ordersCache = ordersCache;
+
+            DisableTelemetry();
         }
 
         public override void Start()
         {
             _log.WriteInfo(nameof(QuoteCacheService), nameof(Start), "Quote cache init started.");
-            
+
             var blobQuotes =
                 _blobRepository
                     .Read<Dictionary<string, InstrumentBidAskPair>>(LykkeConstants.StateBlobContainer, BlobName)
                     ?.ToDictionary(d => d.Key, d => d.Value) ??
                 new Dictionary<string, InstrumentBidAskPair>();
-            _log.WriteInfo(nameof(QuoteCacheService), nameof(Start), 
+            _log.WriteInfo(nameof(QuoteCacheService), nameof(Start),
                 $"{blobQuotes.Count} quotes read from blob.");
-            
+
             var orderBooks = _externalOrderbookService.GetOrderBooks();
-            _log.WriteInfo(nameof(QuoteCacheService), nameof(Start), 
+            _log.WriteInfo(nameof(QuoteCacheService), nameof(Start),
                 $"{orderBooks.Count} order books read from {nameof(IExternalOrderbookService)}.");
 
             var result = new Dictionary<string, InstrumentBidAskPair>();
@@ -80,8 +85,8 @@ namespace MarginTrading.Backend.Services.Quotes
             }
 
             _cache = result;
-            
-            _log.WriteInfo(nameof(QuoteCacheService), nameof(Start), 
+
+            _log.WriteInfo(nameof(QuoteCacheService), nameof(Start),
                 $"Quote cache initialised with total {result.Count} items.");
 
             base.Start();
@@ -96,9 +101,9 @@ namespace MarginTrading.Backend.Services.Quotes
         {
             if (Working)
             {
-                DumpToRepository().Wait();    
+                DumpToRepository().Wait();
             }
-            
+
             base.Stop();
         }
 
@@ -154,7 +159,7 @@ namespace MarginTrading.Backend.Services.Quotes
         public RemoveQuoteError RemoveQuote(string assetPairId)
         {
             #region Validation
-            
+
             var positions = _ordersCache.Positions.GetPositionsByInstrument(assetPairId).ToList();
             if (positions.Any())
             {
@@ -162,7 +167,7 @@ namespace MarginTrading.Backend.Services.Quotes
                     $"Cannot delete [{assetPairId}] best price because there are {positions.Count} opened positions.",
                     RemoveQuoteErrorCode.PositionsOpened);
             }
-            
+
             var orders = _ordersCache.Active.GetOrdersByInstrument(assetPairId).ToList();
             if (orders.Any())
             {
@@ -170,9 +175,9 @@ namespace MarginTrading.Backend.Services.Quotes
                     $"Cannot delete [{assetPairId}] best price because there are {orders.Count} active orders.",
                     RemoveQuoteErrorCode.OrdersOpened);
             }
-            
+
             #endregion
-            
+
             _lockSlim.EnterWriteLock();
             try
             {
