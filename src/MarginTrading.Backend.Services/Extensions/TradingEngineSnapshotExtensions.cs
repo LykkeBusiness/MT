@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+
 using Common;
+
 using MarginTrading.Backend.Contracts.Account;
 using MarginTrading.Backend.Contracts.Orders;
 using MarginTrading.Backend.Contracts.Positions;
@@ -46,7 +48,7 @@ namespace MarginTrading.Backend.Services.Extensions
 
             return GetPositions<Position>(snapshot);
         }
-        
+
         public static List<AccountStatContract> GetAccounts(this TradingEngineSnapshot snapshot)
         {
             return GetAccounts<AccountStatContract>(snapshot);
@@ -56,17 +58,17 @@ namespace MarginTrading.Backend.Services.Extensions
         {
             if (snapshot.Status != SnapshotStatus.Draft)
                 throw new ArgumentOutOfRangeException(nameof(snapshot.Status), DraftStatusMessage);
-            
+
             return GetAccounts<MarginTradingAccount>(snapshot);
         }
-        
+
         public static Dictionary<string, BestPriceContract> GetBestFxPrices(this TradingEngineSnapshot snapshot)
         {
             return string.IsNullOrWhiteSpace(snapshot.BestFxPricesJson)
                 ? new Dictionary<string, BestPriceContract>()
                 : snapshot.BestFxPricesJson.DeserializeJson<Dictionary<string, BestPriceContract>>();
         }
-        
+
         public static Dictionary<string, BestPriceContract> GetBestTradingPrices(this TradingEngineSnapshot snapshot)
         {
             return string.IsNullOrWhiteSpace(snapshot.BestTradingPricesJson)
@@ -74,38 +76,29 @@ namespace MarginTrading.Backend.Services.Extensions
                 : snapshot.BestTradingPricesJson.DeserializeJson<Dictionary<string, BestPriceContract>>();
         }
 
-        public static bool Initialized(this IDraftSnapshotKeeper keeper)
-        {
-            try
-            {
-                return keeper != null && keeper.TradingDay != default(DateTime);
-            }
-            catch (InvalidOperationException)
-            {
-                return false;
-            }
-        }
+        public static bool Initialized(this IDraftSnapshotKeeper keeper) =>
+            keeper.TradingDay != null && keeper.TradingDay != default;
 
         public static bool IsPlatformClosureEvent(this MarketStateChangedEvent evt) =>
             evt.Id == LykkeConstants.PlatformMarketIdentifier && !evt.IsEnabled;
-        
+
         public static bool IsNotPlatformClosureEvent(this MarketStateChangedEvent evt) =>
             !evt.IsPlatformClosureEvent();
-        
+
         private static List<T> GetOrders<T>(this TradingEngineSnapshot snapshot)
         {
             return string.IsNullOrWhiteSpace(snapshot.OrdersJson)
                 ? new List<T>()
                 : snapshot.OrdersJson.DeserializeJson<List<T>>();
         }
-        
+
         private static List<T> GetPositions<T>(this TradingEngineSnapshot snapshot)
         {
             return string.IsNullOrWhiteSpace(snapshot.PositionsJson)
                 ? new List<T>()
                 : snapshot.PositionsJson.DeserializeJson<List<T>>();
         }
-        
+
         private static List<T> GetAccounts<T>(this TradingEngineSnapshot snapshot)
         {
             return string.IsNullOrWhiteSpace(snapshot.AccountsJson)

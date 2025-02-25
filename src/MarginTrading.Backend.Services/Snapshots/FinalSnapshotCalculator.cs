@@ -1,6 +1,7 @@
 // Copyright (c) 2019 Lykke Corp.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -16,6 +17,7 @@ using MarginTrading.Backend.Core.Exceptions;
 using MarginTrading.Backend.Core.Orders;
 using MarginTrading.Backend.Core.Snapshots;
 using MarginTrading.Backend.Core.Trading;
+using MarginTrading.Backend.Services.Extensions;
 using MarginTrading.Backend.Services.Mappers;
 using MarginTrading.Common.Services;
 
@@ -44,29 +46,32 @@ namespace MarginTrading.Backend.Services.Snapshots
         }
 
         /// <inheritdoc />
-        public async Task<TradingEngineSnapshot> RunAsync(IEnumerable<ClosingFxRate> fxRates, 
-            IEnumerable<ClosingAssetPrice> cfdQuotes, 
+        public async Task<TradingEngineSnapshot> RunAsync(IEnumerable<ClosingFxRate> fxRates,
+            IEnumerable<ClosingAssetPrice> cfdQuotes,
             string correlationId,
             IDraftSnapshotKeeper draftSnapshotKeeper = null)
         {
             var keeper = draftSnapshotKeeper ?? _draftSnapshotKeeper;
-            
+
+            if (!keeper.Initialized())
+                throw new InvalidOperationException("Draft snapshot is not initialized");
+
             var fxRatesList = fxRates?.ToList();
             var cfdQuotesList = cfdQuotes?.ToList();
-            
+
             if (fxRatesList == null || !fxRatesList.Any())
                 throw new EmptyPriceUploadException();
-            
+
             if (cfdQuotesList == null || !cfdQuotesList.Any())
                 throw new EmptyPriceUploadException();
-            
+
             var positions = keeper.GetPositions();
             var accounts = (await keeper.GetAccountsAsync()).ToImmutableArray();
             foreach (var closingFxRate in fxRatesList)
             {
                 ApplyFxRate(positions, accounts, closingFxRate.ClosePrice, closingFxRate.AssetId);
             }
-            
+
             var orders = keeper.GetAllOrders();
             foreach (var closingAssetPrice in cfdQuotesList)
             {
@@ -83,7 +88,7 @@ namespace MarginTrading.Backend.Services.Snapshots
                 cfdQuotesList.Select(q => q.ToContract(quotesTimestamp))
             );
 
-            return new TradingEngineSnapshot(keeper.TradingDay,
+            return new TradingEngineSnapshot(keeper.TradingDay.Value,
                 correlationId,
                 keeper.Timestamp,
                 MapToFinalJson(orders, keeper),
@@ -94,32 +99,32 @@ namespace MarginTrading.Backend.Services.Snapshots
                 SnapshotStatus.Final);
         }
 
-        private void ApplyFxRate(ImmutableArray<Position> positionsProvider, 
-            ImmutableArray<MarginTradingAccount> accountsProvider, 
-            decimal closePrice, 
+        private void ApplyFxRate(ImmutableArray<Position> positionsProvider,
+            ImmutableArray<MarginTradingAccount> accountsProvider,
+            decimal closePrice,
             string instrument)
         {
             if (closePrice == 0)
                 return;
-            
+
             var positions = positionsProvider.Where(p => p.FxAssetPairId == instrument);
 
             var positionsByAccounts = positions
                 .GroupBy(p => p.AccountId)
                 .ToDictionary(p => p.Key, p => p.ToArray());
-            
+
             foreach (var accountPositions in positionsByAccounts)
             {
                 foreach (var position in accountPositions.Value)
                 {
-                    var fxPrice = _cfdCalculatorService.GetPrice(closePrice, 
-                        closePrice, 
+                    var fxPrice = _cfdCalculatorService.GetPrice(closePrice,
+                        closePrice,
                         position.FxToAssetPairDirection,
                         position.Volume * (position.ClosePrice - position.OpenPrice) > 0);
 
                     position.UpdateCloseFxPriceWithoutAccountUpdate(fxPrice);
                 }
-                
+
                 var snapshotAccount = accountsProvider.SingleOrDefault(a => a.Id == accountPositions.Key);
 
                 if (snapshotAccount == null)
@@ -127,22 +132,22 @@ namespace MarginTrading.Backend.Services.Snapshots
                     _log.WriteWarning(nameof(ApplyFxRate), null, $"Couldn't find account with id [{accountPositions.Key}] to apply fx rate update");
                     continue;
                 }
-                
+
                 snapshotAccount.CacheNeedsToBeUpdated();
             }
         }
 
-        private void ApplyCfdQuote(ImmutableArray<Position> positionsProvider, 
-            ImmutableArray<Order> ordersProvider, 
+        private void ApplyCfdQuote(ImmutableArray<Position> positionsProvider,
+            ImmutableArray<Order> ordersProvider,
             ImmutableArray<MarginTradingAccount> accountsProvider,
-            decimal closePrice, 
+            decimal closePrice,
             string instrument)
         {
             if (closePrice == 0)
                 return;
-            
+
             var positions = positionsProvider.Where(p => p.AssetPairId == instrument);
-            
+
             var positionsByAccounts = positions
                 .GroupBy(p => p.AccountId)
                 .ToDictionary(p => p.Key, p => p.ToArray());
@@ -152,29 +157,29 @@ namespace MarginTrading.Backend.Services.Snapshots
                 foreach (var position in accountPositions.Value)
                 {
                     position.UpdateClosePriceWithoutAccountUpdate(closePrice);
-                    
+
                     // update trailing stops
                     foreach (var relatedOrderId in position.GetTrailingStopOrderIds())
                     {
                         var relatedOrder = ordersProvider.SingleOrDefault(o => o.Id == relatedOrderId);
-                        
+
                         if (relatedOrder == null)
                             continue;
 
                         var oldPrice = relatedOrder.Price;
 
-                        relatedOrder.UpdateTrailingStopWithClosePrice(position.ClosePrice,() => _dateService.Now());
+                        relatedOrder.UpdateTrailingStopWithClosePrice(position.ClosePrice, () => _dateService.Now());
 
                         if (oldPrice != relatedOrder.Price)
                         {
                             _log.WriteInfoAsync(nameof(FinalSnapshotCalculator), nameof(ApplyCfdQuote),
                                 $"Price for trailing stop order {relatedOrder.Id} changed. " +
                                 $"Old price: {oldPrice}. " +
-                                $"New price: {relatedOrder.Price}");   
+                                $"New price: {relatedOrder.Price}");
                         }
                     }
                 }
-                
+
                 var snapshotAccount = accountsProvider.SingleOrDefault(a => a.Id == accountPositions.Key);
 
                 if (snapshotAccount == null)
@@ -182,12 +187,12 @@ namespace MarginTrading.Backend.Services.Snapshots
                     _log.WriteWarning(nameof(ApplyFxRate), null, $"Couldn't find account with id [{accountPositions.Key}] to apply cfd quote update");
                     continue;
                 }
-                
+
                 snapshotAccount.CacheNeedsToBeUpdated();
             }
         }
 
-        private static string MapToFinalJson(IList<Order> orders, IOrderReader reader) => 
+        private static string MapToFinalJson(IList<Order> orders, IOrderReader reader) =>
             orders.Select(o => o.ConvertToSnapshotContract(reader)).ToJson();
 
         private static string MapToFinalJson(IList<Position> positions, IOrderReader reader) =>

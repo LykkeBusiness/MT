@@ -20,11 +20,11 @@ namespace MarginTrading.Backend.Core
     {
         /// <summary>
         /// The trading day draft trading snapshot is being kept for
-        /// <exception cref="InvalidOperationException">
-        /// When keeper has not been initialized yet
-        /// </exception>
         /// </summary>
-        DateTime TradingDay { get; }
+        /// <remarks>
+        /// When keeper has not been initialized yet, returns null
+        /// </remarks>
+        DateTime? TradingDay { get; }
 
         /// <summary>
         /// The timestamp of the snapshot (when it was created).

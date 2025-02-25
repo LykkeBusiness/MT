@@ -27,47 +27,37 @@ namespace MarginTrading.Backend.Services.Snapshots
     /// Current implementation is not thread safe
     public class DraftSnapshotKeeper : IDraftSnapshotKeeper
     {
-        private DateTime? _tradingDay;
         private DateTime? _timestamp;
-        
+
         [CanBeNull]
         private TradingEngineSnapshot _snapshot;
-        
+
         [CanBeNull]
         private List<Position> _positions;
-        
+
         [CanBeNull]
         private List<Order> _orders;
-        
+
         [CanBeNull]
         private List<MarginTradingAccount> _accounts;
 
-        [CanBeNull] 
+        [CanBeNull]
         private List<BestPriceContract> _fxPrices;
 
-        [CanBeNull] 
+        [CanBeNull]
         private List<BestPriceContract> _cfdQuotes;
-        
+
         private readonly ITradingEngineSnapshotsRepository _tradingEngineSnapshotsRepository;
-        
+
         public DraftSnapshotKeeper(ITradingEngineSnapshotsRepository tradingEngineSnapshotsRepository)
         {
             _tradingEngineSnapshotsRepository = tradingEngineSnapshotsRepository;
         }
-        
+
         #region IDraftSnapshotKeeper implementation
 
         /// <inheritdoc />
-        public DateTime TradingDay
-        {
-            get
-            {
-                if (!_tradingDay.HasValue)
-                    throw new InvalidOperationException("The draft snapshot provider has not been initialized yet");
-
-                return _tradingDay.Value;
-            }
-        }
+        public DateTime? TradingDay { get; private set; }
 
         /// <inheritdoc />
         public DateTime Timestamp
@@ -76,7 +66,7 @@ namespace MarginTrading.Backend.Services.Snapshots
             {
                 if (_timestamp.HasValue)
                     return _timestamp.Value;
-                
+
                 EnsureSnapshotLoadedOrThrowAsync().GetAwaiter().GetResult();
 
                 _timestamp = _snapshot.Timestamp;
@@ -92,7 +82,7 @@ namespace MarginTrading.Backend.Services.Snapshots
             {
                 if (_fxPrices != null)
                     return _fxPrices;
-                
+
                 EnsureSnapshotLoadedOrThrowAsync().GetAwaiter().GetResult();
 
                 _fxPrices = _snapshot.GetBestFxPrices().Values.ToList();
@@ -108,11 +98,11 @@ namespace MarginTrading.Backend.Services.Snapshots
             {
                 if (_cfdQuotes != null)
                     return _cfdQuotes;
-                
+
                 EnsureSnapshotLoadedOrThrowAsync().GetAwaiter().GetResult();
 
                 _cfdQuotes = _snapshot.GetBestTradingPrices().Values.ToList();
-                
+
                 return _cfdQuotes;
             }
         }
@@ -120,11 +110,11 @@ namespace MarginTrading.Backend.Services.Snapshots
         /// <inheritdoc />
         public IDraftSnapshotKeeper Init(DateTime tradingDay)
         {
-            if (_tradingDay.HasValue && _tradingDay != tradingDay)
+            if (TradingDay.HasValue && TradingDay != tradingDay)
                 throw new InvalidOperationException(
-                    $"The draft snapshot provider has already been initialized with trading day [{_tradingDay}]");
+                    $"The draft snapshot provider has already been initialized with trading day [{TradingDay}]");
 
-            _tradingDay = tradingDay;
+            TradingDay = tradingDay;
 
             return this;
         }
@@ -134,11 +124,11 @@ namespace MarginTrading.Backend.Services.Snapshots
         {
             if (_snapshot != null)
                 return true;
-            
-            if (!_tradingDay.HasValue)
+
+            if (!TradingDay.HasValue)
                 throw new InvalidOperationException("The draft snapshot provider has not been initialized yet");
 
-            return await _tradingEngineSnapshotsRepository.DraftExistsAsync(_tradingDay.Value);
+            return await _tradingEngineSnapshotsRepository.DraftExistsAsync(TradingDay.Value);
         }
 
         /// <inheritdoc />
@@ -153,15 +143,15 @@ namespace MarginTrading.Backend.Services.Snapshots
 
             return _accounts;
         }
-        
+
         /// <inheritdoc />
-        public async Task UpdateAsync(ImmutableArray<Position> positions, 
-            ImmutableArray<Order> orders, 
+        public async Task UpdateAsync(ImmutableArray<Position> positions,
+            ImmutableArray<Order> orders,
             ImmutableArray<MarginTradingAccount> accounts,
             IEnumerable<BestPriceContract> fxRates,
             IEnumerable<BestPriceContract> cfdQuotes)
         {
-            if (!_tradingDay.HasValue)
+            if (!TradingDay.HasValue)
                 throw new InvalidOperationException("Unable to update snapshot: the draft snapshot provider has not been initialized yet");
 
             // if there are already positions we can't update them with empty list
@@ -184,7 +174,7 @@ namespace MarginTrading.Backend.Services.Snapshots
                 throw new ArgumentNullException(nameof(accounts), @"Unable to update snapshot: accounts list is empty");
 
             await EnsureSnapshotLoadedOrThrowAsync();
-            
+
             var fxPrices = fxRates?.ToDictionary(r => r.Id, r => r);
 
             var tradingPrices = cfdQuotes?.ToDictionary(q => q.Id, q => q);
@@ -212,16 +202,16 @@ namespace MarginTrading.Backend.Services.Snapshots
             _fxPrices = null;
             _cfdQuotes = null;
         }
-        
+
         #endregion
-        
+
         #region IOrderReader implementation
         public ImmutableArray<Order> GetAllOrders()
         {
             if (_orders != null)
                 return _orders.ToImmutableArray();
-            
-            if (!_tradingDay.HasValue)
+
+            if (!TradingDay.HasValue)
                 throw new InvalidOperationException("Unable to provide orders: the draft snapshot provider has not been initialized yet");
 
             EnsureSnapshotLoadedOrThrowAsync().GetAwaiter().GetResult();
@@ -235,8 +225,8 @@ namespace MarginTrading.Backend.Services.Snapshots
         {
             if (_positions != null)
                 return _positions.ToImmutableArray();
-            
-            if (!_tradingDay.HasValue)
+
+            if (!TradingDay.HasValue)
                 throw new InvalidOperationException("Unable to provide positions: the draft snapshot provider has not been initialized yet");
 
             EnsureSnapshotLoadedOrThrowAsync().GetAwaiter().GetResult();
@@ -276,18 +266,18 @@ namespace MarginTrading.Backend.Services.Snapshots
             order = GetAllOrders().SingleOrDefault(o => o.Id == orderId);
             return order != null;
         }
-        
+
         #endregion
-        
+
         private async Task EnsureSnapshotLoadedOrThrowAsync()
         {
             if (_snapshot == null)
             {
-                if (!_tradingDay.HasValue)
+                if (!TradingDay.HasValue)
                     throw new InvalidOperationException("The draft snapshot provider has not been initialized yet");
 
-                _snapshot = await _tradingEngineSnapshotsRepository.GetLastDraftAsync(_tradingDay) ??
-                            throw new TradingSnapshotDraftNotFoundException(_tradingDay.Value);
+                _snapshot = await _tradingEngineSnapshotsRepository.GetLastDraftAsync(TradingDay) ??
+                            throw new TradingSnapshotDraftNotFoundException(TradingDay.Value);
             }
         }
     }
