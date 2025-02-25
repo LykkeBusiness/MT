@@ -4,8 +4,10 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Common;
 using Common.Log;
+
 using MarginTrading.AccountsManagement.Contracts;
 using MarginTrading.AccountsManagement.Contracts.Api;
 using MarginTrading.AccountsManagement.Contracts.Models;
@@ -71,7 +73,7 @@ namespace MarginTrading.Backend.Services.Services
         {
             if (string.IsNullOrWhiteSpace(accountId))
                 throw new ArgumentNullException(nameof(accountId));
-            
+
             var account = GetAccountByIdInternal(accountId);
 
             var result = await _accountsApi.GetDisposableCapital(accountId,
@@ -85,12 +87,12 @@ namespace MarginTrading.Backend.Services.Services
             var retVal = _convertService.Convert<AccountContract, MarginTradingAccount>(accountContract);
             return retVal;
         }
-        
+
         private MarginTradingAccount GetAccountByIdInternal(string accountId)
         {
-            if (!_draftSnapshotKeeper.Initialized()) 
+            if (!_draftSnapshotKeeper.Initialized())
                 return _accountsCacheService.TryGet(accountId);
-            
+
             _log.WriteInfoAsync(nameof(AccountsProvider),
                 nameof(GetAccountById),
                 _draftSnapshotKeeper.TradingDay.ToJson(),
