@@ -234,6 +234,7 @@ namespace MarginTrading.Backend.Services.Modules
 			builder.RegisterType<InMemorySnapshotRequestQueue>()
 				.As<ISnapshotRequestQueue>()
 				.SingleInstance();
+			builder.RegisterDecorator<LoggingSnapshotRequestQueue, ISnapshotRequestQueue>();
 
 			builder.RegisterType<PositionHistoryHandler>()
 				.As<IPositionHistoryHandler>()

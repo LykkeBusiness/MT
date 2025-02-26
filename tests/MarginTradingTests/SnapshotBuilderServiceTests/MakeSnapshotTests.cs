@@ -47,14 +47,15 @@ public class MakeSnapshotTests
         Prop.ForAll((
             from strategy in Gen.Elements(EnvironmentValidationStrategyType.AsSoonAsPossible, EnvironmentValidationStrategyType.WaitPlatformConsistency)
             from status in Gen.Elements(SnapshotStatus.Draft, SnapshotStatus.Final)
+            from initiator in Gen.Elements(SnapshotInitiator.ServiceApi, SnapshotInitiator.EodProcess, SnapshotInitiator.PlatformClosureEvent)
             from tradingDay in Arb.Default.DateTime().Generator
             from correlationId in Arb.Default.String().Generator
-            select (strategy, status, tradingDay, correlationId)).ToArbitrary(),
+            select (strategy, status, initiator, tradingDay, correlationId)).ToArbitrary(),
             t =>
             {
                 using var mock = AutoMock.GetLoose(ConfigureContainer(t.tradingDay));
                 var sut = mock.Create<SnapshotBuilderService>();
-                var summary = sut.MakeSnapshot(t.tradingDay, t.correlationId, t.strategy, t.status).GetAwaiter().GetResult();
+                var summary = sut.MakeSnapshot(t.tradingDay, t.correlationId, t.strategy, t.initiator, t.status).GetAwaiter().GetResult();
                 return summary is not null;
             }).QuickCheckThrowOnFailure();
     }

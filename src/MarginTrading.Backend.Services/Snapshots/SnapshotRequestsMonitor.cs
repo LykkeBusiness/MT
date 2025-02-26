@@ -29,6 +29,7 @@ public sealed class SnapshotRequestsMonitor(
                 request.TradingDay,
                 request.CorrelationId,
                 request.ValidationStrategyType,
+                request.Initiator,
                 request.Status);
 
             queue.Acknowledge(request.Id);

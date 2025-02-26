@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace MarginTrading.Backend.Services.Snapshots;
 
-internal class LoggingSnapshotBuilderService(
+internal sealed class LoggingSnapshotBuilderService(
     ISnapshotBuilderService decoratee,
     ILogger<LoggingSnapshotBuilderService> logger) : ISnapshotBuilderService
 {
@@ -38,25 +38,29 @@ internal class LoggingSnapshotBuilderService(
         DateTime tradingDay,
         string correlationId,
         EnvironmentValidationStrategyType strategyType,
+        SnapshotInitiator initiator,
         SnapshotStatus status = SnapshotStatus.Final)
     {
         logger.LogInformation(
-            "Making snapshot {Status} for {TradingDay}. CorrelationId: {CorrelationId}",
+            "Making snapshot {Status} for {TradingDay}. CorrelationId: {CorrelationId}, Initiator: {Initiator}",
             status,
             tradingDay.ToString("yyyy-MM-dd"),
-            correlationId);
+            correlationId,
+            initiator);
 
         var summary = await decoratee.MakeSnapshot(
             tradingDay,
             correlationId,
             strategyType,
+            initiator,
             status);
 
         logger.LogInformation(
-            "Snapshot {Status} for {TradingDay} was created. CorrelationId: {CorrelationId}",
+            "Snapshot {Status} for {TradingDay} was created. CorrelationId: {CorrelationId}, Initiator: {Initiator}",
             status,
             tradingDay.ToString("yyyy-MM-dd"),
-            correlationId);
+            correlationId,
+            initiator);
         return summary;
     }
 }

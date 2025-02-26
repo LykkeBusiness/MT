@@ -209,6 +209,7 @@ namespace MarginTrading.Backend.Services.AssetPairs
                         Guid.NewGuid(),
                         EnvironmentValidationStrategyType.WaitPlatformConsistency,
                         SnapshotStatus.Draft,
+                        SnapshotInitiator.PlatformClosureEvent,
                         now,
                         now.Date,
                         _identityGenerator.GenerateGuid()));
