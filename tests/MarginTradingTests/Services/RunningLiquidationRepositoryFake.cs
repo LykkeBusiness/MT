@@ -24,6 +24,8 @@ namespace MarginTradingTests.Services
 
         public async IAsyncEnumerable<RunningLiquidation> Get(string[] accountIds)
         {
+            await Task.Delay(1);
+
             foreach (var accountId in accountIds)
             {
                 yield return new RunningLiquidation(accountId, Guid.NewGuid().ToString("N"));
