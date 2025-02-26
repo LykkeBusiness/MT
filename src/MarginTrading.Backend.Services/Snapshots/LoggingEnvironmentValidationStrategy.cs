@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 
 namespace MarginTrading.Backend.Services.Snapshots;
 
-public class LoggingEnvironmentValidationStrategy(
+internal sealed class LoggingEnvironmentValidationStrategy(
     ILogger<LoggingEnvironmentValidationStrategy> logger,
     IEnvironmentValidationStrategy decoratee)
     : IEnvironmentValidationStrategy

@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace MarginTrading.Backend.Services.Snapshots;
 
-public class LoggingTradingEngineRawSnapshotsRepository(
+public sealed class LoggingTradingEngineRawSnapshotsRepository(
     ITradingEngineRawSnapshotsRepository decoratee,
     ILogger<LoggingTradingEngineRawSnapshotsRepository> logger) : ITradingEngineRawSnapshotsRepository
 {

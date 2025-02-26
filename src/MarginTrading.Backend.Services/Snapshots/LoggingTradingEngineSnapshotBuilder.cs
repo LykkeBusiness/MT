@@ -16,7 +16,7 @@ using Microsoft.Extensions.Logging;
 
 namespace MarginTrading.Backend.Services.Snapshots;
 
-class LoggingTradingEngineSnapshotBuilder(
+internal sealed class LoggingTradingEngineSnapshotBuilder(
     ITradingEngineSnapshotBuilder decoratee,
     bool logBlockedMarginCalculation,
     ILogger<LoggingTradingEngineSnapshotBuilder> logger) : ITradingEngineSnapshotBuilder

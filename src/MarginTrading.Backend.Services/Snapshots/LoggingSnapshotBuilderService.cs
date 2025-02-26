@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace MarginTrading.Backend.Services.Snapshots;
 
-internal class LoggingSnapshotBuilderService(
+internal sealed class LoggingSnapshotBuilderService(
     ISnapshotBuilderService decoratee,
     ILogger<LoggingSnapshotBuilderService> logger) : ISnapshotBuilderService
 {
