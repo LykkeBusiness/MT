@@ -75,10 +75,12 @@ namespace MarginTrading.Backend.Controllers
             return domainStatus switch
             {
                 null => throw new ArgumentOutOfRangeException(nameof(status), status, "Invalid status value"),
+                // todo: switch to queueing requests using <cref name="ISnapshotRequestQueue"/
                 _ => await _snapshotService.MakeSnapshot(
                     tradingDay,
                     correlationId,
                     Core.Snapshots.EnvironmentValidationStrategyType.AsSoonAsPossible,
+                    SnapshotInitiator.ServiceApi,
                     domainStatus.Value)
             };
         }

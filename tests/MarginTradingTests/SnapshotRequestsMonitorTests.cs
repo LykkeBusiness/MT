@@ -47,6 +47,7 @@ public class SnapshotRequestsMonitorTests
                 It.IsAny<DateTime>(),
                 It.IsAny<string>(),
                 It.IsAny<EnvironmentValidationStrategyType>(),
+                It.IsAny<SnapshotInitiator>(),
                 It.IsAny<SnapshotStatus>()),
             Times.Never);
     }
@@ -62,6 +63,7 @@ public class SnapshotRequestsMonitorTests
             Guid.NewGuid(),
             EnvironmentValidationStrategyType.AsSoonAsPossible,
             SnapshotStatus.Draft,
+            SnapshotInitiator.ServiceApi,
             DateTimeOffset.UtcNow,
             new DateTime(2025, 2, 12),
             Guid.NewGuid().ToString()
@@ -73,6 +75,7 @@ public class SnapshotRequestsMonitorTests
             validRequest.TradingDay,
             validRequest.CorrelationId,
             validRequest.ValidationStrategyType,
+            validRequest.Initiator,
             validRequest.Status))
             .Returns(Task.FromResult(TradingEngineSnapshotSummary.Empty))
             .Verifiable();
@@ -114,6 +117,7 @@ public class SnapshotRequestsMonitorTests
             validRequest.TradingDay,
             validRequest.CorrelationId,
             validRequest.ValidationStrategyType,
+            validRequest.Initiator,
             validRequest.Status),
             Times.Once);
         queueMock.Verify(q => q.Acknowledge(validRequest.Id), Times.Once);

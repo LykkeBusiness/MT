@@ -88,6 +88,7 @@ public partial class SnapshotBuilderService : ISnapshotBuilderService
         DateTime tradingDay,
         string correlationId,
         EnvironmentValidationStrategyType strategyType,
+        SnapshotInitiator initiator,
         SnapshotStatus status = SnapshotStatus.Final)
     {
         CheckPreconditionsOrThrow(tradingDay);

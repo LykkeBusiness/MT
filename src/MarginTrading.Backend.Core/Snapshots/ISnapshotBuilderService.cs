@@ -23,6 +23,7 @@ public interface ISnapshotBuilderService
         DateTime tradingDay,
         string correlationId, // remove from the API, it is cross cutting concern
         EnvironmentValidationStrategyType strategyType,
+        SnapshotInitiator initiator,
         SnapshotStatus status = SnapshotStatus.Final);
 
     /// <summary>

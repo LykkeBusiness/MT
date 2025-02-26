@@ -31,12 +31,14 @@ internal class SnapshotBuilderServiceDecorator(
         DateTime tradingDay,
         string correlationId,
         EnvironmentValidationStrategyType strategyType,
+        SnapshotInitiator initiator,
         SnapshotStatus status = SnapshotStatus.Final)
     {
         var summary = await decoratee.MakeSnapshot(
             tradingDay,
             correlationId,
             strategyType,
+            initiator,
             status);
         if (status == SnapshotStatus.Draft)
             await snapshotDraftRebuildAgent.ResetDraftRebuildFlag();

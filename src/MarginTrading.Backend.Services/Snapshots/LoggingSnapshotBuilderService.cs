@@ -38,6 +38,7 @@ internal class LoggingSnapshotBuilderService(
         DateTime tradingDay,
         string correlationId,
         EnvironmentValidationStrategyType strategyType,
+        SnapshotInitiator initiator,
         SnapshotStatus status = SnapshotStatus.Final)
     {
         logger.LogInformation(
@@ -50,6 +51,7 @@ internal class LoggingSnapshotBuilderService(
             tradingDay,
             correlationId,
             strategyType,
+            initiator,
             status);
 
         logger.LogInformation(

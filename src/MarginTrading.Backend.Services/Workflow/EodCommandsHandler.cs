@@ -73,9 +73,11 @@ namespace MarginTrading.Backend.Services.Workflow
 
                 if (shouldRecreateSnapshot && !command.IsMissing)
                 {
+                    // todo: switch to queueing requests using <cref name="ISnapshotRequestQueue"/>
                     await _snapshotService.MakeSnapshot(command.TradingDay,
                         _identityGenerator.GenerateGuid(),
                         EnvironmentValidationStrategyType.WaitPlatformConsistency,
+                        SnapshotInitiator.EodProcess,
                         SnapshotStatus.Draft);
                 }
 
