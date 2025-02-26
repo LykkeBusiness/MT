@@ -21,6 +21,7 @@ public class InMemorySnapshotRequestQueueTests
              Guid.NewGuid(),
             EnvironmentValidationStrategyType.AsSoonAsPossible,
             SnapshotStatus.Draft,
+            SnapshotInitiator.ServiceApi,
             DateTimeOffset.UtcNow,
             DateTime.UtcNow.Date
         );
@@ -55,6 +56,7 @@ public class InMemorySnapshotRequestQueueTests
                         Guid.NewGuid(),
                         EnvironmentValidationStrategyType.WaitPlatformConsistency,
                         SnapshotStatus.Final,
+                        SnapshotInitiator.ServiceApi,
                         DateTimeOffset.UtcNow,
                         DateTime.UtcNow.Date
                     );
@@ -86,6 +88,7 @@ public class InMemorySnapshotRequestQueueTests
             Guid.NewGuid(),
             EnvironmentValidationStrategyType.AsSoonAsPossible,
             SnapshotStatus.Draft,
+            SnapshotInitiator.ServiceApi,
             DateTimeOffset.UtcNow,
             DateTime.UtcNow.Date
         );
@@ -93,6 +96,7 @@ public class InMemorySnapshotRequestQueueTests
             Guid.NewGuid(),
             EnvironmentValidationStrategyType.WaitPlatformConsistency,
             SnapshotStatus.Final,
+            SnapshotInitiator.ServiceApi,
             DateTimeOffset.UtcNow.AddSeconds(1),
             DateTime.UtcNow.Date
         );
@@ -121,6 +125,7 @@ public class InMemorySnapshotRequestQueueTests
             Guid.NewGuid(),
             EnvironmentValidationStrategyType.AsSoonAsPossible,
             SnapshotStatus.Draft,
+            SnapshotInitiator.ServiceApi,
             DateTimeOffset.UtcNow,
             DateTime.UtcNow.Date
         );
@@ -144,6 +149,7 @@ public class InMemorySnapshotRequestQueueTests
             Guid.NewGuid(),
             EnvironmentValidationStrategyType.AsSoonAsPossible,
             SnapshotStatus.Draft,
+            SnapshotInitiator.ServiceApi,
             DateTimeOffset.UtcNow,
             DateTime.UtcNow.Date
         );
@@ -151,6 +157,7 @@ public class InMemorySnapshotRequestQueueTests
             Guid.NewGuid(),
             EnvironmentValidationStrategyType.WaitPlatformConsistency,
             SnapshotStatus.Final,
+            SnapshotInitiator.ServiceApi,
             DateTimeOffset.UtcNow.AddSeconds(1),
             DateTime.UtcNow.Date
         );
@@ -190,6 +197,7 @@ public class InMemorySnapshotRequestQueueTests
             Guid.NewGuid(),
             EnvironmentValidationStrategyType.AsSoonAsPossible,
             SnapshotStatus.Draft,
+            SnapshotInitiator.ServiceApi,
             DateTimeOffset.UtcNow,
             DateTime.UtcNow.Date
         );
@@ -214,6 +222,7 @@ public class InMemorySnapshotRequestQueueTests
                 Guid.NewGuid(),
                 EnvironmentValidationStrategyType.AsSoonAsPossible,
                 SnapshotStatus.Draft,
+                SnapshotInitiator.ServiceApi,
                 DateTimeOffset.UtcNow.AddSeconds(i),
                 DateTime.UtcNow.Date
             );
