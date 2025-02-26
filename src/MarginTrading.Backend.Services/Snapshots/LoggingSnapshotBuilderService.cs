@@ -42,10 +42,11 @@ internal class LoggingSnapshotBuilderService(
         SnapshotStatus status = SnapshotStatus.Final)
     {
         logger.LogInformation(
-            "Making snapshot {Status} for {TradingDay}. CorrelationId: {CorrelationId}",
+            "Making snapshot {Status} for {TradingDay}. CorrelationId: {CorrelationId}, Initiator: {Initiator}",
             status,
             tradingDay.ToString("yyyy-MM-dd"),
-            correlationId);
+            correlationId,
+            initiator);
 
         var summary = await decoratee.MakeSnapshot(
             tradingDay,
@@ -55,10 +56,11 @@ internal class LoggingSnapshotBuilderService(
             status);
 
         logger.LogInformation(
-            "Snapshot {Status} for {TradingDay} was created. CorrelationId: {CorrelationId}",
+            "Snapshot {Status} for {TradingDay} was created. CorrelationId: {CorrelationId}, Initiator: {Initiator}",
             status,
             tradingDay.ToString("yyyy-MM-dd"),
-            correlationId);
+            correlationId,
+            initiator);
         return summary;
     }
 }
