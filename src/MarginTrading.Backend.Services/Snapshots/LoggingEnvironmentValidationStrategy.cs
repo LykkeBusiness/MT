@@ -18,7 +18,7 @@ public class LoggingEnvironmentValidationStrategy(
         var result = await decoratee.Validate(correlationId);
         if (!result.IsValid)
         {
-            logger.LogWarning(result.Exception, result.ToJson());
+            logger.LogCritical(result.Exception, result.ToJson());
         }
 
         return result;
