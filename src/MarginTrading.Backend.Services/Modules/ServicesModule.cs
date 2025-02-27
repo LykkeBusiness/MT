@@ -232,9 +232,15 @@ namespace MarginTrading.Backend.Services.Modules
 			builder.RegisterType<SystemClock>().As<ISystemClock>().SingleInstance();
 
 			builder.RegisterType<InMemorySnapshotRequestQueue>()
+				.AsSelf()
+				.SingleInstance();
+			// add logging decorator
+			builder.Register(c =>
+				new LoggingSnapshotRequestQueue(
+					c.Resolve<InMemorySnapshotRequestQueue>(),
+					c.Resolve<ILogger<LoggingSnapshotRequestQueue>>()))
 				.As<ISnapshotRequestQueue>()
 				.SingleInstance();
-			builder.RegisterDecorator<LoggingSnapshotRequestQueue, ISnapshotRequestQueue>();
 
 			builder.RegisterType<PositionHistoryHandler>()
 				.As<IPositionHistoryHandler>()
