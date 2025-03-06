@@ -6,8 +6,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Common;
 using Common.Log;
+
 using MarginTrading.Backend.Contracts.Prices;
 using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Exceptions;
@@ -19,7 +21,9 @@ using MarginTrading.Backend.Services.AssetPairs;
 using MarginTrading.Backend.Services.Mappers;
 using MarginTrading.Backend.Services.Policies;
 using MarginTrading.Common.Services;
+
 using MoreLinq;
+
 using Polly.Retry;
 
 namespace MarginTrading.Backend.Services.Infrastructure
@@ -119,11 +123,10 @@ namespace MarginTrading.Backend.Services.Infrastructure
                 var validationResult = await _policy.ExecuteAsync(() => Validate(correlationId));
                 if (!validationResult.IsValid)
                 {
-                    await _log.WriteFatalErrorAsync(nameof(SnapshotService),
+                    await _log.WriteErrorAsync(nameof(SnapshotService),
                         nameof(MakeTradingDataSnapshot),
                         validationResult.ToJson(),
                         validationResult.Exception);
-                    throw validationResult.Exception;
                 }
 
                 // orders and positions are fixed at the moment of validation
@@ -152,7 +155,7 @@ namespace MarginTrading.Backend.Services.Infrastructure
 
                         var accountPositions = positions.Where(p => p.AccountId == accountStat.Id);
 
-                        foreach(var p in accountPositions)
+                        foreach (var p in accountPositions)
                         {
                             await _log.WriteInfoAsync(nameof(SnapshotService), nameof(MakeTradingDataSnapshot),
                                 @$"Account {accountStat.Id}, Position {p.Id}, {p.FplData.LogInfo}");

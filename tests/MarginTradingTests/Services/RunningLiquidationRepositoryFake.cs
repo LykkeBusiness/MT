@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+
 using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Repositories;
 
@@ -23,6 +24,8 @@ namespace MarginTradingTests.Services
 
         public async IAsyncEnumerable<RunningLiquidation> Get(string[] accountIds)
         {
+            await Task.Yield();
+
             foreach (var accountId in accountIds)
             {
                 yield return new RunningLiquidation(accountId, Guid.NewGuid().ToString("N"));
