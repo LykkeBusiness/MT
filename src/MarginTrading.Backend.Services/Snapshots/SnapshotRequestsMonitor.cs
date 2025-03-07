@@ -1,9 +1,11 @@
 // Copyright (c) 2019 Lykke Corp.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
+using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Settings;
 using MarginTrading.Backend.Core.Snapshots;
 
@@ -14,7 +16,7 @@ namespace MarginTrading.Backend.Services.Snapshots;
 public sealed class SnapshotRequestsMonitor(
     ISnapshotBuilderService snapshotService,
     SnapshotMonitorSettings settings,
-    ISnapshotRequestQueue queue) : BackgroundService
+    IWaitableRequestConsumer<SnapshotCreationRequest, TradingEngineSnapshotSummary> queue) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -25,14 +27,17 @@ public sealed class SnapshotRequestsMonitor(
             if (request is null)
                 continue;
 
-            await snapshotService.MakeSnapshot(
-                request.TradingDay,
-                request.CorrelationId,
-                request.ValidationStrategyType,
-                request.Initiator,
-                request.Status);
-
-            queue.Acknowledge(request.Id);
+            TradingEngineSnapshotSummary result;
+            try
+            {
+                result = await snapshotService.MakeSnapshot(request);
+            }
+            catch (Exception e)
+            {
+                queue.Reject(request.Id, e);
+                continue;
+            }
+            queue.Acknowledge(request.Id, result);
         }
     }
 }

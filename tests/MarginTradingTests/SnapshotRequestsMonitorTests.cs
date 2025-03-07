@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
+using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Settings;
 using MarginTrading.Backend.Core.Snapshots;
 using MarginTrading.Backend.Services.Snapshots;
@@ -23,7 +24,7 @@ public class SnapshotRequestsMonitorTests
     public async Task ExecuteAsync_WhenQueueReturnsNull_ShouldNotCallSnapshotService()
     {
         var snapshotServiceMock = new Mock<ISnapshotBuilderService>();
-        var queueMock = new Mock<ISnapshotRequestQueue>();
+        var queueMock = new Mock<IWaitableRequestConsumer<SnapshotCreationRequest, TradingEngineSnapshotSummary>>();
         queueMock.Setup(q => q.Dequeue()).Returns((SnapshotCreationRequest)null);
 
         var settings = new SnapshotMonitorSettings
@@ -81,7 +82,7 @@ public class SnapshotRequestsMonitorTests
             .Verifiable();
 
         var callCount = 0;
-        var queueMock = new Mock<ISnapshotRequestQueue>();
+        var queueMock = new Mock<IWaitableRequestQueue<SnapshotCreationRequest, TradingEngineSnapshotSummary>>();
         queueMock.Setup(q => q.Dequeue()).Returns(() =>
         {
             if (callCount == 0)
@@ -94,7 +95,7 @@ public class SnapshotRequestsMonitorTests
                 return null;
             }
         });
-        queueMock.Setup(q => q.Acknowledge(validRequest.Id)).Verifiable();
+        queueMock.Setup(q => q.Acknowledge(validRequest.Id, It.IsAny<TradingEngineSnapshotSummary>())).Verifiable();
 
         var settings = new SnapshotMonitorSettings
         {
@@ -120,6 +121,6 @@ public class SnapshotRequestsMonitorTests
             validRequest.Initiator,
             validRequest.Status),
             Times.Once);
-        queueMock.Verify(q => q.Acknowledge(validRequest.Id), Times.Once);
+        queueMock.Verify(q => q.Acknowledge(validRequest.Id, It.IsAny<TradingEngineSnapshotSummary>()), Times.Once);
     }
 }

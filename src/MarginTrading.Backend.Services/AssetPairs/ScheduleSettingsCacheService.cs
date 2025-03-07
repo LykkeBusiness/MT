@@ -53,7 +53,7 @@ namespace MarginTrading.Backend.Services.AssetPairs
 
         private readonly ReaderWriterLockSlim _readerWriterLockSlim = new ReaderWriterLockSlim();
         private readonly IFeatureManager _featureManager;
-        private readonly ISnapshotRequestQueue _snapshotRequestQueue;
+        private readonly IQueueRequestProducer<SnapshotCreationRequest> _snapshotRequestProducer;
 
         public ScheduleSettingsCacheService(
             ICqrsSender cqrsSender,
@@ -63,7 +63,7 @@ namespace MarginTrading.Backend.Services.AssetPairs
             ILog log,
             OvernightMarginSettings overnightMarginSettings,
             IFeatureManager featureManager,
-            ISnapshotRequestQueue snapshotRequestQueue,
+            IQueueRequestProducer<SnapshotCreationRequest> snapshotRequestProducer,
             IIdentityGenerator identityGenerator)
         {
             _cqrsSender = cqrsSender;
@@ -73,7 +73,7 @@ namespace MarginTrading.Backend.Services.AssetPairs
             _log = log;
             _overnightMarginSettings = overnightMarginSettings;
             _featureManager = featureManager;
-            _snapshotRequestQueue = snapshotRequestQueue;
+            _snapshotRequestProducer = snapshotRequestProducer;
             _identityGenerator = identityGenerator;
         }
 
@@ -205,10 +205,8 @@ namespace MarginTrading.Backend.Services.AssetPairs
 
                 if (ev.IsPlatformClosureEvent())
                 {
-                    _snapshotRequestQueue.Enqueue(new SnapshotCreationRequest(
-                        Guid.NewGuid(),
+                    _snapshotRequestProducer.Enqueue(SnapshotCreationRequest.CreateDraftRequest(
                         EnvironmentValidationStrategyType.WaitPlatformConsistency,
-                        SnapshotStatus.Draft,
                         SnapshotInitiator.PlatformClosureEvent,
                         now,
                         now.Date,

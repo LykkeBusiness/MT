@@ -15,12 +15,13 @@ using MarginTrading.Backend.Services.Infrastructure;
 using MarginTrading.Common.Services;
 using MarginTrading.AssetService.Contracts;
 using MarginTrading.AssetService.Contracts.Scheduling;
-using MarginTrading.Backend.Services.Snapshots;
 
 using Microsoft.FeatureManagement;
 using Moq;
 using NUnit.Framework;
 using MarginTrading.Backend.Core.Repositories;
+using MarginTrading.Backend.Core.Snapshots;
+using MarginTrading.Backend.Services;
 
 namespace MarginTradingTests
 {
@@ -118,7 +119,7 @@ namespace MarginTradingTests
             },
         };
 
-        private static ScheduleSettingsContract AlwaysOnMarketSchedule = new ScheduleSettingsContract
+        private static readonly ScheduleSettingsContract AlwaysOnMarketSchedule = new()
         {
             Id = "AlwaysOnMarketSchedule",
             Rank = int.MinValue,
@@ -332,7 +333,7 @@ namespace MarginTradingTests
                 new EmptyLog(),
                 new OvernightMarginSettings(),
                 Mock.Of<IFeatureManager>(),
-                new InMemorySnapshotRequestQueue(),
+                new InMemoryRequestQueue<SnapshotCreationRequest>(),
                 Mock.Of<IIdentityGenerator>());
 
             scheduleSettingsCacheService.UpdateAllSettingsAsync().GetAwaiter().GetResult();

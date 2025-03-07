@@ -1,5 +1,3 @@
-using MarginTrading.Backend.Services.Snapshots;
-
 namespace MarginTradingTests;
 
 using System;
@@ -7,6 +5,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using MarginTrading.Backend.Core.Snapshots;
+using MarginTrading.Backend.Services;
 
 using NUnit.Framework;
 
@@ -16,7 +15,7 @@ public class InMemorySnapshotRequestQueueTests
     [Test]
     public void SingleProducerSingleConsumer_EnqueueDequeueAcknowledge_ShouldProcessSuccessfully()
     {
-        var queue = new InMemorySnapshotRequestQueue();
+        var queue = new InMemoryRequestQueue<SnapshotCreationRequest>();
         var request = new SnapshotCreationRequest(
              Guid.NewGuid(),
             EnvironmentValidationStrategyType.AsSoonAsPossible,
@@ -41,7 +40,7 @@ public class InMemorySnapshotRequestQueueTests
     [Test]
     public void MultipleProducers_ConcurrentEnqueue_ShouldMaintainCorrectCountAndOrder()
     {
-        var queue = new InMemorySnapshotRequestQueue();
+        var queue = new InMemoryRequestQueue<SnapshotCreationRequest>();
         int producerCount = 10;
         int itemsPerProducer = 100;
         var tasks = new List<Task>();
@@ -66,9 +65,8 @@ public class InMemorySnapshotRequestQueueTests
         }
         Task.WaitAll([.. tasks]);
 
-        var state = queue.CaptureState();
         int expectedCount = producerCount * itemsPerProducer;
-        Assert.AreEqual(expectedCount, state.PendingRequests.Count);
+        Assert.AreEqual(expectedCount, queue.State.PendingRequests.Count);
 
         var dequeuedItems = new List<SnapshotCreationRequest>();
         SnapshotCreationRequest current;
@@ -83,7 +81,7 @@ public class InMemorySnapshotRequestQueueTests
     [Test]
     public void ConsumerFailsToAcknowledge_ShouldRemainBlockedOnDequeue()
     {
-        var queue = new InMemorySnapshotRequestQueue();
+        var queue = new InMemoryRequestQueue<SnapshotCreationRequest>();
         var request1 = new SnapshotCreationRequest(
             Guid.NewGuid(),
             EnvironmentValidationStrategyType.AsSoonAsPossible,
@@ -120,7 +118,7 @@ public class InMemorySnapshotRequestQueueTests
     [Test]
     public void MismatchedAcknowledge_ShouldNotClearInFlightItem()
     {
-        var queue = new InMemorySnapshotRequestQueue();
+        var queue = new InMemoryRequestQueue<SnapshotCreationRequest>();
         var request = new SnapshotCreationRequest(
             Guid.NewGuid(),
             EnvironmentValidationStrategyType.AsSoonAsPossible,
@@ -142,76 +140,10 @@ public class InMemorySnapshotRequestQueueTests
     }
 
     [Test]
-    public void GracefulShutdown_CaptureAndRestoreState_ShouldMaintainQueueState()
-    {
-        var queue = new InMemorySnapshotRequestQueue();
-        var request1 = new SnapshotCreationRequest(
-            Guid.NewGuid(),
-            EnvironmentValidationStrategyType.AsSoonAsPossible,
-            SnapshotStatus.Draft,
-            SnapshotInitiator.ServiceApi,
-            DateTimeOffset.UtcNow,
-            DateTime.UtcNow.Date
-        );
-        var request2 = new SnapshotCreationRequest(
-            Guid.NewGuid(),
-            EnvironmentValidationStrategyType.WaitPlatformConsistency,
-            SnapshotStatus.Final,
-            SnapshotInitiator.ServiceApi,
-            DateTimeOffset.UtcNow.AddSeconds(1),
-            DateTime.UtcNow.Date
-        );
-
-        queue.Enqueue(request1);
-        queue.Enqueue(request2);
-
-        // Dequeue to get the first request in-flight.
-        var inFlight = queue.Dequeue();
-        Assert.IsNotNull(inFlight);
-        Assert.AreEqual(request1, inFlight);
-
-        // Capture the current state (simulate shutdown).
-        var state = queue.CaptureState();
-
-        // Create a new queue instance and restore the state.
-        var restoredQueue = new InMemorySnapshotRequestQueue();
-        restoredQueue.RestoreState(state);
-
-        // Assert that the in-flight item is restored.
-        var restoredInFlight = restoredQueue.Dequeue();
-        Assert.IsNotNull(restoredInFlight);
-        Assert.AreEqual(request1, restoredInFlight);
-
-        // Acknowledge it then get the next item.
-        restoredQueue.Acknowledge(restoredInFlight.Id);
-        var nextItem = restoredQueue.Dequeue();
-        Assert.IsNotNull(nextItem);
-        Assert.AreEqual(request2, nextItem);
-    }
-
-    [Test]
-    public void RestoreQueueState_When_It_Is_Not_Empty_Should_Throw()
-    {
-        var queue = new InMemorySnapshotRequestQueue();
-        var request = new SnapshotCreationRequest(
-            Guid.NewGuid(),
-            EnvironmentValidationStrategyType.AsSoonAsPossible,
-            SnapshotStatus.Draft,
-            SnapshotInitiator.ServiceApi,
-            DateTimeOffset.UtcNow,
-            DateTime.UtcNow.Date
-        );
-        queue.Enqueue(request);
-
-        var state = queue.CaptureState();
-        Assert.Throws<InvalidOperationException>(() => queue.RestoreState(state));
-    }
-
-    [Test]
     public void FifoOrder_ShouldMaintainOrderOfRequests()
     {
         // Arrange
-        var queue = new InMemorySnapshotRequestQueue();
+        var queue = new InMemoryRequestQueue<SnapshotCreationRequest>();
         int itemCount = 5;
         var requests = new List<SnapshotCreationRequest>();
 

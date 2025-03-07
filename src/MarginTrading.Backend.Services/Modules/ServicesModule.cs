@@ -12,7 +12,6 @@ using MarginTrading.Backend.Core.MatchingEngines;
 using MarginTrading.Backend.Core.Orderbooks;
 using MarginTrading.Backend.Core.Services;
 using MarginTrading.Backend.Core.Settings;
-using MarginTrading.Backend.Core.Snapshots;
 using MarginTrading.Backend.Services.AssetPairs;
 using MarginTrading.Backend.Services.Events;
 using MarginTrading.Backend.Services.EventsConsumers;
@@ -22,7 +21,6 @@ using MarginTrading.Backend.Services.MatchingEngines;
 using MarginTrading.Backend.Services.Quotes;
 using MarginTrading.Backend.Services.Scheduling;
 using MarginTrading.Backend.Services.Services;
-using MarginTrading.Backend.Services.Snapshots;
 using MarginTrading.Backend.Services.Stp;
 using MarginTrading.Backend.Services.TradingConditions;
 using MarginTrading.Backend.Services.Workflow.Liquidation;
@@ -211,82 +209,17 @@ namespace MarginTrading.Backend.Services.Modules
 
 			builder.RegisterDecorator<AccountsProviderLoggingDecorator, IAccountsProvider>();
 
-			builder.RegisterType<FinalSnapshotCalculator>()
-				.As<IFinalSnapshotCalculator>()
-				.InstancePerLifetimeScope();
-
-			// @atarutin: DraftSnapshotKeeper implements IOrderReader interface for convenient access to positions
-			// and orders but it is not required to be used for registration in DI container
-			builder.RegisterType<DraftSnapshotKeeper>()
-				.As<IDraftSnapshotKeeper>()
-				.InstancePerLifetimeScope();
-
-			builder.RegisterType<DraftSnapshotKeeperFactory>()
-				.As<IDraftSnapshotKeeperFactory>()
-				.SingleInstance();
-
-			builder.RegisterType<FakeSnapshotService>()
-				.As<IFakeSnapshotService>()
-				.SingleInstance();
-
 			builder.RegisterType<SystemClock>().As<ISystemClock>().SingleInstance();
 
-			builder.RegisterType<InMemorySnapshotRequestQueue>()
-				.AsSelf()
-				.SingleInstance();
-			// add logging decorator
-			builder.Register(c =>
-				new LoggingSnapshotRequestQueue(
-					c.Resolve<InMemorySnapshotRequestQueue>(),
-					c.Resolve<ILogger<LoggingSnapshotRequestQueue>>()))
-				.As<ISnapshotRequestQueue>()
-				.SingleInstance();
+			builder
+				.RegisterSnapshotRequestServices()
+				.RegisterSnapshotBuilderServices(_settings.LogBlockedMarginCalculation)
+				.RegisterSnapshotRecalculationServices();
 
 			builder.RegisterType<PositionHistoryHandler>()
 				.As<IPositionHistoryHandler>()
 				.AsSelf() // this registration is required to decorate it in another module
 				.SingleInstance();
-
-			// register TradingEngineSnapshotBuilder decorators
-			builder.RegisterType<TradingEngineSnapshotBuilder>()
-				.SingleInstance();
-			builder.Register(ctx => new AccountUpdatingTradingEngineSnapshotBuilder(
-				ctx.Resolve<TradingEngineSnapshotBuilder>()))
-				.SingleInstance();
-			builder.Register(ctx => new LoggingTradingEngineSnapshotBuilder(
-					ctx.Resolve<AccountUpdatingTradingEngineSnapshotBuilder>(),
-					_settings.LogBlockedMarginCalculation,
-					ctx.Resolve<ILogger<LoggingTradingEngineSnapshotBuilder>>()))
-				.As<ITradingEngineSnapshotBuilder>()
-				.SingleInstance();
-
-			builder.RegisterType<SnapshotBuilderService>()
-				.As<ISnapshotBuilderService>()
-				.InstancePerLifetimeScope();
-			builder.RegisterDecorator<SnapshotBuilderServiceDecorator, ISnapshotBuilderService>();
-			builder.RegisterDecorator<LoggingSnapshotBuilderService, ISnapshotBuilderService>();
-
-			builder.RegisterType<SnapshotValidationService>()
-				.As<ISnapshotValidationService>()
-				.SingleInstance();
-
-			builder.RegisterType<EnvironmentValidator>()
-				.As<IEnvironmentValidator>()
-				.SingleInstance();
-
-			// register decorated AsSoonAsPossibleStrategy 
-			builder.RegisterType<AsSoonAsPossibleStrategy>();
-			builder.Register(ctx => new LoggingEnvironmentValidationStrategy(
-					ctx.Resolve<ILogger<LoggingEnvironmentValidationStrategy>>(),
-					ctx.Resolve<AsSoonAsPossibleStrategy>()))
-				.Keyed<IEnvironmentValidationStrategy>(EnvironmentValidationStrategyType.AsSoonAsPossible);
-
-			// register decorated PreferConsistencyStrategy
-			builder.RegisterType<PreferConsistencyStrategy>();
-			builder.Register(ctx => new LoggingEnvironmentValidationStrategy(
-					ctx.Resolve<ILogger<LoggingEnvironmentValidationStrategy>>(),
-					ctx.Resolve<PreferConsistencyStrategy>()))
-				.Keyed<IEnvironmentValidationStrategy>(EnvironmentValidationStrategyType.WaitPlatformConsistency);
 
 			builder.RegisterType<ConfigurationValidator>()
 				.As<IConfigurationValidator>()
