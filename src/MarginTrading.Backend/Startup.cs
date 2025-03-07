@@ -144,8 +144,6 @@ namespace MarginTrading.Backend
 
             SetupLoggers(Configuration, services, _mtSettingsManager, correlationContextAccessor);
 
-            services.AddHostedService<SnapshotRequestsMonitor>();
-
             services.AddSettingsTemplateGenerator();
         }
 

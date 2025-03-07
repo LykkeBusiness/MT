@@ -22,7 +22,6 @@ using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Repositories;
 using MarginTrading.Backend.Core.Snapshots;
 using MarginTrading.Backend.Services.Services;
-using MarginTrading.Backend.Services.Snapshots;
 using MarginTrading.Common.Services;
 
 namespace MarginTrading.Backend.Services.Workflow
@@ -32,6 +31,7 @@ namespace MarginTrading.Backend.Services.Workflow
     {
         private readonly IQuotesApi _quotesApi;
         private readonly ISnapshotBuilderService _snapshotService;
+        private readonly IWaitableRequestProducer<SnapshotCreationRequest, TradingEngineSnapshotSummary> _snapshotRequestProducer;
         private readonly IDateService _dateService;
         private readonly IDraftSnapshotKeeperFactory _draftSnapshotKeeperFactory;
         private readonly IIdentityGenerator _identityGenerator;
@@ -40,19 +40,21 @@ namespace MarginTrading.Backend.Services.Workflow
 
         public EodCommandsHandler(
             IQuotesApi quotesApi,
-            ISnapshotBuilderService snapshotService,
             IDateService dateService,
             IDraftSnapshotKeeperFactory draftSnapshotKeeperFactory,
             IIdentityGenerator identityGenerator,
             ISnapshotBuilderDraftRebuildAgent snapshotDraftRebuildAgent,
+            IWaitableRequestProducer<SnapshotCreationRequest, TradingEngineSnapshotSummary> snapshotRequestProducer,
+            ISnapshotBuilderService snapshotService,
             ILog log)
         {
             _quotesApi = quotesApi;
-            _snapshotService = snapshotService;
             _dateService = dateService;
             _draftSnapshotKeeperFactory = draftSnapshotKeeperFactory;
             _identityGenerator = identityGenerator;
             _snapshotDraftRebuildAgent = snapshotDraftRebuildAgent;
+            _snapshotRequestProducer = snapshotRequestProducer;
+            _snapshotService = snapshotService;
             _log = log;
         }
 
@@ -73,12 +75,12 @@ namespace MarginTrading.Backend.Services.Workflow
 
                 if (shouldRecreateSnapshot && !command.IsMissing)
                 {
-                    // todo: switch to queueing requests using <cref name="ISnapshotRequestQueue"/>
-                    await _snapshotService.MakeSnapshot(command.TradingDay,
-                        _identityGenerator.GenerateGuid(),
+                    await _snapshotRequestProducer.EnqueueAndWait(SnapshotCreationRequest.CreateDraftRequest(
                         EnvironmentValidationStrategyType.WaitPlatformConsistency,
                         SnapshotInitiator.EodProcess,
-                        SnapshotStatus.Draft);
+                        _dateService.Now(),
+                        command.TradingDay,
+                        _identityGenerator.GenerateGuid()));
                 }
 
                 var draftSnapshotKeeper = _draftSnapshotKeeperFactory.Create(command.TradingDay);

@@ -8,12 +8,11 @@ using System.Threading.Tasks;
 
 using MarginTrading.Backend.Contracts;
 using MarginTrading.Backend.Contracts.Snapshots;
+using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Repositories;
 using MarginTrading.Backend.Core.Services;
 using MarginTrading.Backend.Core.Snapshots;
 using MarginTrading.Backend.Extensions;
-using MarginTrading.Backend.Services;
-using MarginTrading.Backend.Services.Snapshots;
 using MarginTrading.Backend.Services.TradingConditions;
 using MarginTrading.Common.Middleware;
 
@@ -30,22 +29,22 @@ namespace MarginTrading.Backend.Controllers
     {
         private readonly IOvernightMarginParameterContainer _overnightMarginParameterContainer;
         private readonly IIdentityGenerator _identityGenerator;
-        private readonly ISnapshotBuilderService _snapshotService;
         private readonly IAccountUpdateService _accountUpdateService;
         private readonly IAccountsProvider _accountsProvider;
+        private readonly IWaitableRequestProducer<SnapshotCreationRequest, TradingEngineSnapshotSummary> _snapshotRequestProducer;
 
         public ServiceController(
             IOvernightMarginParameterContainer overnightMarginParameterContainer,
             IIdentityGenerator identityGenerator,
-            ISnapshotBuilderService snapshotService,
             IAccountUpdateService accountUpdateService,
-            IAccountsProvider accountsProvider)
+            IAccountsProvider accountsProvider,
+            IWaitableRequestProducer<SnapshotCreationRequest, TradingEngineSnapshotSummary> snapshotRequestProducer)
         {
             _overnightMarginParameterContainer = overnightMarginParameterContainer;
             _identityGenerator = identityGenerator;
-            _snapshotService = snapshotService;
             _accountUpdateService = accountUpdateService;
             _accountsProvider = accountsProvider;
+            _snapshotRequestProducer = snapshotRequestProducer;
         }
 
         /// <summary>
@@ -75,13 +74,13 @@ namespace MarginTrading.Backend.Controllers
             return domainStatus switch
             {
                 null => throw new ArgumentOutOfRangeException(nameof(status), status, "Invalid status value"),
-                // todo: switch to queueing requests using <cref name="ISnapshotRequestQueue"/
-                _ => await _snapshotService.MakeSnapshot(
-                    tradingDay,
-                    correlationId,
-                    Core.Snapshots.EnvironmentValidationStrategyType.AsSoonAsPossible,
+                _ => await _snapshotRequestProducer.EnqueueAndWait(SnapshotCreationRequest.Create(
+                    EnvironmentValidationStrategyType.AsSoonAsPossible,
+                    domainStatus.Value,
                     SnapshotInitiator.ServiceApi,
-                    domainStatus.Value)
+                    DateTime.UtcNow,
+                    tradingDay,
+                    correlationId))
             };
         }
 

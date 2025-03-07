@@ -1,3 +1,14 @@
+## 2.39.0 - Nova 2. Delivery 50 (March 07, 2025)
+### What's changed
+* LT-6057: Increment ActualHash in FplData when partially closing position.
+* LT-6052: Don't use settingsservice explicitly in accountmargineventsbroker.
+* LT-5626: Issue using prefixes for positions.
+* LT-5508: Potential corrupted snapshot.
+
+### Deployment
+* Remove the following queue since it is not required anymore: `{env}.TradingEngine.queue.TradingEngine.events.events.projections`
+
+
 ## 2.38.2 - Nova 2. Delivery 49. Hotfix 2 (February 19, 2025)
 ### What's changed
 * LT-6057: Increment ActualHash in FplData when partially closing position

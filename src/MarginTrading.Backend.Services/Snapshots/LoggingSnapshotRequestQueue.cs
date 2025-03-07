@@ -1,5 +1,6 @@
 using System;
 
+using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Snapshots;
 
 using Microsoft.Extensions.Logging;
@@ -7,18 +8,13 @@ using Microsoft.Extensions.Logging;
 namespace MarginTrading.Backend.Services.Snapshots;
 
 internal sealed class LoggingSnapshotRequestQueue(
-    ISnapshotRequestQueue decoratee,
-    ILogger<LoggingSnapshotRequestQueue> logger) : ISnapshotRequestQueue
+    IRequestQueue<SnapshotCreationRequest> decoratee,
+    ILogger<LoggingSnapshotRequestQueue> logger) : IRequestQueue<SnapshotCreationRequest>
 {
     public void Acknowledge(Guid requestId)
     {
         decoratee.Acknowledge(requestId);
         logger.LogInformation("Acknowledged snapshot request {RequestId}", requestId);
-    }
-
-    public SnapshotQueueState CaptureState()
-    {
-        throw new NotImplementedException();
     }
 
     public SnapshotCreationRequest Dequeue()
@@ -34,8 +30,9 @@ internal sealed class LoggingSnapshotRequestQueue(
         logger.LogInformation("Enqueued snapshot request: {@Request}", request);
     }
 
-    public void RestoreState(SnapshotQueueState state)
+    public void Reject(Guid requestId, Exception exception)
     {
-        throw new NotImplementedException();
+        decoratee.Reject(requestId, exception);
+        logger.LogError(exception, "Rejected snapshot request {RequestId}", requestId);
     }
 }
