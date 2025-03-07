@@ -55,7 +55,7 @@ public sealed class WaitableQueueAdapter<TRequest, TResult>
 
     public void Reject(Guid requestId, Exception exception)
     {
-        _adaptee.Acknowledge(requestId);
+        _adaptee.Reject(requestId, exception);
 
         if (_waiters.TryRemove(requestId, out var tcs))
         {
