@@ -3,6 +3,7 @@
 
 using Autofac;
 using Autofac.Features.Variance;
+
 using Lykke.RabbitMqBroker.Publisher;
 using Lykke.Snow.Common.Correlation.RabbitMq;
 
@@ -25,6 +26,7 @@ using MarginTrading.Backend.Services.TradingConditions;
 using MarginTrading.Backend.Services.Workflow.Liquidation;
 using MarginTrading.Common.RabbitMq;
 using MarginTrading.Common.Services.Telemetry;
+
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
@@ -46,17 +48,17 @@ namespace MarginTrading.Backend.Services.Modules
 				.As<IQuoteCacheService>()
 				.As<IEventConsumer<BestPriceChangeEventArgs>>()
 				.SingleInstance();
- 
-			builder.RegisterType<FxRateCacheService>() 
+
+			builder.RegisterType<FxRateCacheService>()
 				.AsSelf()
 				.As<IFxRateCacheService>()
-				.SingleInstance(); 
+				.SingleInstance();
 
 			builder.RegisterType<FplService>()
 				.As<IFplService>()
 				.InstancePerLifetimeScope();
 
-            builder.RegisterType<TradingInstrumentsCacheService>()
+			builder.RegisterType<TradingInstrumentsCacheService>()
 				.AsSelf()
 				.As<ITradingInstrumentsCacheService>()
 				.As<IOvernightMarginParameterContainer>()
@@ -114,7 +116,7 @@ namespace MarginTrading.Backend.Services.Modules
 			builder.RegisterType<TradesConsumer>()
 				.As<IEventConsumer<OrderExecutedEventArgs>>()
 				.SingleInstance();
-			
+
 			builder.RegisterType<PositionsConsumer>()
 				.As<IEventConsumer<OrderExecutedEventArgs>>()
 				.SingleInstance();
@@ -193,47 +195,35 @@ namespace MarginTrading.Backend.Services.Modules
 				.As<ILiquidationFailureExecutor>()
 				.SingleInstance();
 
-            builder.RegisterType<PositionsProvider>()
-	            .As<IPositionsProvider>()
-	            .InstancePerLifetimeScope();
+			builder.RegisterType<PositionsProvider>()
+				.As<IPositionsProvider>()
+				.InstancePerLifetimeScope();
 
-            builder.RegisterType<OrdersProvider>()
-	            .As<IOrdersProvider>()
-	            .InstancePerLifetimeScope();
+			builder.RegisterType<OrdersProvider>()
+				.As<IOrdersProvider>()
+				.InstancePerLifetimeScope();
 
-            builder.RegisterType<AccountsProvider>()
-	            .As<IAccountsProvider>()
-	            .InstancePerLifetimeScope();
+			builder.RegisterType<AccountsProvider>()
+				.As<IAccountsProvider>()
+				.InstancePerLifetimeScope();
 
-            builder.RegisterDecorator<AccountsProviderLoggingDecorator, IAccountsProvider>();
+			builder.RegisterDecorator<AccountsProviderLoggingDecorator, IAccountsProvider>();
 
-            builder.RegisterType<FinalSnapshotCalculator>()
-	            .As<IFinalSnapshotCalculator>()
-	            .InstancePerLifetimeScope();
-            
-            // @atarutin: DraftSnapshotKeeper implements IOrderReader interface for convenient access to positions
-            // and orders but it is not required to be used for registration in DI container
-            builder.RegisterType<DraftSnapshotKeeper>()
-	            .As<IDraftSnapshotKeeper>()
-	            .InstancePerLifetimeScope();
+			builder.RegisterType<SystemClock>().As<ISystemClock>().SingleInstance();
 
-            builder.RegisterType<DraftSnapshotKeeperFactory>()
-	            .As<IDraftSnapshotKeeperFactory>()
-	            .SingleInstance();
-            
-            builder.RegisterType<SystemClock>().As<ISystemClock>().SingleInstance();
+			builder
+				.RegisterSnapshotRequestServices()
+				.RegisterSnapshotBuilderServices(_settings.LogBlockedMarginCalculation)
+				.RegisterSnapshotRecalculationServices();
 
-            builder.RegisterType<PositionHistoryHandler>()
-	            .As<IPositionHistoryHandler>()
-	            .SingleInstance();
+			builder.RegisterType<PositionHistoryHandler>()
+				.As<IPositionHistoryHandler>()
+				.AsSelf() // this registration is required to decorate it in another module
+				.SingleInstance();
 
-            builder.RegisterType<ConfigurationValidator>()
-	            .As<IConfigurationValidator>()
-	            .SingleInstance();
-
-            builder.RegisterType<SnapshotTrackerService>()
-	            .As<ISnapshotTrackerService>()
-	            .SingleInstance();
+			builder.RegisterType<ConfigurationValidator>()
+				.As<IConfigurationValidator>()
+				.SingleInstance();
 		}
 	}
 }

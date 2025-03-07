@@ -4,11 +4,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
+
 using Common.Log;
+
 using FluentScheduler;
+
 using JetBrains.Annotations;
+
 using Lykke.Cqrs;
 using Lykke.Logs.MsSql;
 using Lykke.Logs.MsSql.Repositories;
@@ -24,6 +29,7 @@ using Lykke.Snow.Common.Correlation.Serilog;
 using Lykke.Snow.Common.Startup.ApiKey;
 using Lykke.Snow.Common.Startup.Hosting;
 using Lykke.Snow.Common.Startup.Log;
+
 using MarginTrading.AssetService.Contracts.ClientProfileSettings;
 using MarginTrading.Backend.Binders;
 using MarginTrading.Backend.Core;
@@ -41,20 +47,26 @@ using MarginTrading.Backend.Services.Modules;
 using MarginTrading.Backend.Services.Quotes;
 using MarginTrading.Backend.Services.Scheduling;
 using MarginTrading.Backend.Services.Settings;
+using MarginTrading.Backend.Services.Snapshots;
 using MarginTrading.Backend.Services.TradingConditions;
 using MarginTrading.Common.Extensions;
 using MarginTrading.Common.RabbitMq;
 using MarginTrading.Common.Services;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
+
 using Serilog.Core;
+
 using StackExchange.Redis;
+
 using GlobalErrorHandlerMiddleware = MarginTrading.Backend.Middleware.GlobalErrorHandlerMiddleware;
 using IApplicationLifetime = Microsoft.Extensions.Hosting.IApplicationLifetime;
 using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
@@ -93,7 +105,7 @@ namespace MarginTrading.Backend
             services.AddTransient<HttpCorrelationHandler>();
 
             services.AddAssemblyLogger();
-            services.AddApplicationInsightsTelemetry();
+            services.AddHttpContextAccessor();
 
             services.AddSingleton(Configuration);
             services
@@ -131,8 +143,6 @@ namespace MarginTrading.Backend
             services.AddFeatureManagement(_mtSettingsManager.CurrentValue.MtBackend);
 
             SetupLoggers(Configuration, services, _mtSettingsManager, correlationContextAccessor);
-
-            services.AddHostedService<SnapshotMonitoringService>();
 
             services.AddSettingsTemplateGenerator();
         }
@@ -283,7 +293,6 @@ namespace MarginTrading.Backend
 
                 StartService<AccountManager>();
                 StartService<OrderCacheManager>();
-                StartService<PendingOrdersCleaningService>();
             });
         }
 
