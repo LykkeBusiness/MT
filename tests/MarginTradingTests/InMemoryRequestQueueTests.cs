@@ -8,15 +8,15 @@ using NUnit.Framework;
 using System;
 using System.Linq;
 
+internal class TestRequest(string data) : IIdentifiable
+{
+    public Guid Id { get; } = Guid.NewGuid();
+    public string Data { get; } = data;
+}
+
 [TestFixture]
 public class InMemoryRequestQueueTests
 {
-    class TestRequest(string data) : IIdentifiable
-    {
-        public Guid Id { get; } = Guid.NewGuid();
-        public string Data { get; } = data;
-    }
-
     private InMemoryRequestQueue<TestRequest> _queue;
 
     [SetUp]
