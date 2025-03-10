@@ -14,8 +14,8 @@ using Microsoft.Extensions.Logging;
 namespace MarginTrading.Backend.Services.Snapshots;
 
 internal sealed class LoggingSnapshotBuilderService(
-    ISnapshotBuilderService decoratee,
-    ILogger<LoggingSnapshotBuilderService> logger) : ISnapshotBuilderService
+    ISnapshotService decoratee,
+    ILogger<LoggingSnapshotBuilderService> logger) : ISnapshotService
 {
     public async Task ConvertToFinal(
         string correlationId,

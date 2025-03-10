@@ -18,7 +18,7 @@ using MarginTrading.Common.Services;
 
 namespace MarginTrading.Backend.Services.Snapshots;
 
-public partial class SnapshotBuilderService : ISnapshotBuilderService
+public partial class SnapshotService : ISnapshotService
 {
     private readonly IScheduleSettingsCacheService _scheduleSettingsCacheService;
     private readonly IDateService _dateService;
@@ -32,7 +32,7 @@ public partial class SnapshotBuilderService : ISnapshotBuilderService
     private static readonly SemaphoreSlim Lock = new(1, 1);
     public static bool IsMakingSnapshotInProgress => Lock.CurrentCount == 0;
 
-    public SnapshotBuilderService(
+    public SnapshotService(
         IScheduleSettingsCacheService scheduleSettingsCacheService,
         IQueueValidationService queueValidationService,
         IDateService dateService,

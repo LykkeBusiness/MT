@@ -9,7 +9,7 @@ using MarginTrading.Backend.Contracts.Prices;
 
 namespace MarginTrading.Backend.Core.Snapshots;
 
-public interface ISnapshotBuilderService
+public interface ISnapshotService
 {
     /// <summary>
     /// Make final trading snapshot from current system state.

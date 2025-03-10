@@ -54,7 +54,7 @@ public class MakeSnapshotTests
             t =>
             {
                 using var mock = AutoMock.GetLoose(ConfigureContainer(t.tradingDay));
-                var sut = mock.Create<SnapshotBuilderService>();
+                var sut = mock.Create<SnapshotService>();
                 var summary = sut.MakeSnapshot(t.tradingDay, t.correlationId, t.strategy, t.initiator, t.status).GetAwaiter().GetResult();
                 return summary is not null;
             }).QuickCheckThrowOnFailure();

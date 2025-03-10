@@ -14,7 +14,7 @@ using Microsoft.Extensions.Hosting;
 namespace MarginTrading.Backend.Services.Snapshots;
 
 public sealed class SnapshotRequestsMonitor(
-    ISnapshotBuilderService snapshotService,
+    ISnapshotService snapshotService,
     SnapshotMonitorSettings settings,
     IWaitableRequestConsumer<SnapshotCreationRequest, TradingEngineSnapshotSummary> queue) : BackgroundService
 {

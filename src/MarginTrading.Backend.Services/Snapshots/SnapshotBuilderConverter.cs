@@ -7,7 +7,7 @@ using MarginTrading.Backend.Core;
 
 namespace MarginTrading.Backend.Services.Snapshots;
 
-public partial class SnapshotBuilderService
+public partial class SnapshotService
 {
     /// <inheritdoc />
     public async Task ConvertToFinal(

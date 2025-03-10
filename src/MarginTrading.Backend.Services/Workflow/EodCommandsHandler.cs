@@ -30,7 +30,7 @@ namespace MarginTrading.Backend.Services.Workflow
     public class EodCommandsHandler
     {
         private readonly IQuotesApi _quotesApi;
-        private readonly ISnapshotBuilderService _snapshotService;
+        private readonly ISnapshotService _snapshotService;
         private readonly IWaitableRequestProducer<SnapshotCreationRequest, TradingEngineSnapshotSummary> _snapshotRequestProducer;
         private readonly IDateService _dateService;
         private readonly IDraftSnapshotKeeperFactory _draftSnapshotKeeperFactory;
@@ -45,7 +45,7 @@ namespace MarginTrading.Backend.Services.Workflow
             IIdentityGenerator identityGenerator,
             ISnapshotBuilderDraftRebuildAgent snapshotDraftRebuildAgent,
             IWaitableRequestProducer<SnapshotCreationRequest, TradingEngineSnapshotSummary> snapshotRequestProducer,
-            ISnapshotBuilderService snapshotService,
+            ISnapshotService snapshotService,
             ILog log)
         {
             _quotesApi = quotesApi;

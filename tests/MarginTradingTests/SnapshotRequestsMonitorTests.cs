@@ -23,7 +23,7 @@ public class SnapshotRequestsMonitorTests
     [Test]
     public async Task ExecuteAsync_WhenQueueReturnsNull_ShouldNotCallSnapshotService()
     {
-        var snapshotServiceMock = new Mock<ISnapshotBuilderService>();
+        var snapshotServiceMock = new Mock<ISnapshotService>();
         var queueMock = new Mock<IWaitableRequestConsumer<SnapshotCreationRequest, TradingEngineSnapshotSummary>>();
         queueMock.Setup(q => q.Dequeue()).Returns((SnapshotCreationRequest)null);
 
@@ -70,7 +70,7 @@ public class SnapshotRequestsMonitorTests
             Guid.NewGuid().ToString()
         );
 
-        var snapshotServiceMock = new Mock<ISnapshotBuilderService>();
+        var snapshotServiceMock = new Mock<ISnapshotService>();
         snapshotServiceMock
             .Setup(s => s.MakeSnapshot(
             validRequest.TradingDay,
