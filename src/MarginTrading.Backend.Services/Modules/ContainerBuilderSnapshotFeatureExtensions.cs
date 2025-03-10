@@ -61,11 +61,11 @@ internal static class ContainerBuilderSnapshotFeatureExtensions
             .As<ITradingEngineSnapshotBuilder>()
             .SingleInstance();
 
-        builder.RegisterType<SnapshotBuilderService>()
-            .As<ISnapshotBuilderService>()
+        builder.RegisterType<SnapshotService>()
+            .As<ISnapshotService>()
             .InstancePerLifetimeScope();
-        builder.RegisterDecorator<SnapshotBuilderServiceDecorator, ISnapshotBuilderService>();
-        builder.RegisterDecorator<LoggingSnapshotBuilderService, ISnapshotBuilderService>();
+        builder.RegisterDecorator<SnapshotBuilderServiceDecorator, ISnapshotService>();
+        builder.RegisterDecorator<LoggingSnapshotBuilderService, ISnapshotService>();
 
         builder.RegisterType<SnapshotValidationService>()
             .As<ISnapshotValidationService>()

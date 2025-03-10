@@ -13,8 +13,8 @@ using MarginTrading.Backend.Services.Services;
 namespace MarginTrading.Backend.Services.Snapshots;
 
 internal class SnapshotBuilderServiceDecorator(
-    ISnapshotBuilderService decoratee,
-    ISnapshotBuilderDraftRebuildAgent snapshotDraftRebuildAgent) : ISnapshotBuilderService
+    ISnapshotService decoratee,
+    ISnapshotBuilderDraftRebuildAgent snapshotDraftRebuildAgent) : ISnapshotService
 {
     public Task ConvertToFinal(
         string correlationId,

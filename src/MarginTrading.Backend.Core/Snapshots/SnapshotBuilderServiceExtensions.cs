@@ -8,7 +8,7 @@ namespace MarginTrading.Backend.Core.Snapshots;
 public static class SnapshotBuilderServiceExtensions
 {
     public static Task<TradingEngineSnapshotSummary> MakeSnapshot(
-        this ISnapshotBuilderService service,
+        this ISnapshotService service,
         SnapshotCreationRequest request) =>
         service.MakeSnapshot(
             request.TradingDay,
