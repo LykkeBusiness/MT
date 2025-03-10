@@ -10,12 +10,12 @@ namespace MarginTrading.Backend.Core.Services
     /// <summary>
     /// Responsible for validation of current state using the latest snapshot and history.
     /// </summary>
-    public interface ISnapshotValidationService
+    public interface ISnapshotValidator
     {
         /// <summary>
         /// Validates current trading state for inconsistent state.
         /// </summary>
         /// <returns>The validation result that contains the details of the mismatch between the current and expected status..</returns>
-        Task<EnvironmentValidationResult> ValidateCurrentStateAsync();
+        Task<EnvironmentValidationResult> ValidateCurrentState();
     }
 }

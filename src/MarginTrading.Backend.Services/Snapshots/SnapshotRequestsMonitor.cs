@@ -30,7 +30,7 @@ public sealed class SnapshotRequestsMonitor(
             TradingEngineSnapshotSummary result;
             try
             {
-                result = await snapshotService.MakeSnapshot(request);
+                result = await snapshotService.Make(request);
             }
             catch (Exception e)
             {

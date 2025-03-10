@@ -44,7 +44,7 @@ public class SnapshotRequestsMonitorTests
         await sut.StopAsync(cts.Token);
 
         snapshotServiceMock.Verify(
-            s => s.MakeSnapshot(
+            s => s.Make(
                 It.IsAny<DateTime>(),
                 It.IsAny<string>(),
                 It.IsAny<EnvironmentValidationStrategyType>(),
@@ -72,7 +72,7 @@ public class SnapshotRequestsMonitorTests
 
         var snapshotServiceMock = new Mock<ISnapshotService>();
         snapshotServiceMock
-            .Setup(s => s.MakeSnapshot(
+            .Setup(s => s.Make(
             validRequest.TradingDay,
             validRequest.CorrelationId,
             validRequest.ValidationStrategyType,
@@ -114,7 +114,7 @@ public class SnapshotRequestsMonitorTests
         await sut.StopAsync(cts.Token);
 
         snapshotServiceMock.Verify(
-            s => s.MakeSnapshot(
+            s => s.Make(
             validRequest.TradingDay,
             validRequest.CorrelationId,
             validRequest.ValidationStrategyType,

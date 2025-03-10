@@ -2,39 +2,25 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
-using MarginTrading.Backend.Contracts.Prices;
-using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Snapshots;
 using MarginTrading.Backend.Services.Services;
 
 namespace MarginTrading.Backend.Services.Snapshots;
 
-internal class SnapshotBuilderServiceDecorator(
+internal class SnapshotServiceDecorator(
     ISnapshotService decoratee,
     ISnapshotBuilderDraftRebuildAgent snapshotDraftRebuildAgent) : ISnapshotService
 {
-    public Task ConvertToFinal(
-        string correlationId,
-        IEnumerable<ClosingAssetPrice> cfdQuotes,
-        IEnumerable<ClosingFxRate> fxRates,
-        IDraftSnapshotKeeper draftSnapshotKeeper = null) =>
-        decoratee.ConvertToFinal(
-            correlationId,
-            cfdQuotes,
-            fxRates,
-            draftSnapshotKeeper);
-
-    public async Task<TradingEngineSnapshotSummary> MakeSnapshot(
+    public async Task<TradingEngineSnapshotSummary> Make(
         DateTime tradingDay,
         string correlationId,
         EnvironmentValidationStrategyType strategyType,
         SnapshotInitiator initiator,
         SnapshotStatus status = SnapshotStatus.Final)
     {
-        var summary = await decoratee.MakeSnapshot(
+        var summary = await decoratee.Make(
             tradingDay,
             correlationId,
             strategyType,

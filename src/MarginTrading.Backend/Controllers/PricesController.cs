@@ -20,9 +20,7 @@ using MarginTrading.Backend.Core.Quotes;
 using MarginTrading.Backend.Core.Services;
 using MarginTrading.Backend.Core.Snapshots;
 using MarginTrading.Backend.Filters;
-using MarginTrading.Backend.Services;
 using MarginTrading.Backend.Services.Mappers;
-using MarginTrading.Backend.Services.Snapshots;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -40,20 +38,20 @@ namespace MarginTrading.Backend.Controllers
     {
         private readonly IQuoteCacheService _quoteCacheService;
         private readonly IFxRateCacheService _fxRateCacheService;
-        private readonly ISnapshotService _snapshotService;
+        private readonly ISnapshotConverter _snapshotConverter;
         private readonly IDraftSnapshotKeeper _draftSnapshotKeeper;
         private readonly ILog _log;
 
         public PricesController(
             IQuoteCacheService quoteCacheService,
             IFxRateCacheService fxRateCacheService,
-            ISnapshotService snapshotService,
-            ILog log,
-            IDraftSnapshotKeeper draftSnapshotKeeper)
+            ISnapshotConverter snapshotConverter,
+            IDraftSnapshotKeeper draftSnapshotKeeper,
+            ILog log)
         {
             _quoteCacheService = quoteCacheService;
             _fxRateCacheService = fxRateCacheService;
-            _snapshotService = snapshotService;
+            _snapshotConverter = snapshotConverter;
             _log = log;
             _draftSnapshotKeeper = draftSnapshotKeeper;
         }
@@ -124,7 +122,7 @@ namespace MarginTrading.Backend.Controllers
 
             try
             {
-                await _snapshotService.ConvertToFinal(
+                await _snapshotConverter.ConvertToFinal(
                     request.CorrelationId,
                     request.Cfd,
                     request.Forex);

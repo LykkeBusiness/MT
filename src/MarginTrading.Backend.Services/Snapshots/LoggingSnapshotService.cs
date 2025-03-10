@@ -2,39 +2,19 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
-using MarginTrading.Backend.Contracts.Prices;
-using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Snapshots;
 
 using Microsoft.Extensions.Logging;
 
 namespace MarginTrading.Backend.Services.Snapshots;
 
-internal sealed class LoggingSnapshotBuilderService(
+internal sealed class LoggingSnapshotService(
     ISnapshotService decoratee,
-    ILogger<LoggingSnapshotBuilderService> logger) : ISnapshotService
+    ILogger<LoggingSnapshotService> logger) : ISnapshotService
 {
-    public async Task ConvertToFinal(
-        string correlationId,
-        IEnumerable<ClosingAssetPrice> cfdQuotes,
-        IEnumerable<ClosingFxRate> fxRates,
-        IDraftSnapshotKeeper draftSnapshotKeeper = null)
-    {
-        await decoratee.ConvertToFinal(
-            correlationId,
-            cfdQuotes,
-            fxRates,
-            draftSnapshotKeeper);
-
-        logger.LogInformation(
-            "Snapshot was converted to final. CorrelationId: {CorrelationId}",
-            correlationId);
-    }
-
-    public async Task<TradingEngineSnapshotSummary> MakeSnapshot(
+    public async Task<TradingEngineSnapshotSummary> Make(
         DateTime tradingDay,
         string correlationId,
         EnvironmentValidationStrategyType strategyType,
@@ -48,7 +28,7 @@ internal sealed class LoggingSnapshotBuilderService(
             correlationId,
             initiator);
 
-        var summary = await decoratee.MakeSnapshot(
+        var summary = await decoratee.Make(
             tradingDay,
             correlationId,
             strategyType,

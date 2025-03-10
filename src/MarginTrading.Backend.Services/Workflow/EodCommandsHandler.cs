@@ -30,7 +30,7 @@ namespace MarginTrading.Backend.Services.Workflow
     public class EodCommandsHandler
     {
         private readonly IQuotesApi _quotesApi;
-        private readonly ISnapshotService _snapshotService;
+        private readonly ISnapshotConverter _snapshotConverter;
         private readonly IWaitableRequestProducer<SnapshotCreationRequest, TradingEngineSnapshotSummary> _snapshotRequestProducer;
         private readonly IDateService _dateService;
         private readonly IDraftSnapshotKeeperFactory _draftSnapshotKeeperFactory;
@@ -45,7 +45,7 @@ namespace MarginTrading.Backend.Services.Workflow
             IIdentityGenerator identityGenerator,
             ISnapshotBuilderDraftRebuildAgent snapshotDraftRebuildAgent,
             IWaitableRequestProducer<SnapshotCreationRequest, TradingEngineSnapshotSummary> snapshotRequestProducer,
-            ISnapshotService snapshotService,
+            ISnapshotConverter snapshotConverter,
             ILog log)
         {
             _quotesApi = quotesApi;
@@ -54,7 +54,7 @@ namespace MarginTrading.Backend.Services.Workflow
             _identityGenerator = identityGenerator;
             _snapshotDraftRebuildAgent = snapshotDraftRebuildAgent;
             _snapshotRequestProducer = snapshotRequestProducer;
-            _snapshotService = snapshotService;
+            _snapshotConverter = snapshotConverter;
             _log = log;
         }
 
@@ -85,7 +85,7 @@ namespace MarginTrading.Backend.Services.Workflow
 
                 var draftSnapshotKeeper = _draftSnapshotKeeperFactory.Create(command.TradingDay);
 
-                await _snapshotService.ConvertToFinal(command.OperationId,
+                await _snapshotConverter.ConvertToFinal(command.OperationId,
                     MapQuotes(quotes.EodMarketData.Underlyings),
                     MapFxRates(quotes.EodMarketData.Forex),
                     draftSnapshotKeeper);
