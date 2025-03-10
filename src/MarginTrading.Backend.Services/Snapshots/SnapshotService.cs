@@ -18,7 +18,7 @@ using MarginTrading.Common.Services;
 
 namespace MarginTrading.Backend.Services.Snapshots;
 
-public partial class SnapshotService : ISnapshotService
+public partial class SnapshotService : ISnapshotService, ISnapshotConverter
 {
     private readonly IScheduleSettingsCacheService _scheduleSettingsCacheService;
     private readonly IDateService _dateService;
@@ -84,7 +84,7 @@ public partial class SnapshotService : ISnapshotService
     }
 
     /// <inheritdoc />
-    public async Task<TradingEngineSnapshotSummary> MakeSnapshot(
+    public async Task<TradingEngineSnapshotSummary> Make(
         DateTime tradingDay,
         string correlationId,
         EnvironmentValidationStrategyType strategyType,

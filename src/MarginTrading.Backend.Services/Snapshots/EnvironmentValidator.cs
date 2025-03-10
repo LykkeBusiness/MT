@@ -12,16 +12,16 @@ namespace MarginTrading.Backend.Services.Snapshots;
 
 public class EnvironmentValidator : IEnvironmentValidator
 {
-    private readonly ISnapshotValidationService _snapshotValidationService;
+    private readonly ISnapshotValidator _snapshotValidator;
     private readonly IMarginTradingBlobRepository _blobRepository;
     private readonly ILog _log;
 
     public EnvironmentValidator(
-        ISnapshotValidationService snapshotValidationService,
+        ISnapshotValidator snapshotValidator,
         IMarginTradingBlobRepository blobRepository,
         ILog log)
     {
-        _snapshotValidationService = snapshotValidationService;
+        _snapshotValidator = snapshotValidator;
         _blobRepository = blobRepository;
         _log = log;
     }
@@ -30,7 +30,7 @@ public class EnvironmentValidator : IEnvironmentValidator
     {
         try
         {
-            var validationResult = await _snapshotValidationService.ValidateCurrentStateAsync();
+            var validationResult = await _snapshotValidator.ValidateCurrentState();
 
             if (!validationResult.IsValid)
             {

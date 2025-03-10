@@ -22,7 +22,7 @@ using MarginTrading.Common.Extensions;
 namespace MarginTrading.Backend.Services.Snapshots
 {
     /// <inheritdoc/> 
-    public class SnapshotValidationService : ISnapshotValidationService
+    public class SnapshotValidator : ISnapshotValidator
     {
         private static readonly OrderStatus[] OrderTerminalStatuses =
             { OrderStatus.Canceled, OrderStatus.Rejected, OrderStatus.Executed, OrderStatus.Expired };
@@ -35,7 +35,7 @@ namespace MarginTrading.Backend.Services.Snapshots
         private readonly IOrderReader _orderCache;
         private readonly ILog _log;
 
-        public SnapshotValidationService(
+        public SnapshotValidator(
             ITradingEngineSnapshotsRepository tradingEngineSnapshotsRepository,
             IOrdersHistoryRepository ordersHistoryRepository,
             IPositionsHistoryRepository positionsHistoryRepository,
@@ -50,9 +50,9 @@ namespace MarginTrading.Backend.Services.Snapshots
         }
 
         /// <inheritdoc/> 
-        public async Task<EnvironmentValidationResult> ValidateCurrentStateAsync()
+        public async Task<EnvironmentValidationResult> ValidateCurrentState()
         {
-            await _log.WriteInfoAsync(nameof(SnapshotValidationService), nameof(ValidateCurrentStateAsync),
+            await _log.WriteInfoAsync(nameof(SnapshotValidator), nameof(ValidateCurrentState),
                 $"Snapshot validation started: {DateTime.UtcNow}");
             var currentOrdersJson = _orderCache.GetAllOrders().ToJson();
             var ordersTimestamp = DateTime.UtcNow;
@@ -65,7 +65,7 @@ namespace MarginTrading.Backend.Services.Snapshots
             var currentPositions = currentPositionsJson.DeserializeJson<ImmutableArray<Position>>();
 
             var tradingEngineSnapshot = await _tradingEngineSnapshotsRepository.GetLastAsync();
-            await _log.WriteInfoAsync(nameof(SnapshotValidationService), nameof(ValidateCurrentStateAsync),
+            await _log.WriteInfoAsync(nameof(SnapshotValidator), nameof(ValidateCurrentState),
                 $"Last snapshot correlationId {tradingEngineSnapshot.CorrelationId}, tradingDay {tradingEngineSnapshot.TradingDay}, timestamp {tradingEngineSnapshot.Timestamp}");
 
             var lastOrders = GetOrders(tradingEngineSnapshot);
@@ -82,23 +82,23 @@ namespace MarginTrading.Backend.Services.Snapshots
 
             if (ordersValidationResult.IsValid)
             {
-                await _log.WriteInfoAsync(nameof(SnapshotValidationService), nameof(ValidateCurrentStateAsync),
+                await _log.WriteInfoAsync(nameof(SnapshotValidator), nameof(ValidateCurrentState),
                     $"Orders validation result is valid");
             }
             else
             {
-                await _log.WriteWarningAsync(nameof(SnapshotValidationService), nameof(ValidateCurrentStateAsync),
+                await _log.WriteWarningAsync(nameof(SnapshotValidator), nameof(ValidateCurrentState),
                     $"Orders validation result is NOT valid. Extra: {ordersValidationResult.Extra.Count}, missed: {ordersValidationResult.Missed.Count}, inconsistent: {ordersValidationResult.Inconsistent.Count}");
             }
 
             if (positionsValidationResult.IsValid)
             {
-                await _log.WriteInfoAsync(nameof(SnapshotValidationService), nameof(ValidateCurrentStateAsync),
+                await _log.WriteInfoAsync(nameof(SnapshotValidator), nameof(ValidateCurrentState),
                     $"Positions validation result is valid");
             }
             else
             {
-                await _log.WriteWarningAsync(nameof(SnapshotValidationService), nameof(ValidateCurrentStateAsync),
+                await _log.WriteWarningAsync(nameof(SnapshotValidator), nameof(ValidateCurrentState),
                     $"Positions validation result is NOT valid. Extra: {positionsValidationResult.Extra.Count}, missed: {positionsValidationResult.Missed.Count}, inconsistent: {positionsValidationResult.Inconsistent.Count}");
             }
 
