@@ -71,10 +71,10 @@ namespace MarginTrading.Backend.Services.Snapshots
             var lastOrders = GetOrders(tradingEngineSnapshot);
             var lastPositions = GetPositions(tradingEngineSnapshot);
 
-            await _log.WriteInfoAsync(nameof(SnapshotValidationService), nameof(ValidateCurrentStateAsync),
+            await _log.WriteInfoAsync(nameof(SnapshotValidator), nameof(ValidateCurrentState),
                 $"Orders history from {tradingEngineSnapshot.Timestamp} to {ordersTimestamp}");
 
-            await _log.WriteInfoAsync(nameof(SnapshotValidationService), nameof(ValidateCurrentStateAsync),
+            await _log.WriteInfoAsync(nameof(SnapshotValidator), nameof(ValidateCurrentState),
                 $"Positions history from {tradingEngineSnapshot.Timestamp} to {positionsTimestamp}");
             var ordersHistory = await _ordersHistoryRepository.GetLastSnapshot(tradingEngineSnapshot.Timestamp, ordersTimestamp);
             var positionsHistory = await _positionsHistoryRepository.GetLastSnapshot(tradingEngineSnapshot.Timestamp, positionsTimestamp);
