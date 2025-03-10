@@ -35,7 +35,7 @@ namespace MarginTrading.Backend.Services.Workflow
         private readonly IDateService _dateService;
         private readonly IDraftSnapshotKeeperFactory _draftSnapshotKeeperFactory;
         private readonly IIdentityGenerator _identityGenerator;
-        private readonly ISnapshotBuilderDraftRebuildAgent _snapshotDraftRebuildAgent;
+        private readonly ISnapshotDraftAgent _snapshotDraftRebuildAgent;
         private readonly ILog _log;
 
         public EodCommandsHandler(
@@ -43,7 +43,7 @@ namespace MarginTrading.Backend.Services.Workflow
             IDateService dateService,
             IDraftSnapshotKeeperFactory draftSnapshotKeeperFactory,
             IIdentityGenerator identityGenerator,
-            ISnapshotBuilderDraftRebuildAgent snapshotDraftRebuildAgent,
+            ISnapshotDraftAgent snapshotDraftRebuildAgent,
             IWaitableRequestProducer<SnapshotCreationRequest, TradingEngineSnapshotSummary> snapshotRequestProducer,
             ISnapshotConverter snapshotConverter,
             ILog log)

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace MarginTrading.Backend.Services.Services;
 
-public interface ISnapshotBuilderDraftRebuildAgent
+public interface ISnapshotDraftAgent
 {
     ValueTask<bool> IsDraftRebuildRequired();
     Task ResetDraftRebuildFlag();
