@@ -11,7 +11,7 @@ namespace MarginTrading.Backend.Services.Snapshots;
 
 internal class SnapshotServiceDecorator(
     ISnapshotService decoratee,
-    ISnapshotBuilderDraftRebuildAgent snapshotDraftRebuildAgent) : ISnapshotService
+    ISnapshotDraftAgent snapshotDraftRebuildAgent) : ISnapshotService
 {
     public async Task<TradingEngineSnapshotSummary> Make(
         DateTime tradingDay,

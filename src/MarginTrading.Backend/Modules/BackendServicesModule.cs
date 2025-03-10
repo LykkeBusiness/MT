@@ -144,10 +144,10 @@ namespace MarginTrading.Backend.Modules
             // decorate PositionHistoryHandler with SnapshotBuilderPositionHistoryAgent
             // decoration only makes sense in real environment, so it is not used in tests
             // (module BackendServicesModule is not used in tests)
-            builder.Register(ctx => new SnapshotBuilderPositionHistoryAgent(
+            builder.Register(ctx => new SnapshotDraftAgent(
                     ctx.Resolve<PositionHistoryHandler>(),
                     ctx.Resolve<IConnectionMultiplexer>(),
-                    ctx.Resolve<ILogger<SnapshotBuilderPositionHistoryAgent>>()))
+                    ctx.Resolve<ILogger<SnapshotDraftAgent>>()))
                 .AsImplementedInterfaces()
                 .SingleInstance();
         }

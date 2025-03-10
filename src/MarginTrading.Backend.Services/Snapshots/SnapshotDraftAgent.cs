@@ -20,16 +20,16 @@ using StackExchange.Redis;
 namespace MarginTrading.Backend.Services.Snapshots;
 
 /// <summary>
-/// Snapshot builder agent to keep track of position history changes.
+/// Snapshot draft agent to keep track of position history changes.
 /// It is important concern during EOD process.
 /// Also implements cross cutting concern of persisting snapshot rebuild flag to a Redis cache.
 /// Default value of snapshot rebuild flag is false.
 /// </summary>
 /// <param name="decoratee"></param>
-public class SnapshotBuilderPositionHistoryAgent(
+public class SnapshotDraftAgent(
     IPositionHistoryHandler decoratee,
     IConnectionMultiplexer redis,
-    ILogger<SnapshotBuilderPositionHistoryAgent> logger) : IPositionHistoryHandler, ISnapshotBuilderDraftRebuildAgent
+    ILogger<SnapshotDraftAgent> logger) : ISnapshotDraftAgent, IPositionHistoryHandler
 {
     private readonly IPositionHistoryHandler _decoratee = decoratee;
     private readonly IDatabase _database = redis.GetDatabase();
