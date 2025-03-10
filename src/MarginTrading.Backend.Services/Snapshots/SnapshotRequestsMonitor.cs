@@ -23,7 +23,7 @@ public sealed class SnapshotRequestsMonitor(
         using var timer = new PeriodicTimer(settings.MonitoringDelay);
         while (await timer.WaitForNextTickAsync(stoppingToken))
         {
-            var request = queue.Dequeue();
+            var request = GetNextRequest();
             if (request is null)
                 continue;
 
@@ -38,6 +38,19 @@ public sealed class SnapshotRequestsMonitor(
                 continue;
             }
             queue.Acknowledge(request.Id, result);
+        }
+    }
+
+    private SnapshotCreationRequest GetNextRequest()
+    {
+        try
+        {
+            return queue.Dequeue();
+        }
+        catch (InvalidOperationException)
+        {
+            // Can't proceed to next request since there is already one in progress
+            return null;
         }
     }
 }
