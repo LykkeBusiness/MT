@@ -3,22 +3,22 @@
 
 using System;
 using System.Threading.Tasks;
+
 using MarginTrading.Backend.Core.Snapshots;
 
-namespace MarginTrading.Backend.Core.Repositories
+namespace MarginTrading.Backend.Core.Repositories;
+
+public interface ITradingEngineSnapshotsRepository
 {
-    public interface ITradingEngineSnapshotsRepository
-    {
-        Task<TradingEngineSnapshot> GetLastAsync();
-        
-        Task<TradingEngineSnapshot> GetLastDraftAsync(DateTime? tradingDay);
+    Task<TradingEngineSnapshot> GetLastAsync();
 
-        Task AddAsync(TradingEngineSnapshot tradingEngineSnapshot);
+    Task<TradingEngineSnapshot> GetLastDraftAsync(DateTime? tradingDay);
 
-        Task<TradingEngineSnapshot> Get(string correlationId);
+    Task AddAsync(TradingEngineSnapshot tradingEngineSnapshot);
 
-        Task Delete(string correlationId);
+    Task<TradingEngineSnapshot> Get(string correlationId);
 
-        Task<bool> DraftExistsAsync(DateTime tradingDay);
-    }
+    Task Delete(string correlationId);
+
+    Task<bool> DraftExistsAsync(DateTime tradingDay);
 }
