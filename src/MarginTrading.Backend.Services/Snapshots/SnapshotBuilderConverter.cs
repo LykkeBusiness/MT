@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 using MarginTrading.Backend.Contracts.Prices;
@@ -16,12 +17,11 @@ public partial class SnapshotService
         IEnumerable<ClosingFxRate> fxRates,
         IDraftSnapshotKeeper draftSnapshotKeeper = null)
     {
-        if (IsMakingSnapshotInProgress)
+        if (Interlocked.CompareExchange(ref _isSnaphotInProgress, 1, 0) == 1)
         {
             throw new InvalidOperationException("Trading data snapshot manipulations are already in progress");
         }
 
-        await Lock.WaitAsync();
         try
         {
             var snapshot = await _finalSnapshotCalculator.RunAsync(fxRates, cfdQuotes, correlationId, draftSnapshotKeeper);
@@ -29,7 +29,7 @@ public partial class SnapshotService
         }
         finally
         {
-            Lock.Release();
+            Interlocked.Exchange(ref _isSnaphotInProgress, 0);
         }
     }
 }

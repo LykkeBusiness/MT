@@ -29,8 +29,9 @@ public partial class SnapshotService : ISnapshotService, ISnapshotConverter
     private readonly IFinalSnapshotCalculator _finalSnapshotCalculator;
     private readonly ITradingEngineSnapshotBuilder _snapshotBuilder;
     private readonly IComponentContext _context;
-    private static readonly SemaphoreSlim Lock = new(1, 1);
-    public static bool IsMakingSnapshotInProgress => Lock.CurrentCount == 0;
+    public static bool IsMakingSnapshotInProgress =>
+        Interlocked.CompareExchange(ref _isSnaphotInProgress, 0, 0) == 1;
+    private static int _isSnaphotInProgress = 0;
 
     public SnapshotService(
         IScheduleSettingsCacheService scheduleSettingsCacheService,
@@ -63,19 +64,14 @@ public partial class SnapshotService : ISnapshotService, ISnapshotConverter
 
             if (!_scheduleSettingsCacheService.TryGetPlatformCurrentDisabledInterval(out disabledInterval))
             {
-                throw new Exception($"Trading should be stopped for whole platform in order to make trading data snapshot.");
+                throw new InvalidOperationException($"Trading should be stopped for whole platform in order to make trading data snapshot.");
             }
         }
 
         if (disabledInterval.Start.AddDays(-1) > tradingDay.Date || disabledInterval.End < tradingDay.Date)
         {
-            throw new Exception(
+            throw new InvalidOperationException(
                 $"{nameof(tradingDay)}'s Date component must be from current disabled interval's Start -1d to End: [{disabledInterval.Start.AddDays(-1)}, {disabledInterval.End}].");
-        }
-
-        if (IsMakingSnapshotInProgress)
-        {
-            throw new InvalidOperationException("Trading data snapshot creation is already in progress");
         }
 
         // We must be sure all messages have been processed by history brokers before starting current state validation.
@@ -93,7 +89,11 @@ public partial class SnapshotService : ISnapshotService, ISnapshotConverter
     {
         CheckPreconditionsOrThrow(tradingDay);
 
-        await Lock.WaitAsync();
+        if (Interlocked.CompareExchange(ref _isSnaphotInProgress, 1, 0) == 1)
+        {
+            throw new InvalidOperationException("Trading data snapshot creation is already in progress");
+        }
+
         try
         {
             var envValidationResult = await ValidateEnvironment(strategyType, correlationId);
@@ -112,7 +112,7 @@ public partial class SnapshotService : ISnapshotService, ISnapshotConverter
         }
         finally
         {
-            Lock.Release();
+            Interlocked.Exchange(ref _isSnaphotInProgress, 0);
         }
     }
 
