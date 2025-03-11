@@ -4,12 +4,18 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Autofac.Extensions.DependencyInjection;
+
 using JetBrains.Annotations;
+
 using Lykke.SettingsReader.ConfigurationProvider;
+
 using MarginTrading.Common.Services;
+
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.PlatformAbstractions;
 
@@ -61,6 +67,9 @@ namespace MarginTrading.Backend
 
                     AppHost = Host.CreateDefaultBuilder(args)
                         .UseServiceProviderFactory(new AutofacServiceProviderFactory())
+                        .ConfigureServices(
+                            services => services.Configure<HostOptions>(
+                                opt => opt.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore))
                         .ConfigureWebHostDefaults(webBuilder =>
                         {
                             webBuilder.ConfigureKestrel(serverOptions =>

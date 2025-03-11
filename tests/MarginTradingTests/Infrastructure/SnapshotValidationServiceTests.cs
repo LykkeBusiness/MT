@@ -5,8 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading.Tasks;
+
 using Common;
 using Common.Log;
+
 using MarginTrading.Backend.Contracts.Orders;
 using MarginTrading.Backend.Contracts.Positions;
 using MarginTrading.Backend.Core.Orders;
@@ -15,7 +17,10 @@ using MarginTrading.Backend.Core.Snapshots;
 using MarginTrading.Backend.Core.Trading;
 using MarginTrading.Backend.Services;
 using MarginTrading.Backend.Services.Infrastructure;
+using MarginTrading.Backend.Services.Snapshots;
+
 using Moq;
+
 using NUnit.Framework;
 
 namespace MarginTradingTests.Infrastructure
@@ -41,7 +46,7 @@ namespace MarginTradingTests.Infrastructure
         private List<IPositionHistory> _positionsHistory;
         private TradingEngineSnapshot _tradingEngineSnapshot;
 
-        private SnapshotValidationService _service;
+        private SnapshotValidator _service;
 
         [SetUp]
         public void SetUp()
@@ -68,7 +73,7 @@ namespace MarginTradingTests.Infrastructure
             _positionsHistoryRepositoryMock.Setup(o => o.GetLastSnapshot(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
                 .ReturnsAsync((DateTime from, DateTime to) => _positionsHistory);
 
-            _service = new SnapshotValidationService(
+            _service = new SnapshotValidator(
                 _tradingEngineSnapshotsRepositoryMock.Object,
                 _ordersHistoryRepositoryMock.Object,
                 _positionsHistoryRepositoryMock.Object,
@@ -107,7 +112,7 @@ namespace MarginTradingTests.Infrastructure
 
             // act
 
-            var result = await _service.ValidateCurrentStateAsync();
+            var result = await _service.ValidateCurrentState();
 
             // assert
 
@@ -142,7 +147,7 @@ namespace MarginTradingTests.Infrastructure
 
             // act
 
-            var result = await _service.ValidateCurrentStateAsync();
+            var result = await _service.ValidateCurrentState();
 
             // assert
 
@@ -179,7 +184,7 @@ namespace MarginTradingTests.Infrastructure
 
             // act
 
-            var result = await _service.ValidateCurrentStateAsync();
+            var result = await _service.ValidateCurrentState();
 
             // assert
 
@@ -215,7 +220,7 @@ namespace MarginTradingTests.Infrastructure
 
             // act
 
-            var result = await _service.ValidateCurrentStateAsync();
+            var result = await _service.ValidateCurrentState();
 
             // assert
 
@@ -251,7 +256,7 @@ namespace MarginTradingTests.Infrastructure
 
             // act
 
-            var result = await _service.ValidateCurrentStateAsync();
+            var result = await _service.ValidateCurrentState();
 
             // assert
 
@@ -286,7 +291,7 @@ namespace MarginTradingTests.Infrastructure
 
             // act
 
-            var result = await _service.ValidateCurrentStateAsync();
+            var result = await _service.ValidateCurrentState();
 
             // assert
 
@@ -321,7 +326,7 @@ namespace MarginTradingTests.Infrastructure
 
             // act
 
-            var result = await _service.ValidateCurrentStateAsync();
+            var result = await _service.ValidateCurrentState();
 
             // assert
 
@@ -357,7 +362,7 @@ namespace MarginTradingTests.Infrastructure
 
             // act
 
-            var result = await _service.ValidateCurrentStateAsync();
+            var result = await _service.ValidateCurrentState();
 
             // assert
 
@@ -366,7 +371,7 @@ namespace MarginTradingTests.Infrastructure
 
         private static OrderContract CreateSnapshotOrder(string id, decimal volume, decimal? price,
             OrderStatusContract status)
-            => new OrderContract {Id = id, Volume = volume, ExpectedOpenPrice = price, Status = status};
+            => new OrderContract { Id = id, Volume = volume, ExpectedOpenPrice = price, Status = status };
 
         private static Order CreateOrder(string id, decimal volume, decimal? price, OrderStatus status)
             => new Order(id, 0, string.Empty, volume, DateTime.Now, DateTime.Now, null, string.Empty, string.Empty,
@@ -375,10 +380,10 @@ namespace MarginTradingTests.Infrastructure
                 FxToAssetPairDirection.Reverse, status, string.Empty);
 
         private static OrderHistory CreateOrderHistory(string id, decimal volume, decimal? price, OrderStatus status)
-            => new OrderHistory {Id = id, Volume = volume, ExpectedOpenPrice = price, Status = status};
+            => new OrderHistory { Id = id, Volume = volume, ExpectedOpenPrice = price, Status = status };
 
         private static PositionContract CreateSnapshotPosition(string id, decimal volume)
-            => new PositionContract {Id = id, Volume = volume};
+            => new PositionContract { Id = id, Volume = volume };
 
         private static Position CreatePosition(string id, decimal volume)
             => new Position(id, 0, string.Empty, volume, string.Empty, string.Empty, string.Empty, 0, string.Empty,
@@ -389,6 +394,6 @@ namespace MarginTradingTests.Infrastructure
                 false);
 
         private static PositionHistory CreatePositionHistory(string id, decimal volume, PositionHistoryType historyType)
-            => new PositionHistory {Id = id, Volume = volume, HistoryType = historyType};
+            => new PositionHistory { Id = id, Volume = volume, HistoryType = historyType };
     }
 }

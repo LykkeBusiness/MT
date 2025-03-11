@@ -2,27 +2,26 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper;
+
 using Common;
 using Common.Log;
-using FluentScheduler;
+
 using MarginTrading.AccountsManagement.Contracts;
 using MarginTrading.AccountsManagement.Contracts.Models;
 using MarginTrading.Backend.Contracts.RabbitMqMessageModels;
 using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Mappers;
-using MarginTrading.Backend.Core.Orders;
 using MarginTrading.Backend.Core.Repositories;
 using MarginTrading.Backend.Core.Settings;
-using MarginTrading.Backend.Core.Trading;
 using MarginTrading.Backend.Services.Extensions;
 using MarginTrading.Backend.Services.Notifications;
 using MarginTrading.Common.Services;
+
 using Microsoft.Extensions.Internal;
+
 using MoreLinq;
 
 namespace MarginTrading.Backend.Services
@@ -73,6 +72,8 @@ namespace MarginTrading.Backend.Services
             _systemClock = systemClock;
             _accountMarginFreezingRepository = accountMarginFreezingRepository;
             _accountMarginUnconfirmedRepository = accountMarginUnconfirmedRepository;
+
+            DisableTelemetry();
         }
 
         public override Task Execute()
@@ -89,14 +90,14 @@ namespace MarginTrading.Backend.Services
         private async Task<Dictionary<string, MarginTradingAccount>> GetAccounts()
         {
             var accountsTask = _accountsApi.List();
-            var onDate = _systemClock.UtcNow.UtcDateTime.Date; 
+            var onDate = _systemClock.UtcNow.UtcDateTime.Date;
             var balanceChangesTask = _accountBalanceHistoryApi.ByDate(onDate, onDate.AddDays(1));
 
             await Task.WhenAll(accountsTask, balanceChangesTask);
 
             var accounts = await accountsTask;
             var balanceChanges = await balanceChangesTask;
-            
+
             var result = accounts.Select(Convert).ToDictionary(x => x.Id);
             result.ForEach(x =>
             {
@@ -105,7 +106,7 @@ namespace MarginTrading.Backend.Services
                 {
                     var accountBalanceChanges = balanceChanges[x.Key];
                     var firstBalanceChange = accountBalanceChanges.OrderBy(b => b.ChangeTimestamp).FirstOrDefault();
-                    account.TodayStartBalance = firstBalanceChange !=null
+                    account.TodayStartBalance = firstBalanceChange != null
                         ? firstBalanceChange.Balance - firstBalanceChange.ChangeAmount
                         : account.Balance;
                     account.TodayRealizedPnL = accountBalanceChanges.GetTotalByType(AccountBalanceChangeReasonTypeContract.RealizedPnL);
@@ -138,7 +139,7 @@ namespace MarginTrading.Backend.Services
 
             _accountsCacheService.InitAccountsCache(accounts);
             _log.WriteInfo(nameof(Start), nameof(AccountManager), $"Finished InitAccountsCache. Count: {accounts.Count}");
-            
+
             base.Start();
         }
 

@@ -9,7 +9,9 @@ using Lykke.RabbitMqBroker;
 using Lykke.RabbitMqBroker.Publisher;
 using Lykke.RabbitMqBroker.Publisher.Serializers;
 using Lykke.Snow.Common.Correlation.RabbitMq;
+
 using Microsoft.Extensions.Logging;
+
 using RabbitMQ.Client;
 using RabbitMQ.Client.Exceptions;
 
@@ -79,7 +81,7 @@ namespace MarginTrading.Common.RabbitMq
                 IsDurable = configuration.IsDurable,
             };
 
-            return (IMessageProducer<TMessage>) _producers.GetOrAdd(subscriptionSettings, CreateProducer).Value;
+            return (IMessageProducer<TMessage>)_producers.GetOrAdd(subscriptionSettings, CreateProducer).Value;
 
             Lazy<IStartStop> CreateProducer(RabbitMqSubscriptionSettings s)
             {
@@ -87,7 +89,7 @@ namespace MarginTrading.Common.RabbitMq
                 // https://andrewlock.net/making-getoradd-on-concurrentdictionary-thread-safe-using-lazy/
                 return new Lazy<IStartStop>(() =>
                 {
-                    var publisher = new RabbitMqPublisher<TMessage>(_loggerFactory, s);
+                    var publisher = new RabbitMqPublisher<TMessage>(_loggerFactory, s, submitTelemetry: false);
 
                     if (s.IsDurable && _publishingQueueRepository != null)
                         publisher.SetQueueRepository(_publishingQueueRepository);
@@ -102,7 +104,7 @@ namespace MarginTrading.Common.RabbitMq
                 });
             }
         }
-        
+
         /// <remarks>
         ///     ReSharper auto-generated
         /// </remarks>
