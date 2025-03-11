@@ -5,10 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
 using Common;
 using Common.Log;
-
 using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Repositories;
 
@@ -31,16 +29,16 @@ namespace MarginTrading.Backend.Services
             if (result)
             {
                 await _logger.WriteInfoAsync(
-                    nameof(RunningLiquidationLogger),
+                    nameof(RunningLiquidationLogger), 
                     nameof(TryAdd),
-                    runningLiquidation.ToJson(),
+                    runningLiquidation.ToJson(), 
                     "Running liquidation added for account");
                 return true;
             }
 
             await _logger.WriteWarningAsync(
-                nameof(RunningLiquidationLogger),
-                nameof(TryAdd),
+                nameof(RunningLiquidationLogger), 
+                nameof(TryAdd), 
                 runningLiquidation.ToJson(), "Failed to add running liquidation for account");
             return false;
         }
@@ -51,21 +49,51 @@ namespace MarginTrading.Backend.Services
             if (result)
             {
                 await _logger.WriteInfoAsync(
-                    nameof(RunningLiquidationLogger),
-                    nameof(TryRemove),
+                    nameof(RunningLiquidationLogger), 
+                    nameof(TryRemove), 
                     accountId,
                     "Running liquidation removed for account");
                 return true;
             }
 
             await _logger.WriteWarningAsync(
-                nameof(RunningLiquidationLogger),
-                nameof(TryRemove),
+                nameof(RunningLiquidationLogger), 
+                nameof(TryRemove), 
                 accountId,
                 "Failed to remove running liquidation for account");
             return false;
         }
 
-        public IAsyncEnumerable<RunningLiquidation> Get(string[] accountIds) => _decoratee.Get(accountIds);
+        public async IAsyncEnumerable<RunningLiquidation> Get(string[] accountIds)
+        {
+            var result = await _decoratee.Get(accountIds).ToListAsync();
+
+            try
+            {
+                var accountsInLiquidation = result.Select(x => x.AccountId);
+                var restAccounts = accountIds.Except(accountsInLiquidation);
+                foreach (var noLiquidationForAccountId in restAccounts)
+                {
+                    await _logger.WriteWarningAsync(
+                        nameof(RunningLiquidationLogger), 
+                        nameof(Get),
+                        noLiquidationForAccountId,
+                        "There is no running liquidation for account");
+                }
+            }
+            catch (Exception e)
+            {
+                await _logger.WriteErrorAsync(
+                    nameof(RunningLiquidationLogger), 
+                    nameof(Get),
+                    new { accountIds }.ToJson(), 
+                    e);
+            }
+
+            foreach (var runningLiquidation in result)
+            {
+                yield return runningLiquidation;
+            }
+        }
     }
 }

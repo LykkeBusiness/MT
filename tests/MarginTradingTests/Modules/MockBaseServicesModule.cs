@@ -16,14 +16,14 @@ using Microsoft.Rest;
 using Moq;
 using Lykke.Service.Session;
 using MarginTrading.Backend.Core;
+using MarginTrading.Backend.Core.Orderbooks;
+using MarginTrading.Backend.Core.Services;
 using MarginTrading.Backend.Core.Settings;
 using MarginTrading.Backend.Services.Infrastructure;
 using MarginTrading.Backend.Services.Notifications;
 using MarginTrading.Backend.Services.Workflow;
 using MarginTrading.Common.Services;
 using MarginTrading.Common.Services.Client;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Logging;
 
 namespace MarginTradingTests.Modules
 {
@@ -42,19 +42,19 @@ namespace MarginTradingTests.Modules
                     It.IsAny<CancellationToken>())).Returns(() => Task.FromResult(
                     new HttpOperationResponse<ClientSessionGetResponse>
                     {
-                        Body = new ClientSessionGetResponse { Session = new ClientSessionModel { ClientId = "1" } }
+                        Body = new ClientSessionGetResponse {Session = new ClientSessionModel {ClientId = "1"}}
                     }));
 
             var clientsRepositoryMock = new Mock<IClientsSessionsRepository>();
             clientsRepositoryMock.Setup(item => item.GetAsync(It.IsAny<string>())).Returns(() =>
-                Task.FromResult((IClientSession)new ClientSession { ClientId = "1" }));
+                Task.FromResult((IClientSession) new ClientSession {ClientId = "1"}));
 
             var volumeEquivalentService = new Mock<IEquivalentPricesService>();
 
             var clientAccountMock = new Mock<IClientAccountService>();
             clientAccountMock.Setup(s => s.GetEmail(It.IsAny<string>())).ReturnsAsync("email@email.com");
             clientAccountMock.Setup(s => s.GetMarginEnabledAsync(It.IsAny<string>())).ReturnsAsync(
-                new MarginEnabledSettingsModel() { Enabled = true, EnabledLive = true, TermsOfUseAgreed = true });
+                new MarginEnabledSettingsModel() {Enabled = true, EnabledLive = true, TermsOfUseAgreed = true});
             clientAccountMock.Setup(s => s.GetNotificationId(It.IsAny<string>())).ReturnsAsync("notificationId");
             clientAccountMock.Setup(s => s.IsPushEnabled(It.IsAny<string>())).ReturnsAsync(true);
 
@@ -78,9 +78,6 @@ namespace MarginTradingTests.Modules
                 .SingleInstance();
 
             builder.RegisterInstance(Mock.Of<IChaosKitty>()).As<IChaosKitty>().SingleInstance();
-
-            // register null logger for every ILogger<T>
-            builder.RegisterGeneric(typeof(NullLogger<>)).As(typeof(ILogger<>)).SingleInstance();
         }
     }
 

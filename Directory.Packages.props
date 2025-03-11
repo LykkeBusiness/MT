@@ -37,6 +37,7 @@
     <PackageVersion Include="LykkeBiz.RabbitMqBroker" Version="16.2.1" />
     <PackageVersion Include="LykkeBiz.SettingsReader" Version="9.2.0" />
     <PackageVersion Include="LykkeBiz.Snow.Cqrs" Version="7.0.1" />
+    <PackageVersion Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.10" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.2" />

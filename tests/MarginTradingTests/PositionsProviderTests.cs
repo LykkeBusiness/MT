@@ -6,13 +6,9 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using Autofac;
 using Autofac.Extras.Moq;
-
-using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Orders;
 using MarginTrading.Backend.Services;
 using MarginTrading.Backend.Services.Services;
-using MarginTrading.Backend.Services.Snapshots;
-
 using Moq;
 using NUnit.Framework;
 

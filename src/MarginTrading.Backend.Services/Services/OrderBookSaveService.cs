@@ -5,10 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
 using Common;
 using Common.Log;
-
 using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Orderbooks;
 using MarginTrading.Backend.Core.Settings;
@@ -30,15 +28,13 @@ namespace MarginTrading.Backend.Services
             OrderBookList orderBookList,
             MarginTradingSettings marginTradingSettings,
             ILog log,
-            IContextFactory contextFactory)
+            IContextFactory contextFactory) 
             : base(nameof(OrderBookSaveService), marginTradingSettings.BlobPersistence.OrderbooksDumpPeriodMilliseconds, log)
         {
             _blobRepository = blobRepository;
             _orderBookList = orderBookList;
             _log = log;
             _contextFactory = contextFactory;
-
-            DisableTelemetry();
         }
 
         public override void Start()

@@ -22,9 +22,6 @@ using MarginTrading.SqlRepositories;
 using IdentityEntity = MarginTrading.AzureRepositories.Entities.IdentityEntity;
 using OperationLogEntity = MarginTrading.AzureRepositories.OperationLogEntity;
 
-using MarginTrading.Backend.Core.Services;
-using MarginTrading.Backend.Services.Snapshots;
-
 namespace MarginTrading.Backend.Modules
 {
     public class BackendRepositoriesModule : Module
@@ -46,7 +43,7 @@ namespace MarginTrading.Backend.Modules
             if (_settings.CurrentValue.Db.StorageMode == StorageMode.Azure)
             {
                 builder.Register(ctx => _settings.CurrentValue.UseSerilog
-                        ? (IOperationsLogRepository)new SerilogOperationsLogRepository(_log)
+                        ? (IOperationsLogRepository) new SerilogOperationsLogRepository(_log)
                         : new OperationsLogRepository(AzureTableStorage<OperationLogEntity>.Create(
                             _settings.Nested(s => s.Db.LogsConnString), OperationsLogName, _log)))
                     .SingleInstance();
@@ -61,12 +58,12 @@ namespace MarginTrading.Backend.Modules
                     var settings = c.Resolve<IReloadingManager<MarginTradingSettings>>();
 
                     return settings.CurrentValue.UseDbIdentityGenerator
-                        ? (IIdentityGenerator)new AzureIdentityGenerator(
+                        ? (IIdentityGenerator) new AzureIdentityGenerator(
                             AzureTableStorage<IdentityEntity>.Create(settings.Nested(s => s.Db.MarginTradingConnString),
                                 "Identity", _log))
-                        : (IIdentityGenerator)new SimpleIdentityGenerator();
+                        : (IIdentityGenerator) new SimpleIdentityGenerator();
                 }).As<IIdentityGenerator>().SingleInstance();
-
+                
                 builder.RegisterType<AzureRepositories.OperationExecutionInfoRepository>()
                     .As<IOperationExecutionInfoRepository>()
                     .WithParameter(new NamedParameter("connectionStringManager",
@@ -74,13 +71,13 @@ namespace MarginTrading.Backend.Modules
                     .SingleInstance();
 
                 builder.RegisterDecorator<RfqExecutionInfoRepositoryDecorator, IOperationExecutionInfoRepository>();
-
+                
                 builder.RegisterType<AzureRepositories.OpenPositionsRepository>()
                     .As<IOpenPositionsRepository>()
                     .WithParameter(new NamedParameter("connectionStringManager",
                         _settings.Nested(x => x.Db.MarginTradingConnString)))
                     .SingleInstance();
-
+                
                 builder.RegisterType<AzureRepositories.AccountStatRepository>()
                     .As<IAccountStatRepository>()
                     .WithParameter(new NamedParameter("connectionStringManager",
@@ -94,7 +91,7 @@ namespace MarginTrading.Backend.Modules
             else if (_settings.CurrentValue.Db.StorageMode == StorageMode.SqlServer)
             {
                 builder.Register(ctx => _settings.CurrentValue.UseSerilog
-                        ? (IOperationsLogRepository)new SerilogOperationsLogRepository(_log)
+                        ? (IOperationsLogRepository) new SerilogOperationsLogRepository(_log)
                         : new SqlOperationsLogRepository(ctx.Resolve<IDateService>(),
                             OperationsLogName, _settings.CurrentValue.Db.LogsConnString))
                     .SingleInstance();
@@ -105,14 +102,14 @@ namespace MarginTrading.Backend.Modules
 
                 builder.Register(c => c.Resolve<IReloadingManager<MarginTradingSettings>>().CurrentValue
                         .UseDbIdentityGenerator
-                        ? (IIdentityGenerator)new SqlIdentityGenerator()
-                        : (IIdentityGenerator)new SimpleIdentityGenerator())
+                        ? (IIdentityGenerator) new SqlIdentityGenerator()
+                        : (IIdentityGenerator) new SimpleIdentityGenerator())
                     .As<IIdentityGenerator>()
                     .SingleInstance();
-
+                
                 builder.RegisterType<SqlRepositories.Repositories.OperationExecutionInfoRepository>()
                     .As<IOperationExecutionInfoRepository>()
-                    .WithParameter(new NamedParameter("connectionString",
+                    .WithParameter(new NamedParameter("connectionString", 
                         _settings.CurrentValue.Db.SqlConnectionString))
                     .SingleInstance();
 
@@ -120,21 +117,21 @@ namespace MarginTrading.Backend.Modules
 
                 builder.RegisterType<SqlRepositories.Repositories.OpenPositionsRepository>()
                     .As<IOpenPositionsRepository>()
-                    .WithParameter(new NamedParameter("connectionString",
+                    .WithParameter(new NamedParameter("connectionString", 
                         _settings.CurrentValue.Db.SqlConnectionString))
                     .SingleInstance();
 
                 builder.RegisterType<SqlRepositories.Repositories.AccountStatRepository>()
                     .As<IAccountStatRepository>()
-                    .WithParameter(new NamedParameter("connectionString",
+                    .WithParameter(new NamedParameter("connectionString", 
                         _settings.CurrentValue.Db.SqlConnectionString))
                     .SingleInstance();
 
                 builder.RegisterType<SqlRepositories.Repositories.OrdersHistoryRepository>()
                     .As<IOrdersHistoryRepository>()
-                    .WithParameter(new NamedParameter("connectionString",
+                    .WithParameter(new NamedParameter("connectionString", 
                         _settings.CurrentValue.Db.OrdersHistorySqlConnectionString))
-                    .WithParameter(new NamedParameter("tableName",
+                    .WithParameter(new NamedParameter("tableName", 
                         _settings.CurrentValue.Db.OrdersHistoryTableName))
                     .WithParameter(new NamedParameter("getLastSnapshotTimeoutS",
                         _settings.CurrentValue.Db.QueryTimeouts.GetLastSnapshotTimeoutS))
@@ -142,9 +139,9 @@ namespace MarginTrading.Backend.Modules
 
                 builder.RegisterType<SqlRepositories.Repositories.PositionsHistoryRepository>()
                     .As<IPositionsHistoryRepository>()
-                    .WithParameter(new NamedParameter("connectionString",
+                    .WithParameter(new NamedParameter("connectionString", 
                         _settings.CurrentValue.Db.PositionsHistorySqlConnectionString))
-                    .WithParameter(new NamedParameter("tableName",
+                    .WithParameter(new NamedParameter("tableName", 
                         _settings.CurrentValue.Db.PositionsHistoryTableName))
                     .WithParameter(new NamedParameter("getLastSnapshotTimeoutS",
                         _settings.CurrentValue.Db.QueryTimeouts.GetLastSnapshotTimeoutS))
@@ -152,28 +149,23 @@ namespace MarginTrading.Backend.Modules
 
                 builder.RegisterType<AccountHistoryRepository>()
                     .As<IAccountHistoryRepository>()
-                    .WithParameter(new NamedParameter("connectionString",
+                    .WithParameter(new NamedParameter("connectionString", 
                         _settings.CurrentValue.Db.SqlConnectionString))
                     .SingleInstance();
 
                 builder.RegisterType<SqlRepositories.Repositories.TradingEngineSnapshotsRepository>()
                     .As<ITradingEngineSnapshotsRepository>()
                     .SingleInstance();
-
+                
                 builder.RegisterType<SqlRepositories.Repositories.OperationExecutionPauseRepository>()
                     .As<IOperationExecutionPauseRepository>()
-                    .WithParameter(new NamedParameter("connectionString",
+                    .WithParameter(new NamedParameter("connectionString", 
                         _settings.CurrentValue.Db.SqlConnectionString))
                     .SingleInstance();
-
+                
                 builder.RegisterDecorator<RfqExecutionPauseRepositoryDecorator, IOperationExecutionPauseRepository>();
             }
-
-            builder.RegisterType<TradingEngineRawSnapshotsRepository>()
-                .As<ITradingEngineRawSnapshotsRepository>()
-                .SingleInstance();
-            builder.RegisterDecorator<LoggingTradingEngineRawSnapshotsRepository, ITradingEngineRawSnapshotsRepository>();
-
+            
             builder.RegisterType<MatchingEngineInMemoryRepository>().As<IMatchingEngineRepository>().SingleInstance();
 
             builder.Register(c =>
@@ -181,21 +173,21 @@ namespace MarginTrading.Backend.Modules
                 var settings = c.Resolve<IReloadingManager<MarginTradingSettings>>();
 
                 return settings.CurrentValue.UseDbIdentityGenerator
-                    ? (IIdentityGenerator)new AzureIdentityGenerator(
+                    ? (IIdentityGenerator) new AzureIdentityGenerator(
                         AzureTableStorage<IdentityEntity>.Create(settings.Nested(s => s.Db.MarginTradingConnString),
                             "Identity", _log))
-                    : (IIdentityGenerator)new SimpleIdentityGenerator();
+                    : (IIdentityGenerator) new SimpleIdentityGenerator();
             }).As<IIdentityGenerator>().SingleInstance();
-
+            
             //SQL PLACE
             builder.RegisterType<AccountMarginFreezingRepository>()
                 .As<IAccountMarginFreezingRepository>()
                 .SingleInstance();
-
+            
             builder.RegisterType<AccountMarginUnconfirmedRepository>()
                 .As<IAccountMarginUnconfirmedRepository>()
                 .SingleInstance();
-
+            
             InitializeDapper();
         }
 
