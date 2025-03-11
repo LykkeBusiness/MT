@@ -29,7 +29,7 @@ public partial class SnapshotService : ISnapshotService, ISnapshotConverter
     private readonly IFinalSnapshotCalculator _finalSnapshotCalculator;
     private readonly ITradingEngineSnapshotBuilder _snapshotBuilder;
     private readonly IComponentContext _context;
-    public static bool IsMakingSnapshotInProgress =>
+    public static bool IsSnapshotInProgress =>
         Interlocked.CompareExchange(ref _isSnaphotInProgress, 0, 0) == 1;
     private static int _isSnaphotInProgress = 0;
 
