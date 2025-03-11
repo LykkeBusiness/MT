@@ -29,18 +29,22 @@ public sealed class WaitableQueueAdapter<TRequest, TResult>
             return await _waiters[request.Id].Task;
         }
 
-        cancellationToken.Register(() =>
-        {
-            if (_waiters.TryRemove(request.Id, out var pendingTcs))
-            {
-                pendingTcs.TrySetCanceled(cancellationToken);
-            }
-        });
+        var cancellationTokenRegistration = cancellationToken.Register(GetOnTokenCanceled(request, cancellationToken));
 
         _adaptee.Enqueue(request);
 
-        // todo: think if timeout is required
-        return await tcs.Task;
+        try
+        {
+            return await tcs.Task;
+        }
+        finally
+        {
+            cancellationTokenRegistration.Dispose();
+            // Whether task completes normally, exceptionally or via cancellation and whether or not
+            // processor calls Acknowledge or Reject, having this cleanup is important to avoid memory leaks.
+            // It serves as a final safeguard.
+            _waiters.TryRemove(request.Id, out _);
+        }
     }
 
     public void Acknowledge(Guid requestId, TResult result)
@@ -62,4 +66,13 @@ public sealed class WaitableQueueAdapter<TRequest, TResult>
             tcs.TrySetException(exception);
         }
     }
+
+    private Action GetOnTokenCanceled(TRequest request, CancellationToken cancellationToken) =>
+        () =>
+        {
+            if (_waiters.TryRemove(request.Id, out var pendingTcs))
+            {
+                pendingTcs.TrySetCanceled(cancellationToken);
+            }
+        };
 }
