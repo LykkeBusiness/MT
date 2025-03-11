@@ -38,8 +38,6 @@ namespace MarginTrading.Backend.Services.Quotes
             _log = log;
             _blobRepository = blobRepository;
             _ordersCache = ordersCache;
-
-            DisableTelemetry();
         }
 
         public InstrumentBidAskPair GetQuote(string instrument)

@@ -5,18 +5,16 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-
 using MarginTrading.Backend.Core.Messages;
 using MarginTrading.Backend.Core.Orders;
 using MarginTrading.Backend.Core.Trading;
 
 namespace MarginTrading.Backend.Services
 {
-
     public class OrdersCache : IOrderReader
     {
         public OrdersCache()
-        {
+        {       
             Active = new OrderCacheGroup(new Order[0], OrderStatus.Active);
             Inactive = new OrderCacheGroup(new Order[0], OrderStatus.Inactive);
             InProgress = new OrderCacheGroup(new Order[0], OrderStatus.ExecutionStarted);
@@ -55,17 +53,17 @@ namespace MarginTrading.Backend.Services
             return Active.GetAllOrders().ToImmutableArray();
         }
 
-        //        public ImmutableArray<Position> GetPendingForMarginRecalc(string instrument)
-        //        {
-        //            return WaitingForExecutionOrders.GetOrdersByMarginInstrument(instrument).ToImmutableArray();
-        //        }
+//        public ImmutableArray<Position> GetPendingForMarginRecalc(string instrument)
+//        {
+//            return WaitingForExecutionOrders.GetOrdersByMarginInstrument(instrument).ToImmutableArray();
+//        }
 
         public bool TryGetOrderById(string orderId, out Order order)
         {
             return Active.TryGetOrderById(orderId, out order) ||
                    Inactive.TryGetOrderById(orderId, out order);
         }
-
+        
         public Order GetOrderById(string orderId)
         {
             if (TryGetOrderById(orderId, out var result))

@@ -4,10 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-
 using Common;
 using Common.Log;
-
 using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Settings;
 using MarginTrading.Backend.Services.AssetPairs;
@@ -23,14 +21,14 @@ namespace MarginTrading.Backend.Services.Quotes
         private readonly IDateService _dateService;
         private readonly IAssetPairDayOffService _dayOffService;
         private const int NotificationRepeatTimeoutCoef = 5;
-
+        
         private readonly Dictionary<string, OutdatedQuoteInfo> _outdatedQuotes;
 
-        public QuotesMonitor(ILog log,
+        public QuotesMonitor(ILog log, 
             MarginTradingSettings marginSettings,
             IQuoteCacheService quoteCacheService,
             IDateService dateService,
-            IAssetPairDayOffService dayOffService)
+            IAssetPairDayOffService dayOffService) 
             : base("QuotesMonitor", 60000, log)
         {
             _log = log;
@@ -39,28 +37,26 @@ namespace MarginTrading.Backend.Services.Quotes
             _dateService = dateService;
             _dayOffService = dayOffService;
             _outdatedQuotes = new Dictionary<string, OutdatedQuoteInfo>();
-
-            DisableTelemetry();
         }
 
         public override Task Execute()
         {
             if (_marginSettings.MaxMarketMakerLimitOrderAge <= 0)
                 return Task.CompletedTask;
-
+            
             var maxQuoteAgeInSeconds = _marginSettings.MaxMarketMakerLimitOrderAge;
-
+            
             var now = _dateService.Now();
             var minQuoteDateTime = now.AddSeconds(-maxQuoteAgeInSeconds);
             var minNotificationRepeatDate = now.AddSeconds(-maxQuoteAgeInSeconds * NotificationRepeatTimeoutCoef);
-
+            
             var quotes = _quoteCacheService.GetAllQuotes();
-
+            
             foreach (var quote in quotes)
             {
                 if (_dayOffService.IsAssetTradingDisabled(quote.Key))
                     continue;
-
+                
                 if (quote.Value.Date <= minQuoteDateTime)
                 {
                     if (_outdatedQuotes.TryGetValue(quote.Key, out var info))
@@ -83,7 +79,7 @@ namespace MarginTrading.Backend.Services.Quotes
                     }
                 }
             }
-
+            
             return Task.CompletedTask;
         }
 
@@ -96,7 +92,7 @@ namespace MarginTrading.Backend.Services.Quotes
                 LastQuoteRecieved = quote.Date,
                 LastNotificationSend = _dateService.Now()
             };
-
+            
             _outdatedQuotes[quote.Instrument] = info;
         }
 

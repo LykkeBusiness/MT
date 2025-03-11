@@ -19,11 +19,10 @@ using MarginTrading.Common.Extensions;
 using MarginTrading.Common.Services;
 using MarginTrading.AssetService.Contracts;
 using MarginTrading.AssetService.Contracts.Scheduling;
+using MarginTrading.Backend.Core.Services;
 using MarginTrading.Backend.Services.Extensions;
 using Microsoft.FeatureManagement;
 using MoreLinq;
-using MarginTrading.Backend.Core.Snapshots;
-using MarginTrading.Backend.Core.Repositories;
 
 namespace MarginTrading.Backend.Services.AssetPairs
 {
@@ -33,7 +32,6 @@ namespace MarginTrading.Backend.Services.AssetPairs
         private readonly IScheduleSettingsApi _scheduleSettingsApi;
         private readonly IAssetPairsCache _assetPairsCache;
         private readonly IDateService _dateService;
-        private readonly IIdentityGenerator _identityGenerator;
         private readonly ILog _log;
         private readonly OvernightMarginSettings _overnightMarginSettings;
 
@@ -53,7 +51,7 @@ namespace MarginTrading.Backend.Services.AssetPairs
 
         private readonly ReaderWriterLockSlim _readerWriterLockSlim = new ReaderWriterLockSlim();
         private readonly IFeatureManager _featureManager;
-        private readonly IQueueRequestProducer<SnapshotCreationRequest> _snapshotRequestProducer;
+        private readonly ISnapshotStatusTracker _snapshotStatusTracker;
 
         public ScheduleSettingsCacheService(
             ICqrsSender cqrsSender,
@@ -63,8 +61,7 @@ namespace MarginTrading.Backend.Services.AssetPairs
             ILog log,
             OvernightMarginSettings overnightMarginSettings,
             IFeatureManager featureManager,
-            IQueueRequestProducer<SnapshotCreationRequest> snapshotRequestProducer,
-            IIdentityGenerator identityGenerator)
+            ISnapshotStatusTracker snapshotStatusTracker)
         {
             _cqrsSender = cqrsSender;
             _scheduleSettingsApi = scheduleSettingsApi;
@@ -73,8 +70,7 @@ namespace MarginTrading.Backend.Services.AssetPairs
             _log = log;
             _overnightMarginSettings = overnightMarginSettings;
             _featureManager = featureManager;
-            _snapshotRequestProducer = snapshotRequestProducer;
-            _identityGenerator = identityGenerator;
+            _snapshotStatusTracker = snapshotStatusTracker;
         }
 
         public async Task UpdateAllSettingsAsync()
@@ -87,7 +83,7 @@ namespace MarginTrading.Backend.Services.AssetPairs
         {
             await _log.WriteInfoAsync(nameof(ScheduleSettingsCacheService), nameof(UpdateScheduleSettingsAsync),
                 "Updating schedule settings cache");
-
+            
             var newScheduleContracts = (await _scheduleSettingsApi.StateList(null))
                 .Where(x => x.ScheduleSettings.Any()).ToList();
             var invalidSchedules = newScheduleContracts.InvalidSchedules();
@@ -137,7 +133,7 @@ namespace MarginTrading.Backend.Services.AssetPairs
         {
             await _log.WriteInfoAsync(nameof(ScheduleSettingsCacheService), nameof(UpdateMarketsScheduleSettingsAsync),
                 "Updating markets schedule settings cache");
-
+            
             var marketsScheduleSettingsRaw = (await _scheduleSettingsApi.List())
                 .Where(x => !string.IsNullOrWhiteSpace(x.MarketId))
                 .ToList();
@@ -149,7 +145,7 @@ namespace MarginTrading.Backend.Services.AssetPairs
             {
                 var platformScheduleSettings = marketsScheduleSettingsRaw
                     .Where(x => x.MarketId == _overnightMarginSettings.ScheduleMarketId).ToList();
-
+                
                 var newMarketsScheduleSettings = marketsScheduleSettingsRaw
                     .Except(invalidSchedules)
                     .GroupBy(x => x.MarketId)
@@ -176,7 +172,7 @@ namespace MarginTrading.Backend.Services.AssetPairs
         public void HandleMarketStateChanges(DateTime currentTime)
         {
             _readerWriterLockSlim.EnterWriteLock();
-
+            
             try
             {
                 HandleMarketStateChangesUnsafe(currentTime);
@@ -205,12 +201,7 @@ namespace MarginTrading.Backend.Services.AssetPairs
 
                 if (ev.IsPlatformClosureEvent())
                 {
-                    _snapshotRequestProducer.Enqueue(SnapshotCreationRequest.CreateDraftRequest(
-                        EnvironmentValidationStrategyType.WaitPlatformConsistency,
-                        SnapshotInitiator.PlatformClosureEvent,
-                        now,
-                        now.Date,
-                        _identityGenerator.GenerateGuid()));
+                    _snapshotStatusTracker.SnapshotRequested(now.Date);
                 }
                 _cqrsSender.PublishEvent(ev);
 
@@ -247,7 +238,7 @@ namespace MarginTrading.Backend.Services.AssetPairs
                 _readerWriterLockSlim.ExitReadLock();
             }
         }
-
+        
         /// <inheritdoc cref="IScheduleSettingsCacheService"/>
         public List<CompiledScheduleTimeInterval> GetMarketTradingScheduleByAssetPair(string assetPairId)
         {
@@ -297,8 +288,8 @@ namespace MarginTrading.Backend.Services.AssetPairs
                 return InstrumentTradingStatus.Disabled(InstrumentTradingDisabledReason.MarketStateNotFound);
             }
 
-            return marketState.IsEnabled
-                ? InstrumentTradingStatus.Enabled()
+            return marketState.IsEnabled 
+                ? InstrumentTradingStatus.Enabled() 
                 : InstrumentTradingStatus.Disabled(InstrumentTradingDisabledReason.MarketDisabled);
         }
 
@@ -459,7 +450,7 @@ namespace MarginTrading.Backend.Services.AssetPairs
         private DateTime MarketsCacheWarmUpUnsafe()
         {
             var now = _dateService.Now();
-
+            
             _compiledMarketScheduleCache = _rawMarketScheduleCache
                 .ToDictionary(x => x.Key, x => CompileSchedule(x.Value, now, TimeSpan.Zero));
             HandleMarketStateChangesUnsafe(now, _rawMarketScheduleCache.Keys.ToArray());

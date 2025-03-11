@@ -5,23 +5,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
 using BookKeeper.Client;
 using BookKeeper.Client.Responses.Eod;
 using BookKeeper.Client.Workflow.Commands;
 using BookKeeper.Client.Workflow.Events;
-
 using Common.Log;
-
 using JetBrains.Annotations;
-
 using Lykke.Cqrs;
-
 using MarginTrading.Backend.Contracts.Prices;
-using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Repositories;
+using MarginTrading.Backend.Core.Services;
 using MarginTrading.Backend.Core.Snapshots;
-using MarginTrading.Backend.Services.Services;
 using MarginTrading.Common.Services;
 
 namespace MarginTrading.Backend.Services.Workflow
@@ -30,34 +24,31 @@ namespace MarginTrading.Backend.Services.Workflow
     public class EodCommandsHandler
     {
         private readonly IQuotesApi _quotesApi;
-        private readonly ISnapshotConverter _snapshotConverter;
-        private readonly IWaitableRequestProducer<SnapshotCreationRequest, TradingEngineSnapshotSummary> _snapshotRequestProducer;
+        private readonly ISnapshotService _snapshotService;
         private readonly IDateService _dateService;
         private readonly IDraftSnapshotKeeperFactory _draftSnapshotKeeperFactory;
         private readonly IIdentityGenerator _identityGenerator;
-        private readonly ISnapshotDraftAgent _snapshotDraftRebuildAgent;
+        private readonly ISnapshotTrackerService _snapshotTrackerService;
         private readonly ILog _log;
 
         public EodCommandsHandler(
             IQuotesApi quotesApi,
+            ISnapshotService snapshotService, 
             IDateService dateService,
             IDraftSnapshotKeeperFactory draftSnapshotKeeperFactory,
             IIdentityGenerator identityGenerator,
-            ISnapshotDraftAgent snapshotDraftRebuildAgent,
-            IWaitableRequestProducer<SnapshotCreationRequest, TradingEngineSnapshotSummary> snapshotRequestProducer,
-            ISnapshotConverter snapshotConverter,
+            ISnapshotTrackerService snapshotTrackerService,
             ILog log)
         {
             _quotesApi = quotesApi;
+            _snapshotService = snapshotService;
             _dateService = dateService;
             _draftSnapshotKeeperFactory = draftSnapshotKeeperFactory;
             _identityGenerator = identityGenerator;
-            _snapshotDraftRebuildAgent = snapshotDraftRebuildAgent;
-            _snapshotRequestProducer = snapshotRequestProducer;
-            _snapshotConverter = snapshotConverter;
+            _snapshotTrackerService = snapshotTrackerService;
             _log = log;
         }
-
+        
         [UsedImplicitly]
         private async Task Handle(CreateSnapshotCommand command, IEventPublisher publisher)
         {
@@ -71,25 +62,22 @@ namespace MarginTrading.Backend.Services.Workflow
                     throw new Exception($"Could not receive quotes from BookKeeper: {quotes.ErrorCode.ToString()}");
                 }
 
-                var shouldRecreateSnapshot = await _snapshotDraftRebuildAgent.IsDraftRebuildRequired();
+                var shouldRecreateSnapshot = await _snapshotTrackerService.GetShouldRecreateSnapshot();
 
                 if (shouldRecreateSnapshot && !command.IsMissing)
                 {
-                    await _snapshotRequestProducer.EnqueueAndWait(SnapshotCreationRequest.CreateDraftRequest(
-                        EnvironmentValidationStrategyType.WaitPlatformConsistency,
-                        SnapshotInitiator.EodProcess,
-                        _dateService.Now(),
-                        command.TradingDay,
-                        _identityGenerator.GenerateGuid()));
+                    await _snapshotService.MakeTradingDataSnapshot(command.TradingDay, 
+                        _identityGenerator.GenerateGuid(),
+                        SnapshotStatus.Draft);
                 }
 
                 var draftSnapshotKeeper = _draftSnapshotKeeperFactory.Create(command.TradingDay);
-
-                await _snapshotConverter.ConvertToFinal(command.OperationId,
-                    MapQuotes(quotes.EodMarketData.Underlyings),
+                
+                await _snapshotService.MakeTradingDataSnapshotFromDraft(command.OperationId, 
+                    MapQuotes(quotes.EodMarketData.Underlyings), 
                     MapFxRates(quotes.EodMarketData.Forex),
                     draftSnapshotKeeper);
-
+                
                 publisher.PublishEvent(new SnapshotCreatedEvent
                 {
                     OperationId = command.OperationId,
@@ -98,9 +86,9 @@ namespace MarginTrading.Backend.Services.Workflow
             }
             catch (Exception exception)
             {
-                await _log.WriteErrorAsync(nameof(EodCommandsHandler), nameof(CreateSnapshotCommand),
+                await _log.WriteErrorAsync(nameof(EodCommandsHandler), nameof(CreateSnapshotCommand), 
                     exception);
-
+                
                 publisher.PublishEvent(new SnapshotCreationFailedEvent
                 {
                     OperationId = command.OperationId,
@@ -118,7 +106,7 @@ namespace MarginTrading.Backend.Services.Workflow
                 AssetId = x.Id,
             });
         }
-
+        
         private IEnumerable<ClosingFxRate> MapFxRates(IEnumerable<BestPriceContract> bestPrices)
         {
             return bestPrices.Select(x => new ClosingFxRate()
