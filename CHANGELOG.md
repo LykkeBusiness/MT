@@ -1,3 +1,8 @@
+## 2.38.3 - Nova 2. Delivery 49. Hotfix 5 (March 12, 2025)
+### What's changed
+* LT-6097: Make snapshot regardless of inconsistent state of the environment
+
+
 ## 2.39.0 - Nova 2. Delivery 50 (March 07, 2025)
 ### What's changed
 * LT-6057: Increment ActualHash in FplData when partially closing position.
