@@ -3,8 +3,9 @@
 
 using System;
 using System.Text;
+
 using Common.Log;
-using Lykke.RabbitMqBroker.Subscriber;
+
 using Lykke.RabbitMqBroker.Subscriber.Deserializers;
 
 namespace MarginTrading.Common.RabbitMq
@@ -30,6 +31,21 @@ namespace MarginTrading.Common.RabbitMq
             catch (Exception e)
             {
                 var rawObject = Encoding.UTF8.GetString(data);
+                _log.WriteWarningAsync("RabbitMqSubscriber", "Deserialization", typeof(TMessage).FullName,
+                    $"Deserializing: {e.Message}. {Environment.NewLine}Raw message: [{rawObject}]");
+                throw;
+            }
+        }
+
+        public TMessage Deserialize(ReadOnlyMemory<byte> data)
+        {
+            try
+            {
+                return _baseDeserializer.Deserialize(data);
+            }
+            catch (Exception e)
+            {
+                var rawObject = Encoding.UTF8.GetString(data.Span);
                 _log.WriteWarningAsync("RabbitMqSubscriber", "Deserialization", typeof(TMessage).FullName,
                     $"Deserializing: {e.Message}. {Environment.NewLine}Raw message: [{rawObject}]");
                 throw;
