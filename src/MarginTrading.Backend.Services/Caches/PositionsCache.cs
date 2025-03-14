@@ -5,7 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+
 using Autofac;
+
 using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Exceptions;
 using MarginTrading.Backend.Core.Messages;
@@ -51,7 +53,7 @@ namespace MarginTrading.Backend.Services
 
                 _positionIdsByInstrumentId = positions.GroupBy(x => x.AssetPairId)
                     .ToDictionary(x => x.Key, x => x.Select(o => o.Id).ToHashSet());
-                
+
                 _positionIdsByFxInstrumentId = positions.GroupBy(x => x.FxAssetPairId)
                     .ToDictionary(x => x.Key, x => x.Select(o => o.Id).ToHashSet());
 
@@ -63,7 +65,7 @@ namespace MarginTrading.Backend.Services
 
                 _observers = new List<IObserver<Position>>();
             }
-            finally 
+            finally
             {
                 _lockSlim.ExitWriteLock();
             }
@@ -104,7 +106,7 @@ namespace MarginTrading.Backend.Services
 
             var account = ContainerProvider.Container?.Resolve<IAccountsCacheService>().Get(position.AccountId);
             account?.CacheNeedsToBeUpdated();
-            
+
             _observers.ForEach(o => o.OnNext(position));
         }
 
@@ -131,7 +133,7 @@ namespace MarginTrading.Backend.Services
 
             var account = ContainerProvider.Container?.Resolve<IAccountsCacheService>().Get(position.AccountId);
             account?.CacheNeedsToBeUpdated();
-            
+
             _observers.ForEach(o => o.OnNext(position));
         }
 
@@ -147,7 +149,7 @@ namespace MarginTrading.Backend.Services
 
             throw new PositionNotFoundException(string.Format(MtMessages.CantGetPosition, positionId));
         }
-        
+
         public bool TryGetPositionById(string positionId, out Position result)
         {
             _lockSlim.EnterReadLock();
@@ -279,7 +281,7 @@ namespace MarginTrading.Backend.Services
         {
             if (!_observers.Contains(observer))
                 _observers.Add(observer);
-            
+
             return new Unsubscriber(_observers, observer);
         }
     }
