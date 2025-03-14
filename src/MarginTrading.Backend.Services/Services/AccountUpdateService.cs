@@ -6,11 +6,15 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Common;
 using Common.Log;
+
 using JetBrains.Annotations;
+
 using Lykke.Snow.Common.Percents;
 using Lykke.Snow.Domain.Costs;
+
 using MarginTrading.AssetService.Contracts.ClientProfileSettings;
 using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Exceptions;
@@ -21,6 +25,7 @@ using MarginTrading.Backend.Core.Services;
 using MarginTrading.Backend.Core.Settings;
 using MarginTrading.Backend.Core.Trading;
 using MarginTrading.Backend.Services.Infrastructure;
+using MarginTrading.Backend.Services.Snapshots;
 
 #pragma warning disable 1998
 
@@ -111,7 +116,7 @@ namespace MarginTrading.Backend.Services.Services
                 throw new InvalidOperationException($"Account with id {orderFulfillmentPlan.Order.AccountId} not found");
 
             var assetType = _assetPairsCache.GetAssetPairById(orderFulfillmentPlan.Order.AssetPairId).AssetType;
-            
+
             if (!_clientProfileSettingsCache.TryGetValue(account.TradingConditionId, assetType, out var clientProfileSettings))
                 throw new InvalidOperationException($"Client profile settings for [{account.TradingConditionId}] and asset type [{assetType}] were not found in cache");
 
@@ -126,11 +131,11 @@ namespace MarginTrading.Backend.Services.Services
 
             // orderFulfillmentPlan.Order.Volume is OrderSize in this case that's why price is included
             var entryCost = new EntryCost(new EntryCommissionCost(clientProfileSettings.ExecutionFeesFloor,
-                    new ExecutionFeeRate(clientProfileSettings.ExecutionFeesRate), 
-                    clientProfileSettings.ExecutionFeesCap, 
-                    fxRate, 
+                    new ExecutionFeeRate(clientProfileSettings.ExecutionFeesRate),
+                    clientProfileSettings.ExecutionFeesCap,
+                    fxRate,
                     orderFulfillmentPlan.Order.Volume * openPrice));
-            
+
             // orderFulfillmentPlan.UnfulfilledVolume is OrderSize in this case that's why price is included
             var exitCost = new ExitCost(new ExitCommissionCost(clientProfileSettings.ExecutionFeesFloor,
                 new ExecutionFeeRate(clientProfileSettings.ExecutionFeesRate),
@@ -139,23 +144,23 @@ namespace MarginTrading.Backend.Services.Services
                 orderFulfillmentPlan.UnfulfilledVolume * openPrice));
 
             var marginAvailable = account.GetMarginAvailable() + (orderFulfillmentPlan.OppositePositionsState?.Margin ?? 0);
-            
+
             var orderMargin = _fplService.GetInitMarginForOrder(orderFulfillmentPlan.Order, orderFulfillmentPlan.UnfulfilledVolume);
 
             var pnlAtExecution = CalculatePnlAtExecution(orderFulfillmentPlan.Order, pnlInTradingCurrency);
-            
+
             var orderBalanceAvailable = new OrderBalanceAvailable(marginAvailable, pnlAtExecution, entryCost, exitCost);
 
             _log.WriteInfo(nameof(CheckBalance),
                 new
                 {
-                    orderFulfillmentPlan.Order, 
-                    entryCost = (decimal) entryCost, 
-                    exitCost = (decimal) exitCost,
-                    marginAvailable, 
-                    pnlAtExecution, 
-                    orderMargin, 
-                    orderBalanceAvailable = (decimal) orderBalanceAvailable
+                    orderFulfillmentPlan.Order,
+                    entryCost = (decimal)entryCost,
+                    exitCost = (decimal)exitCost,
+                    marginAvailable,
+                    pnlAtExecution,
+                    orderMargin,
+                    orderBalanceAvailable = (decimal)orderBalanceAvailable
                 }.ToJson(),
                 $"Calculation made on order");
 
@@ -220,7 +225,7 @@ namespace MarginTrading.Backend.Services.Services
                 account.LogInfo = @$"PositionsMaintenanceMargin: {positionsMaintenanceMargin} = {positionsMaintenanceMarginLog}. 
                     Summed values: {positionsMaintenanceMarginValues.ToJson()} - LastUpdate: {DateTime.UtcNow}";
             }
-            
+
             account.AccountFpl.MarginInit = Math.Round(positionsInitMargin + pendingOrdersMargin, accuracy);
             account.AccountFpl.InitiallyUsedMargin = positions.Sum(p => p.GetInitialMargin());
             account.AccountFpl.OpenPositionsCount = positions.Count;
@@ -235,9 +240,9 @@ namespace MarginTrading.Backend.Services.Services
         {
             var positions = _positionsProvider.GetPositionsByAccountIds(accountId);
 
-            if(_marginTradingSettings.LogBlockedMarginCalculation && SnapshotService.IsMakingSnapshotInProgress)
+            if (_marginTradingSettings.LogBlockedMarginCalculation && SnapshotService.IsSnapshotInProgress)
             {
-                _log.WriteInfo(nameof(AccountUpdateService), positions?.Select(p => new { p.Id, p.AssetPairId, p.ClosePrice, p.CloseFxPrice }).ToJson(), 
+                _log.WriteInfo(nameof(AccountUpdateService), positions?.Select(p => new { p.Id, p.AssetPairId, p.ClosePrice, p.CloseFxPrice }).ToJson(),
                     $"Account {accountId} - Position array from position provider");
             }
 
@@ -250,10 +255,10 @@ namespace MarginTrading.Backend.Services.Services
         private (decimal, decimal) GetPrices(Order order, decimal actualVolume, IMatchingEngineBase matchingEngine)
         {
             var quote = _quoteCacheService.GetQuote(order.AssetPairId);
-            
+
             decimal openPrice;
             decimal closePrice;
-            
+
             var directionForClose = order.Volume.GetClosePositionOrderDirection();
 
             if (quote.GetVolumeForOrderDirection(order.Direction) >= Math.Abs(actualVolume) &&
@@ -279,11 +284,11 @@ namespace MarginTrading.Backend.Services.Services
 
             return (openPrice, closePrice);
         }
-        
+
         private decimal CalculatePnlAtExecution(Order order, decimal pnlInTradingCurrency)
         {
             var fxRate = GetFxRate(order, pnlInTradingCurrency);
-            
+
             var result = pnlInTradingCurrency * fxRate;
 
             // just in case... is should be always negative

@@ -15,9 +15,13 @@ using MarginTrading.Backend.Services.Infrastructure;
 using MarginTrading.Common.Services;
 using MarginTrading.AssetService.Contracts;
 using MarginTrading.AssetService.Contracts.Scheduling;
+
 using Microsoft.FeatureManagement;
 using Moq;
 using NUnit.Framework;
+using MarginTrading.Backend.Core.Repositories;
+using MarginTrading.Backend.Core.Snapshots;
+using MarginTrading.Backend.Services;
 
 namespace MarginTradingTests
 {
@@ -31,7 +35,7 @@ namespace MarginTradingTests
         private const string AssetWithoutSchedule = "AssetWithoutSchedule";
         private const string AssetWithoutScheduleMarket = "AssetWithoutSchedule_Market";
         private const string AssetWithTradingDisabled = "AssetWithTradingDisabled";
-        
+
         private static readonly ScheduleSettingsContract[] ScheduleSettings = {
             new ScheduleSettingsContract
             {
@@ -115,7 +119,7 @@ namespace MarginTradingTests
             },
         };
 
-        private static ScheduleSettingsContract AlwaysOnMarketSchedule = new ScheduleSettingsContract
+        private static readonly ScheduleSettingsContract AlwaysOnMarketSchedule = new()
         {
             Id = "AlwaysOnMarketSchedule",
             Rank = int.MinValue,
@@ -154,7 +158,7 @@ namespace MarginTradingTests
                 yield return new TestCaseData(new DateTime(2017, 6, 24), AssetWithoutDayOff).Returns(false);
                 yield return new TestCaseData(new DateTime(2017, 6, 25, 20, 59, 59), AssetWithoutDayOff).Returns(false);
                 yield return new TestCaseData(new DateTime(2017, 6, 25, 21, 0, 0), AssetWithoutDayOff).Returns(false);
-                
+
                 yield return new TestCaseData(new DateTime(2017, 6, 21), AssetWithoutSchedule).Returns(true);
                 yield return new TestCaseData(new DateTime(2017, 6, 23, 20, 59, 59), AssetWithoutSchedule).Returns(true);
                 yield return new TestCaseData(new DateTime(2017, 6, 23, 21, 0, 0), AssetWithoutSchedule).Returns(true);
@@ -169,7 +173,7 @@ namespace MarginTradingTests
         public bool TestWeekendOff(DateTime dateTime, string asset)
         {
             //arrange
-            var dayOffService = ArrangeDayOffService(dateTime, new[] {ScheduleSettings[1]});
+            var dayOffService = ArrangeDayOffService(dateTime, new[] { ScheduleSettings[1] });
 
             //act
             return dayOffService.IsAssetTradingDisabled(asset);
@@ -193,7 +197,7 @@ namespace MarginTradingTests
                 yield return new TestCaseData(new DateTime(2017, 6, 24), AssetWithoutDayOff).Returns(false);
                 yield return new TestCaseData(new DateTime(2017, 6, 25, 20, 59, 59), AssetWithoutDayOff).Returns(false);
                 yield return new TestCaseData(new DateTime(2017, 6, 25, 21, 0, 0), AssetWithoutDayOff).Returns(false);
-                
+
                 yield return new TestCaseData(new DateTime(2017, 6, 21), AssetWithoutSchedule).Returns(true);
                 yield return new TestCaseData(new DateTime(2017, 6, 23, 20, 59, 59), AssetWithoutSchedule).Returns(true);
                 yield return new TestCaseData(new DateTime(2017, 6, 23, 21, 0, 0), AssetWithoutSchedule).Returns(true);
@@ -208,7 +212,7 @@ namespace MarginTradingTests
         public bool TestDailyOff(DateTime dateTime, string asset)
         {
             //arrange
-            var dayOffService = ArrangeDayOffService(dateTime, new[] {ScheduleSettings[3]});
+            var dayOffService = ArrangeDayOffService(dateTime, new[] { ScheduleSettings[3] });
 
             //act
             return dayOffService.IsAssetTradingDisabled(asset);
@@ -225,14 +229,14 @@ namespace MarginTradingTests
                 yield return new TestCaseData(new DateTime(2017, 6, 24, 0, 0, 0), AssetWithDayOff).Returns(true);
             }
         }
-        
+
         [Test]
         [TestCaseSource(nameof(IntersectedSpecialHigherTestCases))]
         public bool TestIntersectionSpecialHigher(DateTime dateTime, string asset)
         {
             //arrange
-            var dayOffService = ArrangeDayOffService(dateTime, new[] {ScheduleSettings[0], ScheduleSettings[1]});
-            
+            var dayOffService = ArrangeDayOffService(dateTime, new[] { ScheduleSettings[0], ScheduleSettings[1] });
+
             //act
             return dayOffService.IsAssetTradingDisabled(asset);
         }
@@ -248,18 +252,18 @@ namespace MarginTradingTests
                 yield return new TestCaseData(new DateTime(2017, 6, 24, 0, 0, 0), AssetWithDayOff).Returns(true);
             }
         }
-        
+
         [Test]
         [TestCaseSource(nameof(IntersectedSpecialLowerTestCases))]
         public bool TestIntersectionSpecialLower(DateTime dateTime, string asset)
         {
             //arrange
-            var dayOffService = ArrangeDayOffService(dateTime, new[] {ScheduleSettings[1], ScheduleSettings[2]});
-            
+            var dayOffService = ArrangeDayOffService(dateTime, new[] { ScheduleSettings[1], ScheduleSettings[2] });
+
             //act
             return dayOffService.IsAssetTradingDisabled(asset);
         }
-        
+
         private static IEnumerable TradingDisabledTestCases
         {
             [UsedImplicitly]
@@ -273,13 +277,13 @@ namespace MarginTradingTests
                 yield return new TestCaseData(new DateTime(2017, 6, 25, 8, 0, 0), AssetWithTradingDisabled).Returns(true);
             }
         }
-        
+
         [Test]
         [TestCaseSource(nameof(TradingDisabledTestCases))]
         public bool TestTradingDisabled(DateTime dateTime, string asset)
         {
             //arrange
-            var dayOffService = ArrangeDayOffService(dateTime, new[] {AlwaysOnMarketSchedule});
+            var dayOffService = ArrangeDayOffService(dateTime, new[] { AlwaysOnMarketSchedule });
 
             //act
             return dayOffService.IsAssetTradingDisabled(asset);
@@ -293,32 +297,32 @@ namespace MarginTradingTests
 
             var assetPairsCacheMock = new Mock<IAssetPairsCache>();
             assetPairsCacheMock.Setup(s => s.GetAllIds())
-                .Returns(new[] {AssetWithDayOff, AssetWithoutDayOff}.ToImmutableHashSet());
-            
+                .Returns(new[] { AssetWithDayOff, AssetWithoutDayOff }.ToImmutableHashSet());
+
             var assetPair1Mock = new Mock<IAssetPair>();
             assetPair1Mock.Setup(p => p.Id).Returns(AssetWithDayOff);
             assetPair1Mock.Setup(p => p.MarketId).Returns(AssetWithDayOffMarket);
             assetPairsCacheMock.Setup(s => s.GetAssetPairByIdOrDefault(AssetWithDayOff)).Returns(assetPair1Mock.Object);
-            
+
             var assetPair2Mock = new Mock<IAssetPair>();
             assetPair2Mock.Setup(p => p.Id).Returns(AssetWithoutDayOff);
             assetPair2Mock.Setup(p => p.MarketId).Returns(AssetWithoutDayOffMarket);
             assetPairsCacheMock.Setup(s => s.GetAssetPairByIdOrDefault(AssetWithoutDayOff)).Returns(assetPair2Mock.Object);
-            
+
             var assetPair3Mock = new Mock<IAssetPair>();
             assetPair3Mock.Setup(p => p.Id).Returns(AssetWithoutSchedule);
             assetPair3Mock.Setup(p => p.MarketId).Returns(AssetWithoutScheduleMarket);
             assetPairsCacheMock.Setup(s => s.GetAssetPairByIdOrDefault(AssetWithoutSchedule)).Returns(assetPair3Mock.Object);
-            
+
             var assetPair4Mock = new Mock<IAssetPair>();
             assetPair4Mock.Setup(p => p.Id).Returns(AssetWithTradingDisabled);
             assetPair4Mock.Setup(p => p.MarketId).Returns(AssetWithoutDayOff);
             assetPair4Mock.Setup(p => p.IsTradingDisabled).Returns(true);
             assetPairsCacheMock.Setup(s => s.GetAssetPairByIdOrDefault(AssetWithTradingDisabled)).Returns(assetPair4Mock.Object);
-            
+
             var scheduleSettingsApiMock = new Mock<IScheduleSettingsApi>();
             scheduleSettingsApiMock.Setup(s => s.List(It.IsAny<string>()))
-                .ReturnsAsync(withDayOffSchedules.Concat(new[] {AlwaysOnMarketSchedule}).ToList());
+                .ReturnsAsync(withDayOffSchedules.Concat(new[] { AlwaysOnMarketSchedule }).ToList());
             scheduleSettingsApiMock.Setup(s => s.StateList(It.IsAny<string[]>()))
                 .ReturnsAsync(new List<CompiledScheduleContract>());
 
@@ -329,54 +333,55 @@ namespace MarginTradingTests
                 new EmptyLog(),
                 new OvernightMarginSettings(),
                 Mock.Of<IFeatureManager>(),
-                new SnapshotStatusTracker(new SnapshotMonitorSettings()));
-            
+                new InMemoryRequestQueue<SnapshotCreationRequest>(),
+                Mock.Of<IIdentityGenerator>());
+
             scheduleSettingsCacheService.UpdateAllSettingsAsync().GetAwaiter().GetResult();
             return new AssetPairDayOffService(scheduleSettingsCacheService);
         }
-        
-        
-        
-        
+
+
+
+
         //todo fix it
-//        public static IEnumerable PendingOrdersDisabledTestCases
-//        {
-//            [UsedImplicitly]
-//            get
-//            {
-//                yield return new TestCaseData(new DateTime(2017, 6, 21), AssetWithDayOff).Returns(false);
-//                yield return new TestCaseData(new DateTime(2017, 6, 23, 19, 59, 59), AssetWithDayOff).Returns(false);
-//                yield return new TestCaseData(new DateTime(2017, 6, 23, 20, 0, 0), AssetWithDayOff).Returns(true);
-//                yield return new TestCaseData(new DateTime(2017, 6, 24), AssetWithDayOff).Returns(true);
-//                yield return new TestCaseData(new DateTime(2017, 6, 25, 21, 59, 59), AssetWithDayOff).Returns(true);
-//                yield return new TestCaseData(new DateTime(2017, 6, 25, 22, 0, 0), AssetWithDayOff).Returns(false);
-//
-//                yield return new TestCaseData(new DateTime(2017, 6, 21), AssetWithoutDayOff).Returns(false);
-//                yield return new TestCaseData(new DateTime(2017, 6, 23, 19, 59, 59), AssetWithoutDayOff).Returns(false);
-//                yield return new TestCaseData(new DateTime(2017, 6, 23, 20, 0, 0), AssetWithoutDayOff).Returns(false);
-//                yield return new TestCaseData(new DateTime(2017, 6, 24), AssetWithoutDayOff).Returns(false);
-//                yield return new TestCaseData(new DateTime(2017, 6, 25, 21, 59, 59), AssetWithoutDayOff).Returns(false);
-//                yield return new TestCaseData(new DateTime(2017, 6, 25, 22, 0, 0), AssetWithoutDayOff).Returns(false);
-//            }
-//        }
-//
-//        [Test]
-//        [TestCaseSource(nameof(PendingOrdersDisabledTestCases))]
-//        public bool TestPendingOrdersDisabled(DateTime dateTime, string asset)
-//        {
-//            //arrange 
-//            var dateService = new Mock<IDateService>();
-//            dateService.Setup(s => s.Now()).Returns(dateTime);
-//
-//            var scheduleSettingsCacheService = new Mock<IScheduleSettingsCacheService>();
-//            scheduleSettingsCacheService.Setup(s => s.GetScheduleSettings(It.IsIn(AssetWithoutDayOff)))
-//                .Returns(new List<ScheduleSettings>());
-//            scheduleSettingsCacheService.Setup(s => s.GetScheduleSettings(It.IsIn(AssetWithDayOff)))
-//                .Returns(new List<ScheduleSettings> {ScheduleSettings[1]});
-//            var dayOffService = new AssetPairDayOffService(dateService.Object, scheduleSettingsCacheService.Object);
-//            
-//            //act
-//            return dayOffService.ArePendingOrdersDisabled(asset);
-//        }
+        //        public static IEnumerable PendingOrdersDisabledTestCases
+        //        {
+        //            [UsedImplicitly]
+        //            get
+        //            {
+        //                yield return new TestCaseData(new DateTime(2017, 6, 21), AssetWithDayOff).Returns(false);
+        //                yield return new TestCaseData(new DateTime(2017, 6, 23, 19, 59, 59), AssetWithDayOff).Returns(false);
+        //                yield return new TestCaseData(new DateTime(2017, 6, 23, 20, 0, 0), AssetWithDayOff).Returns(true);
+        //                yield return new TestCaseData(new DateTime(2017, 6, 24), AssetWithDayOff).Returns(true);
+        //                yield return new TestCaseData(new DateTime(2017, 6, 25, 21, 59, 59), AssetWithDayOff).Returns(true);
+        //                yield return new TestCaseData(new DateTime(2017, 6, 25, 22, 0, 0), AssetWithDayOff).Returns(false);
+        //
+        //                yield return new TestCaseData(new DateTime(2017, 6, 21), AssetWithoutDayOff).Returns(false);
+        //                yield return new TestCaseData(new DateTime(2017, 6, 23, 19, 59, 59), AssetWithoutDayOff).Returns(false);
+        //                yield return new TestCaseData(new DateTime(2017, 6, 23, 20, 0, 0), AssetWithoutDayOff).Returns(false);
+        //                yield return new TestCaseData(new DateTime(2017, 6, 24), AssetWithoutDayOff).Returns(false);
+        //                yield return new TestCaseData(new DateTime(2017, 6, 25, 21, 59, 59), AssetWithoutDayOff).Returns(false);
+        //                yield return new TestCaseData(new DateTime(2017, 6, 25, 22, 0, 0), AssetWithoutDayOff).Returns(false);
+        //            }
+        //        }
+        //
+        //        [Test]
+        //        [TestCaseSource(nameof(PendingOrdersDisabledTestCases))]
+        //        public bool TestPendingOrdersDisabled(DateTime dateTime, string asset)
+        //        {
+        //            //arrange 
+        //            var dateService = new Mock<IDateService>();
+        //            dateService.Setup(s => s.Now()).Returns(dateTime);
+        //
+        //            var scheduleSettingsCacheService = new Mock<IScheduleSettingsCacheService>();
+        //            scheduleSettingsCacheService.Setup(s => s.GetScheduleSettings(It.IsIn(AssetWithoutDayOff)))
+        //                .Returns(new List<ScheduleSettings>());
+        //            scheduleSettingsCacheService.Setup(s => s.GetScheduleSettings(It.IsIn(AssetWithDayOff)))
+        //                .Returns(new List<ScheduleSettings> {ScheduleSettings[1]});
+        //            var dayOffService = new AssetPairDayOffService(dateService.Object, scheduleSettingsCacheService.Object);
+        //            
+        //            //act
+        //            return dayOffService.ArePendingOrdersDisabled(asset);
+        //        }
     }
 }
