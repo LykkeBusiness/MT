@@ -6,7 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
+
 using Common.Log;
+
 using MarginTrading.Backend.Contracts;
 using MarginTrading.Backend.Contracts.ErrorCodes;
 using MarginTrading.Backend.Contracts.Prices;
@@ -16,9 +18,10 @@ using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Exceptions;
 using MarginTrading.Backend.Core.Quotes;
 using MarginTrading.Backend.Core.Services;
+using MarginTrading.Backend.Core.Snapshots;
 using MarginTrading.Backend.Filters;
-using MarginTrading.Backend.Services;
 using MarginTrading.Backend.Services.Mappers;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -35,20 +38,20 @@ namespace MarginTrading.Backend.Controllers
     {
         private readonly IQuoteCacheService _quoteCacheService;
         private readonly IFxRateCacheService _fxRateCacheService;
-        private readonly ISnapshotService _snapshotService;
+        private readonly ISnapshotConverter _snapshotConverter;
         private readonly IDraftSnapshotKeeper _draftSnapshotKeeper;
         private readonly ILog _log;
 
         public PricesController(
             IQuoteCacheService quoteCacheService,
             IFxRateCacheService fxRateCacheService,
-            ISnapshotService snapshotService,
-            ILog log,
-            IDraftSnapshotKeeper draftSnapshotKeeper)
+            ISnapshotConverter snapshotConverter,
+            IDraftSnapshotKeeper draftSnapshotKeeper,
+            ILog log)
         {
             _quoteCacheService = quoteCacheService;
             _fxRateCacheService = fxRateCacheService;
-            _snapshotService = snapshotService;
+            _snapshotConverter = snapshotConverter;
             _log = log;
             _draftSnapshotKeeper = draftSnapshotKeeper;
         }
@@ -102,11 +105,11 @@ namespace MarginTrading.Backend.Controllers
         {
             if (!DateTime.TryParse(request.TradingDay, out var tradingDay))
             {
-                await _log.WriteWarningAsync(nameof(PricesController), 
+                await _log.WriteWarningAsync(nameof(PricesController),
                     nameof(UploadMissingQuotesAsync),
-                    request.TradingDay, 
+                    request.TradingDay,
                     "Couldn't parse trading day");
-                
+
                 return QuotesUploadErrorCode.InvalidTradingDay;
             }
 
@@ -119,7 +122,7 @@ namespace MarginTrading.Backend.Controllers
 
             try
             {
-                await _snapshotService.MakeTradingDataSnapshotFromDraft(
+                await _snapshotConverter.ConvertToFinal(
                     request.CorrelationId,
                     request.Cfd,
                     request.Forex);
@@ -148,7 +151,7 @@ namespace MarginTrading.Backend.Controllers
         public MtBackendResponse<bool> RemoveFromBestPriceCache(string assetPairId)
         {
             var decodedAssetPairId = HttpUtility.UrlDecode(assetPairId);
-            
+
             var result = _quoteCacheService.RemoveQuote(decodedAssetPairId);
 
             return result == RemoveQuoteErrorCode.None
@@ -166,21 +169,21 @@ namespace MarginTrading.Backend.Controllers
         public MtBackendResponse<bool> RemoveFromBestFxPriceCache(string assetPairId)
         {
             var decodedAssetPairId = HttpUtility.UrlDecode(assetPairId);
-                
+
             var result = _fxRateCacheService.RemoveQuote(decodedAssetPairId);
-            
+
             return result == RemoveQuoteErrorCode.None
                 ? MtBackendResponse<bool>.Ok(true)
                 : MtBackendResponse<bool>.Error(result.Message);
         }
-        
+
         [ServiceFilter(typeof(DevelopmentEnvironmentFilter))]
         [HttpDelete]
         [Route("internal/bestFx/{assetPairId}")]
         public Task<bool> RemoveFromBestFxPriceCacheInternal(string assetPairId)
         {
             var decodedAssetPairId = HttpUtility.UrlDecode(assetPairId);
-                
+
             var result = _fxRateCacheService.RemoveQuote(decodedAssetPairId);
 
             return Task.FromResult(result.ErrorCode == RemoveQuoteErrorCode.None);

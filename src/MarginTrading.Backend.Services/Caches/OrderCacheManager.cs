@@ -5,8 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Common;
 using Common.Log;
+
 using MarginTrading.Backend.Core;
 using MarginTrading.Backend.Core.Orders;
 using MarginTrading.Backend.Core.Repositories;
@@ -14,6 +16,7 @@ using MarginTrading.Backend.Core.Services;
 using MarginTrading.Backend.Core.Settings;
 using MarginTrading.Backend.Core.Trading;
 using MarginTrading.Backend.Services.Helpers;
+
 using MoreLinq;
 
 namespace MarginTrading.Backend.Services.Caches
@@ -27,11 +30,11 @@ namespace MarginTrading.Backend.Services.Caches
         private readonly IAccountHistoryRepository _accountHistoryRepository;
         private readonly ISentimentCache _sentimentCache;
         private readonly ILog _log;
-        
-        public static readonly string OrdersBlobName= "orders";
-        public static readonly string PositionsBlobName= "positions";
-        
-        private static readonly OrderStatus[] OrderTerminalStatuses = {OrderStatus.Canceled, OrderStatus.Rejected, OrderStatus.Executed, OrderStatus.Expired};
+
+        public static readonly string OrdersBlobName = "orders";
+        public static readonly string PositionsBlobName = "positions";
+
+        private static readonly OrderStatus[] OrderTerminalStatuses = { OrderStatus.Canceled, OrderStatus.Rejected, OrderStatus.Executed, OrderStatus.Expired };
         private static readonly PositionHistoryType PositionTerminalStatus = PositionHistoryType.Close;
 
         public OrderCacheManager(OrdersCache orderCache,
@@ -41,7 +44,7 @@ namespace MarginTrading.Backend.Services.Caches
             IAccountHistoryRepository accountHistoryRepository,
             MarginTradingSettings marginTradingSettings,
             ILog log,
-            ISentimentCache sentimentCache) 
+            ISentimentCache sentimentCache)
             : base(nameof(OrderCacheManager), marginTradingSettings.BlobPersistence.OrdersDumpPeriodMilliseconds, log)
         {
             _orderCache = orderCache;
@@ -51,12 +54,14 @@ namespace MarginTrading.Backend.Services.Caches
             _accountHistoryRepository = accountHistoryRepository;
             _log = log;
             _sentimentCache = sentimentCache;
+
+            DisableTelemetry();
         }
 
         public override void Start()
         {
             InferInitDataFromBlobAndHistory();
-            
+
             if (_orderCache.Positions == null)
             {
                 _log.WriteWarning(nameof(Start), null,
@@ -81,9 +86,9 @@ namespace MarginTrading.Backend.Services.Caches
             if (Working)
             {
                 DumpOrdersToRepository().Wait();
-                DumpPositionsToRepository().Wait();    
+                DumpPositionsToRepository().Wait();
             }
-            
+
             base.Stop();
         }
 
@@ -135,20 +140,20 @@ namespace MarginTrading.Backend.Services.Caches
                 LykkeConstants.StateBlobContainer, PositionsBlobName);
             var (blobOrders, blobOrdersTimestamp) = blobOrdersTask.GetAwaiter().GetResult();
             var (blobPositions, blobPositionsTimestamp) = blobPositionsTask.GetAwaiter().GetResult();
-            
+
             _log.WriteInfo(nameof(OrderCacheManager), nameof(InferInitDataFromBlobAndHistory),
                 $"Finish reading data from blob, there are [{blobOrders.Count}] orders, [{blobPositions.Count}] positions. Start checking historical data.");
-            
+
             var orderSnapshotsTask = _ordersHistoryRepository.GetLastSnapshot(blobOrdersTimestamp);
             var positionSnapshotsTask = _positionsHistoryRepository.GetLastSnapshot(blobPositionsTimestamp);
             var orderSnapshots = orderSnapshotsTask.GetAwaiter().GetResult().Select(OrderHistory.Create).ToList();
             PreProcess(orderSnapshots);
             var positionSnapshots = positionSnapshotsTask.GetAwaiter().GetResult();
-            
+
             _log.WriteInfo(nameof(OrderCacheManager), nameof(InferInitDataFromBlobAndHistory),
                 $"Finish reading historical data. #{orderSnapshots.Count} order history items since [{blobOrdersTimestamp:s}], #{positionSnapshots.Count} position history items since [{blobPositionsTimestamp:s}].");
 
-            var (ordersResult, orderIdsChangedFromHistory) = MapOrders(blobOrders.ToDictionary(x => x.Id, x => x), 
+            var (ordersResult, orderIdsChangedFromHistory) = MapOrders(blobOrders.ToDictionary(x => x.Id, x => x),
                 orderSnapshots.ToDictionary(x => x.Id, x => x), _log);
             var (positionsResult, positionIdsChangedFromHistory) = MapPositions(
                 blobPositions.ToDictionary(x => x.Id, x => x), positionSnapshots.ToDictionary(x => x.Id, x => x));
@@ -170,7 +175,7 @@ namespace MarginTrading.Backend.Services.Caches
                 $"Initializing cache with [{ordersResult.Count}] orders and [{positionsResult.Count}] positions.");
 
             _orderCache.InitOrders(ordersResult, positionsResult);
-            
+
             if (orderIdsChangedFromHistory.Any() || positionIdsChangedFromHistory.Any())
             {
                 _log.WriteInfo(nameof(OrderCacheManager), nameof(InferInitDataFromBlobAndHistory),
@@ -188,10 +193,10 @@ namespace MarginTrading.Backend.Services.Caches
                 {
                     DumpPositionsToRepository().Wait();
                 }
-                
+
                 _log.WriteInfo(nameof(OrderCacheManager), nameof(InferInitDataFromBlobAndHistory),
                      "Finished dumping merged order and position data to the blob."
-                ); 
+                );
             }
 
             return (ordersResult, positionsResult);
@@ -204,15 +209,15 @@ namespace MarginTrading.Backend.Services.Caches
         /// <param name="orders"></param>
         private void ApplyExpirationDateFix(List<Order> orders)
         {
-            var noonTime = new TimeSpan(12, 0 ,0);
-            
+            var noonTime = new TimeSpan(12, 0, 0);
+
             foreach (var order in orders)
             {
                 if (!order.Validity.HasValue)
                     continue;
 
                 var timeOfValidityDay = order.Validity.Value.TimeOfDay;
-                
+
                 // if we already fixed that validity datetime the time portion will be cut
                 if (timeOfValidityDay.TotalSeconds == 0)
                     continue;
@@ -220,7 +225,7 @@ namespace MarginTrading.Backend.Services.Caches
                 var newDateTime = timeOfValidityDay >= noonTime
                     ? order.Validity.Value.AddDays(1)
                     : order.Validity.Value;
-                
+
                 order.FixValidity(newDateTime.Date);
             }
         }
@@ -229,7 +234,7 @@ namespace MarginTrading.Backend.Services.Caches
         {
             var relatedOrderTypes = new HashSet<OrderType>
                 {OrderType.TakeProfit, OrderType.StopLoss, OrderType.TrailingStop};
-            
+
             foreach (var orderHistory in orderHistories)
             {
                 if (orderHistory.Status == OrderStatus.Placed && relatedOrderTypes.Contains(orderHistory.Type))
@@ -246,7 +251,7 @@ namespace MarginTrading.Backend.Services.Caches
             {
                 return (blobOrders.Values.ToList(), new List<string>());
             }
-        
+
             var changedIds = new List<string>();
             var result = new List<Order>();
 
@@ -264,7 +269,7 @@ namespace MarginTrading.Backend.Services.Caches
                     {
                         log.WriteWarning(nameof(OrderCacheManager), nameof(MapOrders),
                             $"Order in invalid status [Placed] found and skipped: {orderHistory.ToJson()}");
-                        
+
                         continue;
                     }
 
@@ -281,10 +286,10 @@ namespace MarginTrading.Backend.Services.Caches
                 {
                     log.WriteWarning(nameof(OrderCacheManager), nameof(MapOrders),
                         $"Order in invalid status [Placed] found and skipped: {orderHistory.ToJson()}");
-                        
+
                     continue;
                 }
-                
+
                 changedIds.Add(id);
                 result.Add(orderHistory.FromHistory());
             }
