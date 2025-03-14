@@ -20,7 +20,7 @@
     <PackageVersion Include="Lykke.MarginTrading.AssetService.Contracts" Version="14.0.11" />
     <PackageVersion Include="Lykke.MarginTrading.BookKeeper.Contracts" Version="3.0.0" />
     <PackageVersion Include="Lykke.MarginTrading.OrderBookService.Contracts" Version="3.0.0" />
-    <PackageVersion Include="Lykke.MarginTrading.BackendSnow.Contracts" Version="3.0.0" />
+    <PackageVersion Include="Lykke.MarginTrading.BackendSnow.Contracts" Version="3.2.0" />
     <PackageVersion Include="Lykke.Rocks.Caching" Version="1.0.0" />
     <PackageVersion Include="Lykke.Service.ClientAccount.Client" Version="3.2.0" />
     <PackageVersion Include="Lykke.Service.EmailSender" Version="1.1.0" />
